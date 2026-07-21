@@ -493,6 +493,13 @@ body.cb-lock-scroll {
   color: inherit;
 }
 
+.cb-leader-name {
+  overflow: hidden;
+  font-size: clamp(20px, 2.45vw, 34px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cb-season-days strong,
 .cb-weather-temp strong {
   font-weight: 820;
@@ -2478,7 +2485,19 @@ function setupStickyNav(){
     });
   });
 
+  function updateFromHash(){
+    var id = String(window.location.hash || "").replace(/^#/, "");
+    var exists = sections.some(function(section){ return section.id === id; });
+    if(exists) setActive(id);
+  }
+
+  window.addEventListener("hashchange", updateFromHash);
   updateActiveSection();
+  updateFromHash();
+  setTimeout(function(){
+    if(window.location.hash) updateFromHash();
+    else updateActiveSection();
+  }, 700);
 }
 
 function escapeHtml(v){
