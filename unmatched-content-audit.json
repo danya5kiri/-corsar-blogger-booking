@@ -1,0 +1,89 @@
+{
+  "totalRows": 82,
+  "bookingRows": 60,
+  "contentRows": 20,
+  "notFoundCount": 8,
+  "resolvedCount": 7,
+  "unresolvedCount": 1,
+  "resolved": [
+    {
+      "telegram": "@evgivl",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-23",
+      "link": "https://www.instagram.com/reel/DYt_rCAI2WJ/?igsh=MWNmbHB6M3dibGNscA==",
+      "createdAt": "2026-05-25T05:41:20.282Z",
+      "matchedDate": "2026-05-23",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@evgivl"
+    },
+    {
+      "telegram": "@evgivl",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-23",
+      "link": "https://www.instagram.com/s/aGlnaGxpZ2h0OjE4MTY1MjE4Mjc1NDI4NzMw?igsh=Z3R0eGJtYzF5MXdx",
+      "createdAt": "2026-05-25T05:52:46.273Z",
+      "matchedDate": "2026-05-23",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@evgivl"
+    },
+    {
+      "telegram": "@evgivl",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-23",
+      "link": "https://www.instagram.com/p/DYsEMrwkWZY/?img_index=2&igsh=YjNzODI5Njk1MzFh",
+      "createdAt": "2026-05-25T05:53:39.907Z",
+      "matchedDate": "2026-05-23",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@evgivl"
+    },
+    {
+      "telegram": "@elenayanchenko01",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-09",
+      "link": "https://www.instagram.com/reel/DYn1yoroD1D/?igsh=cGs5eGc4Y3ZzaDN0",
+      "createdAt": "2026-05-27T07:54:51.368Z",
+      "matchedDate": "2026-05-09",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@elenayanchenko01"
+    },
+    {
+      "telegram": "@elenayanchenko01",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-09",
+      "link": "https://www.instagram.com/reel/DYn1yoroD1D/?igsh=cGs5eGc4Y3ZzaDN0",
+      "createdAt": "2026-05-27T07:54:53.015Z",
+      "matchedDate": "2026-05-09",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@elenayanchenko01"
+    },
+    {
+      "telegram": "@elenayanchenko01",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-05-09",
+      "link": "https://www.instagram.com/reel/DYLf7Whoqo2/?igsh=MWVjaTU1bW91YnZjMQ==",
+      "createdAt": "2026-05-27T07:55:50.282Z",
+      "matchedDate": "2026-05-09",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@elenayanchenko01"
+    },
+    {
+      "telegram": "@a4fanaseva",
+      "reportTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "reportDate": "2026-06-25",
+      "link": "https://www.instagram.com/reel/DaJ47gkItzE/?igsh=Z3ZjajVrNjhmZ2Fz",
+      "createdAt": "2026-07-10T23:23:21.069Z",
+      "matchedDate": "2026-06-25",
+      "matchedTour": "Вечерняя прогулка с саксофоном на катамаране",
+      "matchedTelegram": "@a4fanaseva"
+    }
+  ],
+  "unresolved": [
+    {
+      "telegram": "@hazadela",
+      "reportTour": "Путешествие на остров Шкота с посещением розовых пещер и дальневосточных тюленей",
+      "reportDate": "2026-05-19",
+      "link": "https://www.instagram.com/reel/DYjDS3OIG3b/?igsh=emhrajZxZjE5N290",
+      "createdAt": "2026-05-25T06:19:20.350Z"
+    }
+  ]
+}
