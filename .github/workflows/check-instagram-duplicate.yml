@@ -1,0 +1,33 @@
+name: Проверить дубль Instagram
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - tools/check_duplicate_link.py
+      - .github/workflows/check-instagram-duplicate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: check-instagram-daj47gkitze
+
+      - name: Проверить ссылку в базе
+        run: python tools/check_duplicate_link.py
+
+      - name: Сохранить результат проверки
+        run: |
+          git config user.name "corsar-duplicate-check"
+          git config user.email "actions@users.noreply.github.com"
+          git add duplicate-check-result.json
+          git commit -m "Сохранить результат проверки Instagram-ссылки"
+          git push origin HEAD:check-instagram-daj47gkitze
