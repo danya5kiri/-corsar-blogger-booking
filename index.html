@@ -2376,7 +2376,7 @@ body.cb-lock-scroll {
         <select id="cb-transfer-source"><option value="">Сначала укажите существующий ник</option></select>
         <div class="cb-field-hint">Выберите прежнюю дату, а выше укажите новую дату и программу.</div>
       </div>
-      <div class="cb-inline-note">После сохранения заявка появится в календаре, а затем откроется WhatsApp с готовым сообщением для согласования.</div>
+      <div class="cb-inline-note">На каждый тур в конкретную дату записывается только один креатор. При переносе прежняя запись автоматически освобождает место.</div>
       <button type="button" id="cb-submit" class="cb-submit">Сформировать заявку в WhatsApp</button>
     </div>
   </section>
@@ -2417,7 +2417,7 @@ body.cb-lock-scroll {
         <div class="cb-section-kicker">03 / Расписание</div>
         <h2 class="cb-section-title">Календарь <strong>окон</strong></h2>
       </div>
-      <p class="cb-section-note">Нажмите на дату, чтобы увидеть доступные программы и текущие записи креаторов.</p>
+      <p class="cb-section-note">Нажмите на дату, чтобы увидеть свободные программы и текущие записи креаторов. Занятый тур недоступен для новой записи.</p>
     </div>
     <div class="cb-legend">
       <span><i></i>Есть туры</span>
@@ -3434,6 +3434,12 @@ var weatherLastRequestedAt = 0;
 var CREATOR_ALIASES = {
   "@a4anaseva": "@a4fanaseva"
 };
+var DELETED_CREATORS = {
+  "@ник": true,
+  "@тест": true,
+  "@nik": true,
+  "@test": true
+};
 var KNOWN_BOOKING_TRANSFERS = [{
   from: {
     date: "2026-07-23",
@@ -3648,14 +3654,13 @@ function canonicalTourName(v){
   return original;
 }
 
-function isAnalyticsExcludedCreator(v){
-  var creator = normalizeTelegram(v).replace(/^@/, "");
-  return ["ник", "тест", "nik", "test"].indexOf(creator) !== -1;
+function isDeletedCreator(v){
+  return !!DELETED_CREATORS[normalizeTelegram(v)];
 }
 
 function ensureCreatorDirectoryEntry(directory, value){
   var key = normalizeTelegram(value);
-  if(!key || isAnalyticsExcludedCreator(key)) return null;
+  if(!key || isDeletedCreator(key)) return null;
 
   if(!directory[key]){
     directory[key] = {
@@ -3711,7 +3716,7 @@ function getReportCreatorDirectory(tour){
     if(selectedTour && normalizeTour(booking.tour) !== selectedTour) return;
 
     var key = normalizeTelegram(booking.telegram);
-    if(!key || isAnalyticsExcludedCreator(key)) return;
+    if(!key || isDeletedCreator(key)) return;
 
     var known = knownByKey[key] || {key: key, name: key, visits: 0, materials: 0};
     directory[key] = {
@@ -3727,7 +3732,7 @@ function getReportCreatorDirectory(tour){
 
 function findCreatorEntry(value, directory){
   var key = normalizeTelegram(value);
-  if(!key) return null;
+  if(!key || isDeletedCreator(key)) return null;
 
   for(var i = 0; i < directory.length; i++){
     if(directory[i].key === key) return directory[i];
@@ -3739,7 +3744,7 @@ function findCreatorEntry(value, directory){
 function getTransferableBookings(telegram){
   var creator = normalizeTelegram(telegram);
   var todayKey = getTodayKey();
-  if(!creator) return [];
+  if(!creator || isDeletedCreator(creator)) return [];
 
   return bookings.filter(function(booking){
     var date = normalizeDate(booking.date);
@@ -3826,6 +3831,14 @@ function setCreatorIdentityState(inputId, stateId, directory, mode){
   var key = normalizeTelegram(input.value);
   if(!key){
     state.textContent = mode === "report" ? "Выберите ник из базы записей." : "";
+    return null;
+  }
+
+  if(isDeletedCreator(key)){
+    input.classList.add("is-new-creator");
+    input.setAttribute("aria-invalid", "true");
+    state.classList.add("is-error");
+    state.textContent = "Этот профиль удалён и недоступен для записи, переноса и публикаций.";
     return null;
   }
 
@@ -3974,6 +3987,10 @@ function bookingFingerprint(date, telegram, tour){
   return [normalizeDate(date), normalizeTelegram(telegram), normalizeTour(tour)].join("|");
 }
 
+function bookingSlotFingerprint(date, tour){
+  return [normalizeDate(date), normalizeTour(tour)].join("|");
+}
+
 function isInactiveBooking(booking){
   var status = String((booking && booking.status) || "").trim().toLowerCase();
   return status === "отмена" || status === "не пришел" || status === "не пришёл" || status === "отменено" || status === "cancelled" || status === "canceled";
@@ -4011,7 +4028,7 @@ function resolveEffectiveBookings(rows){
   var unique = Object.create(null);
 
   (Array.isArray(rows) ? rows : []).forEach(function(booking, index){
-    if(!booking || isInactiveBooking(booking)) return;
+    if(!booking || isInactiveBooking(booking) || isDeletedCreator(booking.telegram)) return;
     var key = bookingFingerprint(booking.date, booking.telegram, booking.tour);
     unique[key] = {booking: booking, index: index};
   });
@@ -4047,12 +4064,21 @@ function findBookingByFingerprint(fingerprint){
   return null;
 }
 
-function hasBookingDuplicate(date, telegram, tour){
-  var fingerprint = bookingFingerprint(date, telegram, tour);
-  return bookings.some(function(booking){
-    return !isInactiveBooking(booking) &&
-      bookingFingerprint(booking.date, booking.telegram, booking.tour) === fingerprint;
-  });
+function findBookingSlotOccupant(date, tour){
+  var slot = bookingSlotFingerprint(date, tour);
+  if(!normalizeDate(date) || !normalizeTour(tour)) return null;
+
+  for(var i = 0; i < bookings.length; i++){
+    var booking = bookings[i];
+    if(!isInactiveBooking(booking) && !isDeletedCreator(booking.telegram) &&
+      bookingSlotFingerprint(booking.date, booking.tour) === slot) return booking;
+  }
+
+  return null;
+}
+
+function hasBookingSlotConflict(date, tour){
+  return !!findBookingSlotOccupant(date, tour);
 }
 
 function hasContentDuplicate(link){
@@ -4475,19 +4501,25 @@ function renderTours(date){
     return;
   }
 
-  select.innerHTML = '<option value="">Выберите тур</option>';
+  var allOccupied = tours.every(function(tour){
+    return hasBookingSlotConflict(date, tour);
+  });
+
+  select.innerHTML = '<option value="">' + (allOccupied ? "Все туры на эту дату заняты" : "Выберите свободный тур") + '</option>';
 
   tours.forEach(function(t){
     var opt = document.createElement("option");
+    var occupied = hasBookingSlotConflict(date, t);
     opt.value = t;
-    opt.textContent = t;
+    opt.textContent = t + (occupied ? " — занято" : "");
+    opt.disabled = occupied;
     select.appendChild(opt);
   });
 }
 
 function getBookingsByDate(date){
   return bookings.filter(function(b){
-    return !isInactiveBooking(b) && normalizeDate(b.date) === date && !isExcludedTour(b.tour) && isDateInSeason(date);
+    return !isInactiveBooking(b) && !isDeletedCreator(b.telegram) && normalizeDate(b.date) === date && !isExcludedTour(b.tour) && isDateInSeason(date);
   });
 }
 
@@ -4608,10 +4640,13 @@ function renderDetails(date){
   var html = '<h3>' + escapeHtml(formatDateRu(date)) + '</h3>';
 
   if(tours.length){
-    html += '<div class="cb-small" style="margin-bottom:12px">Доступные программы и текущая активность</div><div class="cb-window-list">';
+    html += '<div class="cb-small" style="margin-bottom:12px">Программы и текущая занятость</div><div class="cb-window-list">';
     tours.forEach(function(tour){
-      var tourCount = rows.filter(function(row){ return String(row.tour || "").trim() === tour; }).length;
-      html += '<div class="cb-window-row"><span>' + escapeHtml(tour) + '</span><span class="cb-window-status' + (tourCount ? ' has-bookings' : '') + '">' + (tourCount ? 'записей: ' + tourCount : 'свободно') + '</span></div>';
+      var tourCount = rows.filter(function(row){ return normalizeTour(row.tour) === normalizeTour(tour); }).length;
+      var occupiedText = tourCount > 1
+        ? "занято · " + tourCount + " " + pluralCount(tourCount, "запись", "записи", "записей")
+        : "занято";
+      html += '<div class="cb-window-row"><span>' + escapeHtml(tour) + '</span><span class="cb-window-status' + (tourCount ? ' has-bookings' : '') + '">' + (tourCount ? occupiedText : 'свободно') + '</span></div>';
     });
     html += '</div>';
   } else {
@@ -4662,7 +4697,7 @@ function renderSeasonMetrics(){
   var activeBookings = bookings.filter(function(booking){
     var creator = normalizeTelegram(booking.telegram);
     var date = normalizeDate(booking.date);
-    if(isInactiveBooking(booking) || !creator || isAnalyticsExcludedCreator(creator) || !isDateInSeason(date)) return false;
+    if(isInactiveBooking(booking) || !creator || isDeletedCreator(creator) || !isDateInSeason(date)) return false;
     creators[creator] = true;
     return true;
   });
@@ -4680,7 +4715,7 @@ function renderAnalytics(){
   bookings.forEach(function(b){
     if(isInactiveBooking(b)) return;
     var tg = normalizeTelegram(b.telegram);
-    if(isAnalyticsExcludedCreator(tg)) return;
+    if(isDeletedCreator(tg)) return;
     if(tg){
       if(!users[tg]) users[tg] = 0;
       users[tg] += 1;
@@ -4766,6 +4801,7 @@ function getPublishedContentItems(){
     var link = getReportLink(report);
     var key = normalizeContentLink(link);
     var matchStatus = String((report && report.matchStatus) || "").trim();
+    if(isDeletedCreator(getReportCreator(report))) return false;
     if(matchStatus && matchStatus !== "Есть запись") return false;
     if(!isValidContentLink(link) || seen[key]) return false;
     seen[key] = true;
@@ -4783,7 +4819,7 @@ function renderContentLeader(){
   var totals = {};
   getPublishedContentItems().forEach(function(report){
     var creator = getReportCreator(report);
-    if(!creator || isAnalyticsExcludedCreator(creator)) return;
+    if(!creator || isDeletedCreator(creator)) return;
     if(!totals[creator]) totals[creator] = 0;
     totals[creator] += 1;
   });
@@ -5006,7 +5042,7 @@ function fetchRemoteRows(timeoutMs){
 
 function applyRemoteRows(allRows){
   reports = allRows.filter(function(item){
-    return item && item.type === "content_report";
+    return item && item.type === "content_report" && !isDeletedCreator(getReportCreator(item));
   });
 
   bookings = resolveEffectiveBookings(allRows.filter(function(item){
@@ -5107,6 +5143,12 @@ function submitBooking(){
     return;
   }
 
+  if(isDeletedCreator(tg)){
+    setMessage("Этот профиль удалён. Новая запись и перенос для него недоступны.", true);
+    setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", getKnownCreatorDirectory(), "booking");
+    return;
+  }
+
   var knownCreator = findCreatorEntry(tg, getKnownCreatorDirectory());
   if(knownCreator){
     tg = knownCreator.name;
@@ -5132,8 +5174,8 @@ function submitBooking(){
     return;
   }
 
-  if(mode === "new" && hasBookingDuplicate(date, tg, tour)){
-    setMessage("Этот креатор уже записан на выбранный тур в эту дату.", true);
+  if(hasBookingSlotConflict(date, tour)){
+    setMessage("Этот тур в выбранную дату уже занят. Выберите другой тур или дату.", true);
     return;
   }
 
@@ -5174,10 +5216,11 @@ function submitBooking(){
         ? "transfer:" + sourceFingerprint + "=>" + fingerprint
         : "booking:" + fingerprint;
 
-      if(mode === "new" && hasBookingDuplicate(date, tg, tour)){
+      if(hasBookingSlotConflict(date, tour)){
         bookingSubmitting = false;
         setSubmitBusy("cb-submit", false, "");
-        setMessage("Этот креатор уже записан на выбранный тур в эту дату.", true);
+        renderDataViews();
+        setMessage("Этот тур уже занял другой креатор. Выберите свободный тур или другую дату.", true);
         return;
       }
 
@@ -5197,6 +5240,8 @@ function submitBooking(){
         count: 1,
         participants: 1,
         status: mode === "transfer" ? "Перенос" : "Новая заявка",
+        slotKey: bookingSlotFingerprint(date, tour),
+        slotCapacity: 1,
         comment: mode === "transfer"
           ? "Перенос с " + formatDateRu(normalizeDate(transferSource.date)) + " · " + canonicalTourName(transferSource.tour) + " [transferFrom:" + encodeURIComponent(sourceFingerprint) + "]"
           : "",
@@ -5313,6 +5358,12 @@ function submitReport(){
 
   if(!tg){
     setMessage("Укажите Telegram / ник креатора.", true);
+    return;
+  }
+
+  if(isDeletedCreator(tg)){
+    setMessage("Этот профиль удалён и не может добавлять публикации.", true);
+    setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", getReportCreatorDirectory(tour), "report");
     return;
   }
 
