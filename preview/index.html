@@ -431,6 +431,21 @@ body.cb-lock-scroll {
   color: #fff;
 }
 
+.cb-link-button-content {
+  border-color: rgba(23, 23, 25, .16);
+  background: #fff;
+  color: var(--cb-ink);
+  box-shadow: 0 12px 26px rgba(42, 45, 59, .10);
+}
+
+.cb-link-button-content:hover,
+.cb-link-button-content:focus-visible {
+  border-color: rgba(23, 23, 25, .28);
+  background: #fff;
+  color: var(--cb-ink);
+  box-shadow: 0 16px 30px rgba(42, 45, 59, .15);
+}
+
 .cb-link-button:hover {
   transform: translateY(-2px);
 }
@@ -439,8 +454,8 @@ body.cb-lock-scroll {
   position: relative;
   z-index: 1;
   display: grid;
-  align-content: stretch;
-  grid-template-rows: 1.25fr .75fr .75fr;
+  align-content: start;
+  grid-template-rows: repeat(4, max-content);
   gap: 10px;
   min-width: 0;
 }
@@ -464,7 +479,8 @@ body.cb-lock-scroll {
   background: #e9f8fb;
 }
 
-.cb-stat-card:nth-child(3) {
+.cb-stat-card:nth-child(3),
+.cb-stat-card:nth-child(4) {
   background:
     radial-gradient(circle at 90% 8%, rgba(255,255,255,.68), transparent 34%),
     linear-gradient(135deg, #ffd66b 0%, #ffb09e 38%, #cbbdff 70%, #8ce8f4 100%);
@@ -511,7 +527,12 @@ body.cb-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-top: 8px;
+  width: fit-content;
+  min-height: 30px;
+  margin-top: 10px;
+  padding: 0 10px;
+  border: 1px solid rgba(23, 23, 25, .16);
+  background: rgba(255, 255, 255, .62);
   font-size: 10px;
   font-weight: 820;
   letter-spacing: .065em;
@@ -546,6 +567,25 @@ body.cb-lock-scroll {
   color: inherit;
 }
 
+.cb-weather-temp {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.cb-weather-number {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.cb-weather-icon {
+  width: clamp(34px, 4vw, 48px);
+  height: clamp(34px, 4vw, 48px);
+  flex: 0 0 auto;
+  overflow: visible;
+  filter: drop-shadow(0 7px 10px rgba(67, 76, 122, .12));
+}
+
 .cb-leader-name {
   overflow: hidden;
   font-size: clamp(20px, 2.45vw, 34px);
@@ -566,6 +606,45 @@ body.cb-lock-scroll {
   opacity: .68;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.cb-season-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(23, 23, 25, .11);
+}
+
+.cb-season-metric {
+  min-width: 0;
+}
+
+.cb-season-metric + .cb-season-metric {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(23, 23, 25, .11);
+}
+
+.cb-season-metric strong {
+  display: block;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 820;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.cb-season-metric span {
+  display: block;
+  margin-top: 5px;
+  color: inherit;
+  opacity: .66;
+  font-size: 9px;
+  font-weight: 760;
+  line-height: 1.25;
+  letter-spacing: .045em;
+  text-transform: uppercase;
 }
 
 .cb-season-bar {
@@ -1194,6 +1273,40 @@ body.cb-lock-scroll {
   gap: 8px;
 }
 
+.cb-ranking-list:not(.is-expanded) .cb-rank-row:nth-child(n+6) {
+  display: none;
+}
+
+.cb-ranking-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 0 20px;
+  border: 1px solid rgba(23,23,25,.10);
+  border-radius: 0;
+  background: rgba(255,255,255,.78);
+  color: var(--cb-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 820;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 24px rgba(71, 67, 111, .06);
+  transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.cb-ranking-toggle:hover,
+.cb-ranking-toggle:focus-visible {
+  transform: translateY(-1px);
+  outline: 0;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(71, 67, 111, .11);
+}
+
 .cb-rank-row {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -1803,6 +1916,10 @@ body.cb-lock-scroll {
     grid-column: 1 / -1;
   }
 
+  .cb-content-leader-card {
+    grid-column: 1 / -1;
+  }
+
   .cb-section-head {
     display: block;
   }
@@ -2027,27 +2144,43 @@ body.cb-lock-scroll {
         </div>
         <div class="cb-hero-actions">
           <a class="cb-link-button" href="#booking">Записаться на тур</a>
-          <a class="cb-link-button" href="#content">Добавить контент</a>
+          <a class="cb-link-button cb-link-button-content" href="#content">Добавить контент</a>
         </div>
       </div>
 
       <div class="cb-hero-stats">
         <article class="cb-stat-card">
-          <div class="cb-stat-label">До конца сезона</div>
-          <div id="cb-season-days" class="cb-season-days">считаем...</div>
-          <div class="cb-season-bar"><div id="cb-season-fill" class="cb-season-fill"></div></div>
-          <div id="cb-season-caption" class="cb-season-caption">Сезон завершится 1 октября 2026 года.</div>
-        </article>
-        <article class="cb-stat-card">
           <div class="cb-stat-label">Владивосток сейчас</div>
           <div id="cb-weather-temp" class="cb-weather-temp">—</div>
           <div id="cb-weather-meta" class="cb-weather-meta">Получаем погоду...</div>
         </article>
-        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона">
-          <div class="cb-stat-label">Лидер сезона</div>
+        <article class="cb-stat-card">
+          <div class="cb-stat-label">До конца сезона</div>
+          <div id="cb-season-days" class="cb-season-days">считаем...</div>
+          <div class="cb-season-bar"><div id="cb-season-fill" class="cb-season-fill"></div></div>
+          <div id="cb-season-caption" class="cb-season-caption">Сезон завершится 1 октября 2026 года.</div>
+          <div class="cb-season-metrics" aria-label="Статистика участников сезона">
+            <div class="cb-season-metric">
+              <strong id="cb-season-creators">—</strong>
+              <span>Креаторов в сезоне</span>
+            </div>
+            <div class="cb-season-metric">
+              <strong id="cb-season-bookings">—</strong>
+              <span>Записей на туры</span>
+            </div>
+          </div>
+        </article>
+        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона по количеству туров">
+          <div class="cb-stat-label">Лидер сезона по количеству туров</div>
           <div id="cb-leader-name" class="cb-leader-name">—</div>
           <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
           <span id="cb-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
+        </button>
+        <button type="button" id="cb-content-leader-card" class="cb-stat-card cb-leader-card cb-content-leader-card" aria-disabled="true" aria-label="Лидер по опубликованному контенту">
+          <div class="cb-stat-label">Лидер по опубликованному контенту</div>
+          <div id="cb-content-leader-name" class="cb-leader-name">—</div>
+          <div id="cb-content-leader-count" class="cb-leader-visits">Загружаем публикации...</div>
+          <span id="cb-content-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
         </button>
       </div>
 
@@ -2222,6 +2355,16 @@ var CONFIG = {
   SEASON_END: "2026-10-01",
   WHATSAPP_NUMBER: "79149753285"
 };
+
+var CANONICAL_TOURS = [
+  "Барбекю на островах, морские угощения, катание на сапах",
+  "Вечерняя прогулка на катамаране",
+  "Вокруг острова Рикарда на катамаране",
+  "Вокруг острова Русского с посещением морефермы на катамаране",
+  "Отдых на катере 32 фута с рыбалкой",
+  "Путешествие на остров Шкота с посещением розовых пещер и дальневосточных тюленей",
+  "Тур-архипелаг: путешествие на острова Желтухина, Карамзина, Кротова, Моисеева, Сергеева"
+];
 
 var TOURS_BY_DATE = {
   "2026-04-18": [
@@ -3123,6 +3266,7 @@ var selectedDate = "";
 var bookingSubmitting = false;
 var reportSubmitting = false;
 var resultsCreatorFilter = "";
+var rankingExpanded = false;
 var calendarScrollTicking = false;
 var calendarMonthPosition = (function(){
   var now = new Date();
@@ -3135,6 +3279,8 @@ var calendarMonthPosition = (function(){
 var BOOKING_STORAGE_KEY = "corsar_recent_bookings_v1";
 var CONTENT_STORAGE_KEY = "corsar_recent_content_v1";
 var RECENT_SUBMISSION_TTL = 15 * 60 * 1000;
+var WEATHER_REFRESH_INTERVAL = 12 * 60 * 60 * 1000;
+var weatherLastRequestedAt = 0;
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 var weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
@@ -3228,6 +3374,22 @@ function normalizeTelegram(v){
   var tg = String(v || "").trim().toLowerCase().replace(/\s+/g,"");
   if(tg && tg.charAt(0) !== "@") tg = "@" + tg;
   return tg;
+}
+
+function canonicalTourName(v){
+  var original = String(v || "").trim().replace(/\s+/g, " ");
+  var tour = original.toLowerCase().replace(/ё/g, "е");
+
+  if(!tour) return "";
+  if(tour.indexOf("барбекю") !== -1 || tour.indexOf("купальный круиз") !== -1) return CANONICAL_TOURS[0];
+  if(tour.indexOf("вечерняя прогулка") !== -1) return CANONICAL_TOURS[1];
+  if(/острова?\s+рик[оа]рда/.test(tour)) return CANONICAL_TOURS[2];
+  if(/острова?\s+русск/.test(tour)) return CANONICAL_TOURS[3];
+  if(tour.indexOf("отдых на катере") !== -1 && (tour.indexOf("рыбал") !== -1 || tour.indexOf("32") !== -1)) return CANONICAL_TOURS[4];
+  if(tour.indexOf("остров шкота") !== -1) return CANONICAL_TOURS[5];
+  if(tour.indexOf("архипелаг") !== -1 || (tour.indexOf("желтухин") !== -1 && tour.indexOf("карамзин") !== -1)) return CANONICAL_TOURS[6];
+
+  return original;
 }
 
 function isAnalyticsExcludedCreator(v){
@@ -3442,7 +3604,7 @@ function setupCreatorIdentityInputs(){
 }
 
 function normalizeTour(v){
-  return String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return canonicalTourName(v).toLowerCase().replace(/\s+/g, " ");
 }
 
 function normalizeContentLink(v){
@@ -3668,10 +3830,47 @@ function weatherLabel(code){
   return "облачно";
 }
 
+function weatherIcon(code){
+  var sun = '<circle cx="19" cy="18" r="7" fill="#ffd66b" stroke="#171719" stroke-width="2"/>' +
+    '<g fill="none" stroke="#ea5aa7" stroke-linecap="round" stroke-width="2.2">' +
+      '<path d="M19 5v4M19 27v4M6 18h4M28 18h4M10 9l3 3M25 25l3 3M28 9l-3 3M13 25l-3 3"/>' +
+    '</g>';
+  var cloud = '<path d="M14 35h22c5 0 8-3 8-7.5S40.5 20 36 20c-1.7-5.1-5.8-8-10.8-8-5.7 0-10.4 4.1-11.2 9.6C9.2 21.8 6 24.5 6 28.4 6 32.2 9.1 35 14 35Z" fill="#f8fbff" stroke="#2558c8" stroke-linejoin="round" stroke-width="2.2"/>';
+  var base = '<svg class="cb-weather-icon" viewBox="0 0 52 52" role="img" aria-hidden="true" focusable="false">';
+
+  if(code === 0){
+    return base + '<g transform="translate(7 8)">' + sun + '</g></svg>';
+  }
+
+  if(code === 1 || code === 2){
+    return base + '<g transform="translate(2 1)">' + sun + '</g><g transform="translate(2 5) scale(.94)">' + cloud + '</g></svg>';
+  }
+
+  if(code >= 51 && code <= 67 || code >= 80 && code <= 82){
+    return base + cloud + '<g fill="none" stroke="#4ecbed" stroke-linecap="round" stroke-width="2.6"><path d="M16 40l-2 5M27 40l-2 5M38 40l-2 5"/></g></svg>';
+  }
+
+  if(code >= 71 && code <= 77){
+    return base + cloud + '<g fill="none" stroke="#7f67f8" stroke-linecap="round" stroke-width="1.8"><path d="M18 40v7M15 43.5h6M34 40v7M31 43.5h6"/></g></svg>';
+  }
+
+  if(code >= 95){
+    return base + cloud + '<path d="M28 37l-5 8h5l-2 6 9-10h-5l3-4Z" fill="#ffd66b" stroke="#171719" stroke-linejoin="round" stroke-width="1.5"/></svg>';
+  }
+
+  if(code === 45 || code === 48){
+    return base + cloud + '<g fill="none" stroke="#7f67f8" stroke-linecap="round" stroke-width="2"><path d="M10 40h30M15 45h27"/></g></svg>';
+  }
+
+  return base + '<circle cx="17" cy="16" r="7" fill="#ded4ff"/>' + cloud + '</svg>';
+}
+
 function loadWeather(){
   var tempEl = $("cb-weather-temp");
   var metaEl = $("cb-weather-meta");
   if(!tempEl || !metaEl || !window.fetch) return;
+
+  weatherLastRequestedAt = Date.now();
 
   var url = "https://api.open-meteo.com/v1/forecast?latitude=43.1155&longitude=131.8855&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FVladivostok";
 
@@ -3685,13 +3884,26 @@ function loadWeather(){
       var temp = Math.round(Number(current.temperature_2m));
       var feels = Math.round(Number(current.apparent_temperature));
       var wind = Math.round(Number(current.wind_speed_10m));
-      tempEl.innerHTML = "<strong>" + (temp > 0 ? "+" : "") + temp + "</strong>°";
-      metaEl.textContent = weatherLabel(Number(current.weather_code)) + " · ощущается " + (feels > 0 ? "+" : "") + feels + "° · ветер " + wind + " км/ч";
+      var code = Number(current.weather_code);
+      if(!Number.isFinite(temp) || !Number.isFinite(feels) || !Number.isFinite(wind) || !Number.isFinite(code)) throw new Error("weather-data");
+      tempEl.innerHTML = '<span class="cb-weather-number"><strong>' + (temp > 0 ? "+" : "") + temp + "</strong>°</span>" + weatherIcon(code);
+      metaEl.textContent = weatherLabel(code) + " · ощущается " + (feels > 0 ? "+" : "") + feels + "° · ветер " + wind + " км/ч";
     })
     .catch(function(){
       tempEl.textContent = "—";
       metaEl.textContent = "Погода временно недоступна";
     });
+}
+
+function setupWeatherRefresh(){
+  loadWeather();
+  setInterval(loadWeather, WEATHER_REFRESH_INTERVAL);
+
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && Date.now() - weatherLastRequestedAt >= WEATHER_REFRESH_INTERVAL){
+      loadWeather();
+    }
+  });
 }
 
 function renderTourSelect(date, selectId, emptyText){
@@ -3723,17 +3935,7 @@ function renderTourSelect(date, selectId, emptyText){
 }
 
 function getAllTours(){
-  var seen = {};
-  var all = [];
-  Object.keys(TOURS_BY_DATE).sort().forEach(function(date){
-    getToursByDate(date).forEach(function(tour){
-      if(!seen[tour]){
-        seen[tour] = true;
-        all.push(tour);
-      }
-    });
-  });
-  return all.sort(function(a, b){ return a.localeCompare(b, "ru"); });
+  return CANONICAL_TOURS.slice();
 }
 
 function renderReportTours(){
@@ -4058,6 +4260,30 @@ function pluralCount(number, one, few, many){
   return many;
 }
 
+function renderSeasonMetrics(){
+  var creatorsEl = $("cb-season-creators");
+  var bookingsEl = $("cb-season-bookings");
+  if(!creatorsEl || !bookingsEl) return;
+
+  if(!creatorDirectoryReady){
+    creatorsEl.textContent = "—";
+    bookingsEl.textContent = "—";
+    return;
+  }
+
+  var creators = Object.create(null);
+  var activeBookings = bookings.filter(function(booking){
+    var creator = normalizeTelegram(booking.telegram);
+    var date = normalizeDate(booking.date);
+    if(isInactiveBooking(booking) || !creator || isAnalyticsExcludedCreator(creator) || !isDateInSeason(date)) return false;
+    creators[creator] = true;
+    return true;
+  });
+
+  creatorsEl.textContent = Object.keys(creators).length;
+  bookingsEl.textContent = activeBookings.length;
+}
+
 function renderAnalytics(){
   var el = $("cb-analytics");
   if(!el) return;
@@ -4086,7 +4312,7 @@ function renderAnalytics(){
   var leaderAction = $("cb-leader-action");
   if(ranking.length){
     leaderName.textContent = ranking[0].name;
-    leaderVisits.textContent = ranking[0].visits + " " + pluralCount(ranking[0].visits, "посещение", "посещения", "посещений") + " · первое место";
+    leaderVisits.textContent = ranking[0].visits + " " + pluralCount(ranking[0].visits, "тур", "тура", "туров") + " · первое место";
     if(leaderCard){
       leaderCard.setAttribute("data-creator", ranking[0].name);
       leaderCard.setAttribute("aria-disabled", "false");
@@ -4113,7 +4339,7 @@ function renderAnalytics(){
     return;
   }
 
-  el.innerHTML = '<div class="cb-ranking-list">' + ranking.map(function(item, index){
+  el.innerHTML = '<div id="cb-ranking-list" class="cb-ranking-list' + (rankingExpanded ? ' is-expanded' : '') + '">' + ranking.map(function(item, index){
     var place = index + 1;
     var podiumClass = place <= 3 ? ' is-podium is-top-' + place : '';
     return '<div class="cb-rank-row' + podiumClass + '">' +
@@ -4121,7 +4347,18 @@ function renderAnalytics(){
       '<span class="cb-rank-name">' + escapeHtml(item.name) + '</span>' +
       '<span class="cb-rank-score">' + item.visits + '<small>' + pluralCount(item.visits, "поездка", "поездки", "поездок") + '</small></span>' +
       '</div>';
-  }).join("") + '</div>';
+  }).join("") + '</div>' + (ranking.length > 5 ?
+    '<button type="button" id="cb-ranking-toggle" class="cb-ranking-toggle" aria-controls="cb-ranking-list" aria-expanded="' + (rankingExpanded ? 'true' : 'false') + '">' +
+      (rankingExpanded ? 'Свернуть до 5 мест' : 'Показать все') +
+    '</button>' : '');
+
+  var rankingToggle = $("cb-ranking-toggle");
+  if(rankingToggle){
+    rankingToggle.onclick = function(){
+      rankingExpanded = !rankingExpanded;
+      renderAnalytics();
+    };
+  }
 }
 
 function getReportLink(report){
@@ -4134,6 +4371,61 @@ function getReportCreator(report){
 
 function getReportTour(report){
   return String((report && (report.tour || report.tourName)) || "").trim();
+}
+
+function getPublishedContentItems(){
+  var seen = {};
+  return reports.slice().reverse().filter(function(report){
+    var link = getReportLink(report);
+    var key = normalizeContentLink(link);
+    var matchStatus = String((report && report.matchStatus) || "").trim();
+    if(matchStatus && matchStatus !== "Есть запись") return false;
+    if(!isValidContentLink(link) || seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+}
+
+function renderContentLeader(){
+  var leaderName = $("cb-content-leader-name");
+  var leaderCount = $("cb-content-leader-count");
+  var leaderCard = $("cb-content-leader-card");
+  var leaderAction = $("cb-content-leader-action");
+  if(!leaderName || !leaderCount || !leaderCard) return;
+
+  var totals = {};
+  getPublishedContentItems().forEach(function(report){
+    var creator = getReportCreator(report);
+    if(!creator || isAnalyticsExcludedCreator(creator)) return;
+    if(!totals[creator]) totals[creator] = 0;
+    totals[creator] += 1;
+  });
+
+  var ranking = Object.keys(totals).map(function(creator){
+    return {name: creator, materials: totals[creator]};
+  }).sort(function(a, b){
+    return b.materials - a.materials || a.name.localeCompare(b.name, "ru");
+  });
+
+  if(ranking.length){
+    leaderName.textContent = ranking[0].name;
+    leaderCount.textContent = ranking[0].materials + " " + pluralCount(ranking[0].materials, "опубликованная работа", "опубликованные работы", "опубликованных работ") + " · первое место";
+    leaderCard.setAttribute("data-creator", ranking[0].name);
+    leaderCard.setAttribute("aria-disabled", "false");
+    leaderCard.setAttribute("aria-label", "Показать опубликованные работы лидера по контенту " + ranking[0].name);
+    leaderCard.onclick = function(){
+      focusCreatorResults(this.getAttribute("data-creator"));
+    };
+    if(leaderAction) leaderAction.hidden = false;
+  } else {
+    leaderName.textContent = "Пока нет";
+    leaderCount.textContent = "Первая публикация определит лидера";
+    leaderCard.removeAttribute("data-creator");
+    leaderCard.setAttribute("aria-disabled", "true");
+    leaderCard.setAttribute("aria-label", "Лидер по опубликованному контенту пока не определён");
+    leaderCard.onclick = null;
+    if(leaderAction) leaderAction.hidden = true;
+  }
 }
 
 function getContentPlatform(link){
@@ -4184,19 +4476,12 @@ function renderResults(){
   var root = $("cb-results");
   if(!root) return;
 
+  renderContentLeader();
+
   var select = $("cb-results-filter");
   var summary = $("cb-results-summary");
 
-  var seen = {};
-  var items = reports.slice().reverse().filter(function(report){
-    var link = getReportLink(report);
-    var key = normalizeContentLink(link);
-    var matchStatus = String((report && report.matchStatus) || "").trim();
-    if(matchStatus && matchStatus !== "Есть запись") return false;
-    if(!isValidContentLink(link) || seen[key]) return false;
-    seen[key] = true;
-    return true;
-  });
+  var items = getPublishedContentItems();
 
   var groupsByCreator = {};
   items.forEach(function(report){
@@ -4350,6 +4635,7 @@ function renderDataViews(){
   renderCreatorOptions();
   renderCalendar();
   renderDetails(getFormDate());
+  renderSeasonMetrics();
   renderAnalytics();
   renderResults();
 }
@@ -4688,7 +4974,7 @@ function init(){
 
   updateSeasonCounter();
   setInterval(updateSeasonCounter, 3600000);
-  loadWeather();
+  setupWeatherRefresh();
   setupStickyNav();
   setupCalendarCarousel();
   renderReportTours();
