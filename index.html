@@ -431,6 +431,21 @@ body.cb-lock-scroll {
   color: #fff;
 }
 
+.cb-link-button-content {
+  border-color: rgba(23, 23, 25, .16);
+  background: #fff;
+  color: var(--cb-ink);
+  box-shadow: 0 12px 26px rgba(42, 45, 59, .10);
+}
+
+.cb-link-button-content:hover,
+.cb-link-button-content:focus-visible {
+  border-color: rgba(23, 23, 25, .28);
+  background: #fff;
+  color: var(--cb-ink);
+  box-shadow: 0 16px 30px rgba(42, 45, 59, .15);
+}
+
 .cb-link-button:hover {
   transform: translateY(-2px);
 }
@@ -566,6 +581,45 @@ body.cb-lock-scroll {
   opacity: .68;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.cb-season-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(23, 23, 25, .11);
+}
+
+.cb-season-metric {
+  min-width: 0;
+}
+
+.cb-season-metric + .cb-season-metric {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(23, 23, 25, .11);
+}
+
+.cb-season-metric strong {
+  display: block;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 820;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.cb-season-metric span {
+  display: block;
+  margin-top: 5px;
+  color: inherit;
+  opacity: .66;
+  font-size: 9px;
+  font-weight: 760;
+  line-height: 1.25;
+  letter-spacing: .045em;
+  text-transform: uppercase;
 }
 
 .cb-season-bar {
@@ -2027,7 +2081,7 @@ body.cb-lock-scroll {
         </div>
         <div class="cb-hero-actions">
           <a class="cb-link-button" href="#booking">Записаться на тур</a>
-          <a class="cb-link-button" href="#content">Добавить контент</a>
+          <a class="cb-link-button cb-link-button-content" href="#content">Добавить контент</a>
         </div>
       </div>
 
@@ -2037,6 +2091,16 @@ body.cb-lock-scroll {
           <div id="cb-season-days" class="cb-season-days">считаем...</div>
           <div class="cb-season-bar"><div id="cb-season-fill" class="cb-season-fill"></div></div>
           <div id="cb-season-caption" class="cb-season-caption">Сезон завершится 1 октября 2026 года.</div>
+          <div class="cb-season-metrics" aria-label="Статистика участников сезона">
+            <div class="cb-season-metric">
+              <strong id="cb-season-creators">—</strong>
+              <span>Креаторов в сезоне</span>
+            </div>
+            <div class="cb-season-metric">
+              <strong id="cb-season-bookings">—</strong>
+              <span>Записей на туры</span>
+            </div>
+          </div>
         </article>
         <article class="cb-stat-card">
           <div class="cb-stat-label">Владивосток сейчас</div>
@@ -2222,6 +2286,16 @@ var CONFIG = {
   SEASON_END: "2026-10-01",
   WHATSAPP_NUMBER: "79149753285"
 };
+
+var CANONICAL_TOURS = [
+  "Барбекю на островах, морские угощения, катание на сапах",
+  "Вечерняя прогулка на катамаране",
+  "Вокруг острова Рикарда на катамаране",
+  "Вокруг острова Русского с посещением морефермы на катамаране",
+  "Отдых на катере 32 фута с рыбалкой",
+  "Путешествие на остров Шкота с посещением розовых пещер и дальневосточных тюленей",
+  "Тур-архипелаг: путешествие на острова Желтухина, Карамзина, Кротова, Моисеева, Сергеева"
+];
 
 var TOURS_BY_DATE = {
   "2026-04-18": [
@@ -3230,6 +3304,22 @@ function normalizeTelegram(v){
   return tg;
 }
 
+function canonicalTourName(v){
+  var original = String(v || "").trim().replace(/\s+/g, " ");
+  var tour = original.toLowerCase().replace(/ё/g, "е");
+
+  if(!tour) return "";
+  if(tour.indexOf("барбекю") !== -1 || tour.indexOf("купальный круиз") !== -1) return CANONICAL_TOURS[0];
+  if(tour.indexOf("вечерняя прогулка") !== -1) return CANONICAL_TOURS[1];
+  if(/острова?\s+рик[оа]рда/.test(tour)) return CANONICAL_TOURS[2];
+  if(/острова?\s+русск/.test(tour)) return CANONICAL_TOURS[3];
+  if(tour.indexOf("отдых на катере") !== -1 && (tour.indexOf("рыбал") !== -1 || tour.indexOf("32") !== -1)) return CANONICAL_TOURS[4];
+  if(tour.indexOf("остров шкота") !== -1) return CANONICAL_TOURS[5];
+  if(tour.indexOf("архипелаг") !== -1 || (tour.indexOf("желтухин") !== -1 && tour.indexOf("карамзин") !== -1)) return CANONICAL_TOURS[6];
+
+  return original;
+}
+
 function isAnalyticsExcludedCreator(v){
   var creator = normalizeTelegram(v).replace(/^@/, "");
   return ["ник", "тест", "nik", "test"].indexOf(creator) !== -1;
@@ -3442,7 +3532,7 @@ function setupCreatorIdentityInputs(){
 }
 
 function normalizeTour(v){
-  return String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return canonicalTourName(v).toLowerCase().replace(/\s+/g, " ");
 }
 
 function normalizeContentLink(v){
@@ -3723,17 +3813,7 @@ function renderTourSelect(date, selectId, emptyText){
 }
 
 function getAllTours(){
-  var seen = {};
-  var all = [];
-  Object.keys(TOURS_BY_DATE).sort().forEach(function(date){
-    getToursByDate(date).forEach(function(tour){
-      if(!seen[tour]){
-        seen[tour] = true;
-        all.push(tour);
-      }
-    });
-  });
-  return all.sort(function(a, b){ return a.localeCompare(b, "ru"); });
+  return CANONICAL_TOURS.slice();
 }
 
 function renderReportTours(){
@@ -4058,6 +4138,30 @@ function pluralCount(number, one, few, many){
   return many;
 }
 
+function renderSeasonMetrics(){
+  var creatorsEl = $("cb-season-creators");
+  var bookingsEl = $("cb-season-bookings");
+  if(!creatorsEl || !bookingsEl) return;
+
+  if(!creatorDirectoryReady){
+    creatorsEl.textContent = "—";
+    bookingsEl.textContent = "—";
+    return;
+  }
+
+  var creators = Object.create(null);
+  var activeBookings = bookings.filter(function(booking){
+    var creator = normalizeTelegram(booking.telegram);
+    var date = normalizeDate(booking.date);
+    if(isInactiveBooking(booking) || !creator || isAnalyticsExcludedCreator(creator) || !isDateInSeason(date)) return false;
+    creators[creator] = true;
+    return true;
+  });
+
+  creatorsEl.textContent = Object.keys(creators).length;
+  bookingsEl.textContent = activeBookings.length;
+}
+
 function renderAnalytics(){
   var el = $("cb-analytics");
   if(!el) return;
@@ -4350,6 +4454,7 @@ function renderDataViews(){
   renderCreatorOptions();
   renderCalendar();
   renderDetails(getFormDate());
+  renderSeasonMetrics();
   renderAnalytics();
   renderResults();
 }
