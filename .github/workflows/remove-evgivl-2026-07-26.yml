@@ -7,6 +7,12 @@ on:
     paths:
       - tools/remove_evgivl_2026_07_26.py
       - .github/workflows/remove-evgivl-2026-07-26.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - tools/remove_evgivl_2026_07_26.py
+      - .github/workflows/remove-evgivl-2026-07-26.yml
 
 permissions:
   contents: write
