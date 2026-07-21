@@ -455,7 +455,7 @@ body.cb-lock-scroll {
   z-index: 1;
   display: grid;
   align-content: start;
-  grid-template-rows: repeat(4, max-content);
+  grid-template-rows: repeat(3, max-content);
   gap: 10px;
   min-width: 0;
 }
@@ -471,20 +471,109 @@ body.cb-lock-scroll {
   background: #f3efff;
 }
 
-.cb-stat-card:first-child {
+.cb-hero-stats > .cb-stat-card:first-child {
   min-height: 194px;
 }
 
-.cb-stat-card:nth-child(2) {
+.cb-hero-stats > .cb-stat-card:nth-child(2) {
   background: #e9f8fb;
 }
 
-.cb-stat-card:nth-child(3),
-.cb-stat-card:nth-child(4) {
+.cb-leaders-track .cb-leader-card {
   background:
     radial-gradient(circle at 90% 8%, rgba(255,255,255,.68), transparent 34%),
     linear-gradient(135deg, #ffd66b 0%, #ffb09e 38%, #cbbdff 70%, #8ce8f4 100%);
   color: var(--cb-ink);
+}
+
+.cb-leaders-carousel {
+  min-width: 0;
+}
+
+.cb-leaders-track {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.cb-leaders-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cb-leaders-track .cb-leader-card {
+  flex: 0 0 100%;
+  min-width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.cb-leaders-controls {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px;
+  border: 1px solid rgba(23, 23, 25, .08);
+  background: rgba(255, 255, 255, .68);
+}
+
+.cb-leaders-nav {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(23, 23, 25, .13);
+  background: #fff;
+  color: var(--cb-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.cb-leaders-nav:hover,
+.cb-leaders-nav:focus-visible {
+  border-color: var(--cb-lilac-strong);
+  transform: translateY(-1px);
+}
+
+.cb-leaders-nav:disabled {
+  cursor: default;
+  opacity: .28;
+  transform: none;
+}
+
+.cb-leaders-current {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.cb-leaders-current span {
+  color: #858a97;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cb-leaders-current strong {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 790;
+  letter-spacing: -.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cb-leader-card {
@@ -1930,11 +2019,7 @@ body.cb-lock-scroll {
     grid-template: auto / repeat(2, minmax(0, 1fr));
   }
 
-  .cb-stat-card:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .cb-content-leader-card {
+  .cb-hero-stats > .cb-stat-card:first-child {
     grid-column: 1 / -1;
   }
 
@@ -2017,7 +2102,7 @@ body.cb-lock-scroll {
     grid-template-columns: 1fr;
   }
 
-  .cb-stat-card:first-child {
+  .cb-hero-stats > .cb-stat-card:first-child {
     grid-column: auto;
   }
 
@@ -2188,18 +2273,30 @@ body.cb-lock-scroll {
             </div>
           </div>
         </article>
-        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона по количеству туров">
-          <div class="cb-stat-label">Лидер сезона по количеству туров</div>
-          <div id="cb-leader-name" class="cb-leader-name">—</div>
-          <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
-          <span id="cb-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
-        </button>
-        <button type="button" id="cb-content-leader-card" class="cb-stat-card cb-leader-card cb-content-leader-card" aria-disabled="true" aria-label="Лидер по опубликованному контенту">
-          <div class="cb-stat-label">Лидер по опубликованному контенту</div>
-          <div id="cb-content-leader-name" class="cb-leader-name">—</div>
-          <div id="cb-content-leader-count" class="cb-leader-visits">Загружаем публикации...</div>
-          <span id="cb-content-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
-        </button>
+        <div class="cb-leaders-carousel" aria-label="Лидеры сезона">
+          <div id="cb-leaders-track" class="cb-leaders-track">
+            <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона по количеству туров">
+              <div class="cb-stat-label">Лидер сезона по количеству туров</div>
+              <div id="cb-leader-name" class="cb-leader-name">—</div>
+              <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
+              <span id="cb-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
+            </button>
+            <button type="button" id="cb-content-leader-card" class="cb-stat-card cb-leader-card cb-content-leader-card" aria-disabled="true" aria-label="Лидер по опубликованному контенту">
+              <div class="cb-stat-label">Лидер по опубликованному контенту</div>
+              <div id="cb-content-leader-name" class="cb-leader-name">—</div>
+              <div id="cb-content-leader-count" class="cb-leader-visits">Загружаем публикации...</div>
+              <span id="cb-content-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
+            </button>
+          </div>
+          <div class="cb-leaders-controls" aria-label="Переключение лидеров">
+            <button type="button" id="cb-leaders-prev" class="cb-leaders-nav" aria-label="Предыдущий лидер">‹</button>
+            <div class="cb-leaders-current" aria-live="polite">
+              <span>Листайте лидеров</span>
+              <strong id="cb-leaders-current">По количеству туров</strong>
+            </div>
+            <button type="button" id="cb-leaders-next" class="cb-leaders-nav" aria-label="Следующий лидер">›</button>
+          </div>
+        </div>
       </div>
 
       <svg class="cb-route-line" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
@@ -3291,6 +3388,8 @@ var reportSubmitting = false;
 var resultsCreatorFilter = "";
 var rankingExpanded = false;
 var calendarScrollTicking = false;
+var leaderScrollTicking = false;
+var leaderCardPosition = 0;
 var calendarMonthPosition = (function(){
   var now = new Date();
   var lastPosition = CONFIG.END_MONTH - CONFIG.START_MONTH;
@@ -3304,6 +3403,10 @@ var CONTENT_STORAGE_KEY = "corsar_recent_content_v1";
 var RECENT_SUBMISSION_TTL = 15 * 60 * 1000;
 var WEATHER_REFRESH_INTERVAL = 12 * 60 * 60 * 1000;
 var weatherLastRequestedAt = 0;
+var CREATOR_ALIASES = {
+  "@a4anaseva": "@a4fanaseva"
+};
+var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту"];
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 var weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
@@ -3371,6 +3474,94 @@ function setupStickyNav(){
   }, 700);
 }
 
+function clampLeaderCardPosition(position){
+  var root = $("cb-leaders-track");
+  var cardCount = root ? root.querySelectorAll(".cb-leader-card").length : 0;
+  return Math.max(0, Math.min(Math.max(0, cardCount - 1), Number(position) || 0));
+}
+
+function updateLeaderControls(){
+  var root = $("cb-leaders-track");
+  var label = $("cb-leaders-current");
+  var prev = $("cb-leaders-prev");
+  var next = $("cb-leaders-next");
+  var cardCount = root ? root.querySelectorAll(".cb-leader-card").length : 0;
+
+  if(label) label.textContent = LEADER_CARD_LABELS[leaderCardPosition] || "Лидер сезона";
+  if(prev) prev.disabled = leaderCardPosition <= 0;
+  if(next) next.disabled = !cardCount || leaderCardPosition >= cardCount - 1;
+}
+
+function scrollLeadersToPosition(smooth){
+  var root = $("cb-leaders-track");
+  if(!root) return;
+  var cards = root.querySelectorAll(".cb-leader-card");
+  var card = cards[leaderCardPosition];
+
+  updateLeaderControls();
+  if(!card) return;
+
+  var left = card.offsetLeft;
+  if(typeof root.scrollTo === "function"){
+    root.scrollTo({left: left, behavior: smooth ? "smooth" : "auto"});
+  } else {
+    root.scrollLeft = left;
+  }
+}
+
+function setLeaderCardPosition(position, smooth){
+  leaderCardPosition = clampLeaderCardPosition(position);
+  scrollLeadersToPosition(smooth !== false);
+}
+
+function setupLeadersCarousel(){
+  var root = $("cb-leaders-track");
+  var prev = $("cb-leaders-prev");
+  var next = $("cb-leaders-next");
+  if(!root) return;
+
+  if(prev) prev.onclick = function(){
+    setLeaderCardPosition(leaderCardPosition - 1, true);
+  };
+
+  if(next) next.onclick = function(){
+    setLeaderCardPosition(leaderCardPosition + 1, true);
+  };
+
+  root.addEventListener("scroll", function(){
+    if(leaderScrollTicking) return;
+    leaderScrollTicking = true;
+    window.requestAnimationFrame(function(){
+      leaderScrollTicking = false;
+      var cards = root.querySelectorAll(".cb-leader-card");
+      if(!cards.length) return;
+
+      var nearest = 0;
+      var nearestDistance = Infinity;
+      Array.prototype.forEach.call(cards, function(card, index){
+        var distance = Math.abs(card.offsetLeft - root.scrollLeft);
+        if(distance < nearestDistance){
+          nearestDistance = distance;
+          nearest = index;
+        }
+      });
+
+      if(nearest !== leaderCardPosition){
+        leaderCardPosition = nearest;
+        updateLeaderControls();
+      }
+    });
+  }, {passive: true});
+
+  window.addEventListener("resize", function(){
+    window.requestAnimationFrame(function(){
+      scrollLeadersToPosition(false);
+    });
+  }, {passive: true});
+
+  scrollLeadersToPosition(false);
+}
+
 function escapeHtml(v){
   return String(v || "")
     .replace(/&/g, "&amp;")
@@ -3396,7 +3587,7 @@ function normalizeDate(v){
 function normalizeTelegram(v){
   var tg = String(v || "").trim().toLowerCase().replace(/\s+/g,"");
   if(tg && tg.charAt(0) !== "@") tg = "@" + tg;
-  return tg;
+  return CREATOR_ALIASES[tg] || tg;
 }
 
 function canonicalTourName(v){
@@ -4999,6 +5190,7 @@ function init(){
   setInterval(updateSeasonCounter, 3600000);
   setupWeatherRefresh();
   setupStickyNav();
+  setupLeadersCarousel();
   setupCalendarCarousel();
   renderReportTours();
   renderResults();
