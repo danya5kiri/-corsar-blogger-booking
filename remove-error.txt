@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tools/remove_evgivl_2026_07_26.py", line 117, in <module>
+    main()
+  File "/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tools/remove_evgivl_2026_07_26.py", line 86, in main
+    updated = replace_once(updated, old_resolve_guard, new_resolve_guard, "фильтра отменённых записей")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tools/remove_evgivl_2026_07_26.py", line 13, in replace_once
+    raise RuntimeError(f"Ожидалось одно совпадение {label}, найдено: {count}")
+RuntimeError: Ожидалось одно совпадение фильтра отменённых записей, найдено: 0
