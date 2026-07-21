@@ -899,6 +899,23 @@ body.cb-lock-scroll {
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 
+.cb-field[hidden] {
+  display: none;
+}
+
+.cb-booking-mode-field,
+.cb-transfer-source-field {
+  grid-column: 1 / -1;
+}
+
+.cb-booking-mode-field select {
+  border-bottom-color: var(--cb-cyan);
+}
+
+.cb-transfer-source-field select {
+  border-bottom-color: var(--cb-coral);
+}
+
 .cb-field input:focus,
 .cb-field select:focus {
   border-bottom-color: var(--cb-lilac-strong);
@@ -2346,6 +2363,19 @@ body.cb-lock-scroll {
         <label for="cb-tour">Название тура</label>
         <select id="cb-tour"><option value="">Сначала выберите дату</option></select>
       </div>
+      <div class="cb-field cb-booking-mode-field">
+        <label for="cb-booking-mode">Действие с записью</label>
+        <select id="cb-booking-mode">
+          <option value="new">Добавить новый тур</option>
+          <option value="transfer">Перенести существующую запись</option>
+        </select>
+        <div class="cb-field-hint">При переносе прежняя запись будет исключена из календаря, рейтинга и общей статистики.</div>
+      </div>
+      <div id="cb-transfer-source-field" class="cb-field cb-transfer-source-field" hidden>
+        <label for="cb-transfer-source">Какую запись перенести</label>
+        <select id="cb-transfer-source"><option value="">Сначала укажите существующий ник</option></select>
+        <div class="cb-field-hint">Выберите прежнюю дату, а выше укажите новую дату и программу.</div>
+      </div>
       <div class="cb-inline-note">После сохранения заявка появится в календаре, а затем откроется WhatsApp с готовым сообщением для согласования.</div>
       <button type="button" id="cb-submit" class="cb-submit">Сформировать заявку в WhatsApp</button>
     </div>
@@ -2442,8 +2472,6 @@ body.cb-lock-scroll {
     <div class="cb-footer-brand" aria-label="CREACLOUD"><strong class="cb-brand-crea">CREA</strong><span class="cb-brand-cloud">CLOUD</span></div>
     <div class="cb-footer-statement">
       <p>Цифровое пространство для создателей исключительного контента.</p>
-      <p>Создавай, делись и впечатляй.</p>
-      <p>Идея обретает силу, когда ею делятся.</p>
     </div>
     <div class="cb-footer-team">
       <a class="cb-footer-person" href="https://t.me/danya5kiri" target="_blank" rel="noopener noreferrer">
@@ -3406,6 +3434,18 @@ var weatherLastRequestedAt = 0;
 var CREATOR_ALIASES = {
   "@a4anaseva": "@a4fanaseva"
 };
+var KNOWN_BOOKING_TRANSFERS = [{
+  from: {
+    date: "2026-07-23",
+    telegram: "@a4fanaseva",
+    tour: "Путешествие на остров Аскольд на катере 32ft"
+  },
+  to: {
+    date: "2026-07-29",
+    telegram: "@a4fanaseva",
+    tour: "Путешествие на остров Аскольд на катере 32ft"
+  }
+}];
 var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту"];
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -3474,10 +3514,12 @@ function setupStickyNav(){
   }, 700);
 }
 
-function clampLeaderCardPosition(position){
+function wrapLeaderCardPosition(position){
   var root = $("cb-leaders-track");
   var cardCount = root ? root.querySelectorAll(".cb-leader-card").length : 0;
-  return Math.max(0, Math.min(Math.max(0, cardCount - 1), Number(position) || 0));
+  if(!cardCount) return 0;
+  var normalized = Number(position) || 0;
+  return ((normalized % cardCount) + cardCount) % cardCount;
 }
 
 function updateLeaderControls(){
@@ -3488,8 +3530,8 @@ function updateLeaderControls(){
   var cardCount = root ? root.querySelectorAll(".cb-leader-card").length : 0;
 
   if(label) label.textContent = LEADER_CARD_LABELS[leaderCardPosition] || "Лидер сезона";
-  if(prev) prev.disabled = leaderCardPosition <= 0;
-  if(next) next.disabled = !cardCount || leaderCardPosition >= cardCount - 1;
+  if(prev) prev.disabled = cardCount < 2;
+  if(next) next.disabled = cardCount < 2;
 }
 
 function scrollLeadersToPosition(smooth){
@@ -3510,7 +3552,7 @@ function scrollLeadersToPosition(smooth){
 }
 
 function setLeaderCardPosition(position, smooth){
-  leaderCardPosition = clampLeaderCardPosition(position);
+  leaderCardPosition = wrapLeaderCardPosition(position);
   scrollLeadersToPosition(smooth !== false);
 }
 
@@ -3694,6 +3736,64 @@ function findCreatorEntry(value, directory){
   return null;
 }
 
+function getTransferableBookings(telegram){
+  var creator = normalizeTelegram(telegram);
+  var todayKey = getTodayKey();
+  if(!creator) return [];
+
+  return bookings.filter(function(booking){
+    var date = normalizeDate(booking.date);
+    return !isInactiveBooking(booking) &&
+      normalizeTelegram(booking.telegram) === creator &&
+      isDateInSeason(date) &&
+      date >= todayKey;
+  }).sort(function(a, b){
+    return normalizeDate(a.date).localeCompare(normalizeDate(b.date)) ||
+      normalizeTour(a.tour).localeCompare(normalizeTour(b.tour), "ru");
+  });
+}
+
+function renderTransferOptions(){
+  var mode = $("cb-booking-mode");
+  var field = $("cb-transfer-source-field");
+  var select = $("cb-transfer-source");
+  var input = $("cb-telegram");
+  var button = $("cb-submit");
+  if(!mode || !field || !select) return;
+
+  var isTransfer = mode.value === "transfer";
+  field.hidden = !isTransfer;
+
+  if(button && !bookingSubmitting){
+    var buttonText = isTransfer ? "Сформировать перенос в WhatsApp" : "Сформировать заявку в WhatsApp";
+    button.textContent = buttonText;
+    button.setAttribute("data-idle-text", buttonText);
+  }
+
+  if(!isTransfer) return;
+
+  var previousValue = select.value;
+  var entries = getTransferableBookings(input ? input.value : "");
+  select.innerHTML = "";
+
+  var placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = entries.length ? "Выберите прежнюю запись" : "Нет записей, доступных для переноса";
+  select.appendChild(placeholder);
+
+  entries.forEach(function(booking){
+    var option = document.createElement("option");
+    option.value = bookingFingerprint(booking.date, booking.telegram, booking.tour);
+    option.textContent = formatDateRu(normalizeDate(booking.date)) + " · " + canonicalTourName(booking.tour);
+    select.appendChild(option);
+  });
+
+  select.disabled = !entries.length;
+  if(entries.some(function(booking){
+    return bookingFingerprint(booking.date, booking.telegram, booking.tour) === previousValue;
+  })) select.value = previousValue;
+}
+
 function creatorDirectoryOptionLabel(entry){
   return entry.visits + " " + pluralCount(entry.visits, "поездка", "поездки", "поездок") +
     " · " + entry.materials + " " + pluralCount(entry.materials, "материал", "материала", "материалов");
@@ -3777,6 +3877,7 @@ function renderCreatorOptions(){
   fillCreatorDatalist("cb-report-creators", reportDirectory);
   setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", bookingDirectory, "booking");
   setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", reportDirectory, "report");
+  renderTransferOptions();
 }
 
 function setupCreatorIdentityInputs(){
@@ -3787,6 +3888,7 @@ function setupCreatorIdentityInputs(){
   function updateBookingIdentity(){
     var directory = getKnownCreatorDirectory();
     setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", directory, "booking");
+    renderTransferOptions();
   }
 
   function updateReportIdentity(){
@@ -3801,6 +3903,7 @@ function setupCreatorIdentityInputs(){
     bookingInput.addEventListener("change", function(){
       var entry = setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", getKnownCreatorDirectory(), "booking");
       if(entry) bookingInput.value = entry.name;
+      renderTransferOptions();
     });
   }
 
@@ -3814,6 +3917,8 @@ function setupCreatorIdentityInputs(){
   }
 
   if(reportTour) reportTour.addEventListener("change", updateReportIdentity);
+  var bookingMode = $("cb-booking-mode");
+  if(bookingMode) bookingMode.addEventListener("change", renderTransferOptions);
   renderCreatorOptions();
 }
 
@@ -3865,8 +3970,8 @@ function getTodayKey(){
   }
 }
 
-function bookingFingerprint(date, telegram){
-  return [normalizeDate(date), normalizeTelegram(telegram)].join("|");
+function bookingFingerprint(date, telegram, tour){
+  return [normalizeDate(date), normalizeTelegram(telegram), normalizeTour(tour)].join("|");
 }
 
 function isInactiveBooking(booking){
@@ -3874,11 +3979,79 @@ function isInactiveBooking(booking){
   return status === "отмена" || status === "не пришел" || status === "не пришёл" || status === "отменено" || status === "cancelled" || status === "canceled";
 }
 
-function hasBookingDuplicate(date, telegram){
+function decodeTransferFingerprint(value){
+  var key = String(value || "").trim();
+  if(!key) return "";
+  try {
+    return decodeURIComponent(key);
+  } catch(e) {
+    return key;
+  }
+}
+
+function getTransferSourceFingerprint(booking){
+  if(!booking) return "";
+
+  var direct = booking.transferFromKey || booking.replacesBookingKey || booking.previousBookingKey;
+  if(direct) return decodeTransferFingerprint(direct);
+
+  var previousDate = normalizeDate(booking.previousDate || booking.fromDate);
+  var previousTour = booking.previousTour || booking.fromTour;
+  var creator = booking.previousTelegram || booking.fromTelegram || booking.telegram;
+  if(previousDate && previousTour && creator){
+    return bookingFingerprint(previousDate, creator, previousTour);
+  }
+
+  var comment = String(booking.comment || "");
+  var marker = comment.match(/\[transferFrom:([^\]]+)\]/i);
+  return marker ? decodeTransferFingerprint(marker[1]) : "";
+}
+
+function resolveEffectiveBookings(rows){
+  var unique = Object.create(null);
+
+  (Array.isArray(rows) ? rows : []).forEach(function(booking, index){
+    if(!booking || isInactiveBooking(booking)) return;
+    var key = bookingFingerprint(booking.date, booking.telegram, booking.tour);
+    unique[key] = {booking: booking, index: index};
+  });
+
+  var transferred = Object.create(null);
+  Object.keys(unique).forEach(function(key){
+    var sourceKey = getTransferSourceFingerprint(unique[key].booking);
+    if(sourceKey && sourceKey !== key) transferred[sourceKey] = true;
+  });
+
+  KNOWN_BOOKING_TRANSFERS.forEach(function(correction){
+    var sourceKey = bookingFingerprint(correction.from.date, correction.from.telegram, correction.from.tour);
+    var targetKey = bookingFingerprint(correction.to.date, correction.to.telegram, correction.to.tour);
+    if(unique[sourceKey] && unique[targetKey]) transferred[sourceKey] = true;
+  });
+
+  return Object.keys(unique).map(function(key){
+    return {key: key, booking: unique[key].booking, index: unique[key].index};
+  }).filter(function(entry){
+    return !transferred[entry.key];
+  }).sort(function(a, b){
+    return a.index - b.index;
+  }).map(function(entry){
+    return entry.booking;
+  });
+}
+
+function findBookingByFingerprint(fingerprint){
+  var key = String(fingerprint || "");
+  for(var i = 0; i < bookings.length; i++){
+    if(bookingFingerprint(bookings[i].date, bookings[i].telegram, bookings[i].tour) === key) return bookings[i];
+  }
+  return null;
+}
+
+function hasBookingDuplicate(date, telegram, tour){
+  var fingerprint = bookingFingerprint(date, telegram, tour);
   return bookings.some(function(booking){
     return !isInactiveBooking(booking) &&
-      normalizeDate(booking.date) === normalizeDate(date) &&
-      normalizeTelegram(booking.telegram) === normalizeTelegram(telegram);
+      bookingFingerprint(booking.date, booking.telegram, booking.tour) === fingerprint;
   });
 }
 
@@ -4836,9 +5009,9 @@ function applyRemoteRows(allRows){
     return item && item.type === "content_report";
   });
 
-  bookings = allRows.filter(function(item){
+  bookings = resolveEffectiveBookings(allRows.filter(function(item){
     return !item.type || item.type !== "content_report";
-  });
+  }));
 
   creatorDirectoryReady = true;
 }
@@ -4881,6 +5054,9 @@ function submitBooking(){
   var date = getFormDate();
   var tg = normalizeTelegram($("cb-telegram").value);
   var tour = $("cb-tour") ? String($("cb-tour").value || "").trim() : "";
+  var mode = $("cb-booking-mode") && $("cb-booking-mode").value === "transfer" ? "transfer" : "new";
+  var sourceFingerprint = $("cb-transfer-source") ? String($("cb-transfer-source").value || "") : "";
+  var transferSource = null;
 
   if(bookingSubmitting){
     setMessage("Заявка уже обрабатывается.", true);
@@ -4937,10 +5113,32 @@ function submitBooking(){
     $("cb-telegram").value = tg;
   }
 
-  var fingerprint = bookingFingerprint(date, tg);
+  if(mode === "transfer"){
+    transferSource = findBookingByFingerprint(sourceFingerprint);
+    if(!transferSource || normalizeTelegram(transferSource.telegram) !== tg){
+      setMessage("Выберите существующую запись этого креатора для переноса.", true);
+      renderTransferOptions();
+      return;
+    }
+  }
 
-  if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
-    setMessage("Этот креатор уже записан на поездку в выбранную дату.", true);
+  var fingerprint = bookingFingerprint(date, tg, tour);
+  var submissionFingerprint = mode === "transfer"
+    ? "transfer:" + sourceFingerprint + "=>" + fingerprint
+    : "booking:" + fingerprint;
+
+  if(mode === "transfer" && sourceFingerprint === fingerprint){
+    setMessage("Для переноса выберите другую дату или другую программу.", true);
+    return;
+  }
+
+  if(mode === "new" && hasBookingDuplicate(date, tg, tour)){
+    setMessage("Этот креатор уже записан на выбранный тур в эту дату.", true);
+    return;
+  }
+
+  if(wasRecentlySubmitted(BOOKING_STORAGE_KEY, submissionFingerprint)){
+    setMessage(mode === "transfer" ? "Такой перенос уже отправлен." : "Такая заявка уже отправлена.", true);
     return;
   }
 
@@ -4952,12 +5150,41 @@ function submitBooking(){
     .then(function(){
       var refreshedCreator = findCreatorEntry(tg, getKnownCreatorDirectory());
       if(refreshedCreator) tg = refreshedCreator.name;
-      fingerprint = bookingFingerprint(date, tg);
+      fingerprint = bookingFingerprint(date, tg, tour);
 
-      if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
+      if(mode === "transfer"){
+        transferSource = findBookingByFingerprint(sourceFingerprint);
+        if(!transferSource || normalizeTelegram(transferSource.telegram) !== tg){
+          bookingSubmitting = false;
+          setSubmitBusy("cb-submit", false, "");
+          renderDataViews();
+          setMessage("Исходная запись уже была изменена. Выберите её заново.", true);
+          return;
+        }
+
+        if(sourceFingerprint === fingerprint){
+          bookingSubmitting = false;
+          setSubmitBusy("cb-submit", false, "");
+          setMessage("Для переноса выберите другую дату или другую программу.", true);
+          return;
+        }
+      }
+
+      submissionFingerprint = mode === "transfer"
+        ? "transfer:" + sourceFingerprint + "=>" + fingerprint
+        : "booking:" + fingerprint;
+
+      if(mode === "new" && hasBookingDuplicate(date, tg, tour)){
         bookingSubmitting = false;
         setSubmitBusy("cb-submit", false, "");
-        setMessage("Этот креатор уже записан на поездку в выбранную дату.", true);
+        setMessage("Этот креатор уже записан на выбранный тур в эту дату.", true);
+        return;
+      }
+
+      if(wasRecentlySubmitted(BOOKING_STORAGE_KEY, submissionFingerprint)){
+        bookingSubmitting = false;
+        setSubmitBusy("cb-submit", false, "");
+        setMessage(mode === "transfer" ? "Такой перенос уже отправлен." : "Такая заявка уже отправлена.", true);
         return;
       }
 
@@ -4969,14 +5196,24 @@ function submitBooking(){
         phone: "",
         count: 1,
         participants: 1,
-        status: "Новая заявка",
-        comment: "",
-        dedupeKey: "booking:" + fingerprint,
-        requestId: "booking-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+        status: mode === "transfer" ? "Перенос" : "Новая заявка",
+        comment: mode === "transfer"
+          ? "Перенос с " + formatDateRu(normalizeDate(transferSource.date)) + " · " + canonicalTourName(transferSource.tour) + " [transferFrom:" + encodeURIComponent(sourceFingerprint) + "]"
+          : "",
+        dedupeKey: submissionFingerprint,
+        requestId: (mode === "transfer" ? "transfer-" : "booking-") + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
       };
 
-      setSubmitBusy("cb-submit", true, "Сохраняем заявку...");
-      setMessage("Сохраняем заявку...", false);
+      if(mode === "transfer"){
+        payload.operation = "transfer";
+        payload.transferFromKey = sourceFingerprint;
+        payload.previousDate = normalizeDate(transferSource.date);
+        payload.previousTour = String(transferSource.tour || "").trim();
+        payload.previousTelegram = normalizeTelegram(transferSource.telegram);
+      }
+
+      setSubmitBusy("cb-submit", true, mode === "transfer" ? "Сохраняем перенос..." : "Сохраняем заявку...");
+      setMessage(mode === "transfer" ? "Сохраняем перенос..." : "Сохраняем заявку...", false);
 
       fetch(CONFIG.API_URL, {
         method: "POST",
@@ -4984,14 +5221,26 @@ function submitBooking(){
         body: JSON.stringify(payload)
       })
       .then(function(){
-        bookings.push(payload);
-        rememberSubmission(BOOKING_STORAGE_KEY, fingerprint);
+        bookings = resolveEffectiveBookings(bookings.concat([payload]));
+        rememberSubmission(BOOKING_STORAGE_KEY, submissionFingerprint);
         $("cb-telegram").value = "";
-        renderDataViews();
+        if($("cb-booking-mode")) $("cb-booking-mode").value = "new";
+        if($("cb-transfer-source")) $("cb-transfer-source").value = "";
         bookingSubmitting = false;
+        renderDataViews();
         setSubmitBusy("cb-submit", false, "");
+        renderTransferOptions();
 
-        var text = [
+        var text = mode === "transfer" ? [
+          "Здравствуйте! Перенос записи креатора на морскую поездку.",
+          "",
+          "Креатор: " + tg,
+          "Было: " + formatDateRu(normalizeDate(transferSource.date)) + " — " + canonicalTourName(transferSource.tour),
+          "Новая дата: " + formatDateRu(date),
+          "Новый тур: " + tour,
+          "",
+          "Прошу согласовать перенос."
+        ].join("\n") : [
           "Здравствуйте! Заявка на бронирование поездки блогера.",
           "",
           "Креатор: " + tg,
@@ -5002,7 +5251,7 @@ function submitBooking(){
         ].join("\n");
         var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
 
-        setMessage("Заявка записана. Открываем WhatsApp для согласования.", false);
+        setMessage(mode === "transfer" ? "Запись перенесена. Открываем WhatsApp для согласования." : "Заявка записана. Открываем WhatsApp для согласования.", false);
         setTimeout(function(){ window.location.href = whatsappUrl; }, 650);
       })
       .catch(function(){
