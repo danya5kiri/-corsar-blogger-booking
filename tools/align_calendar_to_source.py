@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
+import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -74,9 +74,13 @@ def expected_dates() -> list[str]:
 
 
 def source_snapshot() -> dict[str, object]:
-    raw = subprocess.check_output(
-        ["git", "show", f"{SOURCE_COMMIT}:{SOURCE_PATH}"], text=True
+    url = (
+        "https://raw.githubusercontent.com/danya5kiri/-corsar-blogger-booking/"
+        f"{SOURCE_COMMIT}/{SOURCE_PATH}"
     )
+    request = urllib.request.Request(url, headers={"User-Agent": "CorsarCalendarCheck/1.0"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read().decode("utf-8")
     payload = json.loads(raw)
     if payload.get("source") != "https://katermorekorsar.ru/tours":
         raise RuntimeError("Неверный источник контрольного расписания")
