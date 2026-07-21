@@ -33,7 +33,17 @@ jobs:
           python-version: "3.12"
 
       - name: Применить точечное удаление
-        run: python tools/remove_evgivl_2026_07_26.py
+        run: |
+          if ! python tools/remove_evgivl_2026_07_26.py 2>remove-error.txt; then
+            cat remove-error.txt
+            git config user.name "corsar-booking-check"
+            git config user.email "actions@users.noreply.github.com"
+            git add remove-error.txt
+            git commit -m "Сохранить ошибку проверки удаления @evgivl"
+            git push origin HEAD:remove-evgivl-2026-07-26
+            exit 1
+          fi
+          rm -f remove-error.txt
 
       - name: Проверить изменения
         run: |
