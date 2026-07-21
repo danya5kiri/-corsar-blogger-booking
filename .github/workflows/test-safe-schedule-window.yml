@@ -1,0 +1,59 @@
+name: Проверка безопасного периода расписания
+
+on:
+  push:
+    branches:
+      - safe-schedule-2026-07-22
+    paths:
+      - tools/apply_schedule_window.py
+      - .github/workflows/test-safe-schedule-window.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Настроить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Применить только границы периода
+        run: python tools/apply_schedule_window.py
+
+      - name: Проверить синтаксис JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          start = text.rfind('<script>')
+          end = text.find('</script>', start)
+          if start < 0 or end < 0:
+              raise SystemExit('Не найден основной JavaScript')
+          Path('/tmp/corsar-inline.js').write_text(text[start + len('<script>'):end], encoding='utf-8')
+          PY
+          node --check /tmp/corsar-inline.js
+
+      - name: Проверить состав изменений
+        run: |
+          git diff --check
+          changed="$(git diff --name-only)"
+          test "$changed" = "index.html"
+          git diff --stat
+
+      - name: Сохранить проверенную версию в тестовой ветке
+        run: |
+          git config user.name "corsar-safe-update"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Расширить запись на туры до 20 октября без изменения данных"
+          git push
