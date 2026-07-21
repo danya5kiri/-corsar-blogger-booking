@@ -744,6 +744,47 @@ body.cb-lock-scroll {
   line-height: 1.45;
 }
 
+.cb-creator-state {
+  width: fit-content;
+  min-height: 18px;
+  margin-top: 8px;
+  padding: 5px 8px;
+  background: #f2f3f6;
+  color: #747986;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.cb-creator-state:empty {
+  display: none;
+}
+
+.cb-creator-state.is-existing {
+  background: #dff6ec;
+  color: #245d4f;
+}
+
+.cb-creator-state.is-new {
+  background: linear-gradient(100deg, #fff1e7, #f3efff);
+  color: #6b4a42;
+}
+
+.cb-creator-state.is-error {
+  background: #ffe5df;
+  color: #91463b;
+}
+
+.cb-field input.is-existing-creator {
+  border-bottom-color: #4aa88e;
+  box-shadow: 0 2px 0 #4aa88e;
+}
+
+.cb-field input.is-new-creator {
+  border-bottom-color: var(--cb-coral);
+  box-shadow: 0 2px 0 var(--cb-coral);
+}
+
 .cb-submit {
   grid-column: 1 / -1;
   display: inline-flex;
@@ -2043,8 +2084,10 @@ body.cb-lock-scroll {
     <div class="cb-form-grid">
       <div class="cb-field">
         <label for="cb-telegram">Ник креатора</label>
-        <input id="cb-telegram" autocomplete="username" placeholder="@username">
-        <div class="cb-field-hint">Используйте один и тот же ник при записи и добавлении контента.</div>
+        <input id="cb-telegram" list="cb-booking-creators" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Начните вводить @username">
+        <datalist id="cb-booking-creators"></datalist>
+        <div class="cb-field-hint">Выберите прежний ник из подсказок или введите новый, если записываетесь впервые.</div>
+        <div id="cb-booking-creator-state" class="cb-creator-state" aria-live="polite"></div>
       </div>
       <div class="cb-field">
         <label for="cb-date">Дата поездки</label>
@@ -2071,8 +2114,10 @@ body.cb-lock-scroll {
 
     <div class="cb-form-grid">
       <div class="cb-field">
-        <label for="cb-report-telegram">Имя / ник креатора</label>
-        <input id="cb-report-telegram" autocomplete="username" placeholder="@username">
+        <label for="cb-report-telegram">Ник креатора из записи</label>
+        <input id="cb-report-telegram" list="cb-report-creators" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Выберите ранее записанный ник">
+        <datalist id="cb-report-creators"></datalist>
+        <div id="cb-report-creator-state" class="cb-creator-state" aria-live="polite">Выберите ник из базы записей.</div>
       </div>
       <div class="cb-field">
         <label for="cb-report-tour">Название тура в контенте</label>
@@ -3073,6 +3118,7 @@ var TOURS_BY_DATE = {
 
 var bookings = [];
 var reports = [];
+var creatorDirectoryReady = false;
 var selectedDate = "";
 var bookingSubmitting = false;
 var reportSubmitting = false;
@@ -3187,6 +3233,212 @@ function normalizeTelegram(v){
 function isAnalyticsExcludedCreator(v){
   var creator = normalizeTelegram(v).replace(/^@/, "");
   return ["ник", "тест", "nik", "test"].indexOf(creator) !== -1;
+}
+
+function ensureCreatorDirectoryEntry(directory, value){
+  var key = normalizeTelegram(value);
+  if(!key || isAnalyticsExcludedCreator(key)) return null;
+
+  if(!directory[key]){
+    directory[key] = {
+      key: key,
+      name: key,
+      visits: 0,
+      materials: 0
+    };
+  }
+
+  return directory[key];
+}
+
+function sortCreatorDirectory(directory){
+  return Object.keys(directory).map(function(key){
+    return directory[key];
+  }).sort(function(a, b){
+    if(b.visits !== a.visits) return b.visits - a.visits;
+    if(b.materials !== a.materials) return b.materials - a.materials;
+    return a.name.localeCompare(b.name, "ru");
+  });
+}
+
+function getKnownCreatorDirectory(){
+  var directory = Object.create(null);
+
+  bookings.forEach(function(booking){
+    if(isInactiveBooking(booking)) return;
+    var entry = ensureCreatorDirectoryEntry(directory, booking.telegram);
+    if(entry) entry.visits += 1;
+  });
+
+  reports.forEach(function(report){
+    var entry = ensureCreatorDirectoryEntry(directory, getReportCreator(report));
+    if(entry) entry.materials += 1;
+  });
+
+  return sortCreatorDirectory(directory);
+}
+
+function getReportCreatorDirectory(tour){
+  var selectedTour = normalizeTour(tour);
+  var knownCreators = getKnownCreatorDirectory();
+  var knownByKey = Object.create(null);
+  var directory = Object.create(null);
+
+  knownCreators.forEach(function(entry){
+    knownByKey[entry.key] = entry;
+  });
+
+  bookings.forEach(function(booking){
+    if(isInactiveBooking(booking)) return;
+    if(selectedTour && normalizeTour(booking.tour) !== selectedTour) return;
+
+    var key = normalizeTelegram(booking.telegram);
+    if(!key || isAnalyticsExcludedCreator(key)) return;
+
+    var known = knownByKey[key] || {key: key, name: key, visits: 0, materials: 0};
+    directory[key] = {
+      key: known.key,
+      name: known.name,
+      visits: known.visits,
+      materials: known.materials
+    };
+  });
+
+  return sortCreatorDirectory(directory);
+}
+
+function findCreatorEntry(value, directory){
+  var key = normalizeTelegram(value);
+  if(!key) return null;
+
+  for(var i = 0; i < directory.length; i++){
+    if(directory[i].key === key) return directory[i];
+  }
+
+  return null;
+}
+
+function creatorDirectoryOptionLabel(entry){
+  return entry.visits + " " + pluralCount(entry.visits, "поездка", "поездки", "поездок") +
+    " · " + entry.materials + " " + pluralCount(entry.materials, "материал", "материала", "материалов");
+}
+
+function fillCreatorDatalist(id, directory){
+  var list = $(id);
+  if(!list) return;
+
+  list.innerHTML = "";
+  directory.forEach(function(entry){
+    var option = document.createElement("option");
+    var label = creatorDirectoryOptionLabel(entry);
+    option.value = entry.name;
+    option.label = label;
+    option.textContent = label;
+    list.appendChild(option);
+  });
+}
+
+function setCreatorIdentityState(inputId, stateId, directory, mode){
+  var input = $(inputId);
+  var state = $(stateId);
+  if(!input || !state) return null;
+
+  input.classList.remove("is-existing-creator", "is-new-creator");
+  input.removeAttribute("aria-invalid");
+  state.className = "cb-creator-state";
+
+  var key = normalizeTelegram(input.value);
+  if(!key){
+    state.textContent = mode === "report" ? "Выберите ник из базы записей." : "";
+    return null;
+  }
+
+  if(!creatorDirectoryReady){
+    state.textContent = "Проверим ник по базе перед отправкой.";
+    return null;
+  }
+
+  var entry = findCreatorEntry(key, directory);
+
+  if(mode === "booking"){
+    if(entry){
+      input.classList.add("is-existing-creator");
+      state.classList.add("is-existing");
+      state.textContent = "Существующий профиль " + entry.name + " · " + entry.visits + " " +
+        pluralCount(entry.visits, "поездка", "поездки", "поездок") + " — статистика будет продолжена.";
+      return entry;
+    }
+
+    input.classList.add("is-new-creator");
+    state.classList.add("is-new");
+    state.textContent = key + " будет добавлен как новый креатор. Проверьте написание перед отправкой.";
+    return null;
+  }
+
+  if(entry){
+    input.classList.add("is-existing-creator");
+    state.classList.add("is-existing");
+    state.textContent = $("cb-report-tour") && $("cb-report-tour").value
+      ? "Ник найден среди участников выбранного тура — контент попадёт в его профиль."
+      : "Ник найден в базе записей. Теперь выберите тур.";
+    return entry;
+  }
+
+  state.classList.add("is-error");
+  input.setAttribute("aria-invalid", "true");
+  state.textContent = $("cb-report-tour") && $("cb-report-tour").value
+    ? "Такого ника нет среди записавшихся на выбранный тур. Выберите вариант из подсказок."
+    : "Такого ника нет в базе записей. Сначала оформите запись на тур.";
+  return null;
+}
+
+function renderCreatorOptions(){
+  var bookingDirectory = getKnownCreatorDirectory();
+  var reportTour = $("cb-report-tour") ? String($("cb-report-tour").value || "").trim() : "";
+  var reportDirectory = getReportCreatorDirectory(reportTour);
+
+  fillCreatorDatalist("cb-booking-creators", bookingDirectory);
+  fillCreatorDatalist("cb-report-creators", reportDirectory);
+  setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", bookingDirectory, "booking");
+  setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", reportDirectory, "report");
+}
+
+function setupCreatorIdentityInputs(){
+  var bookingInput = $("cb-telegram");
+  var reportInput = $("cb-report-telegram");
+  var reportTour = $("cb-report-tour");
+
+  function updateBookingIdentity(){
+    var directory = getKnownCreatorDirectory();
+    setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", directory, "booking");
+  }
+
+  function updateReportIdentity(){
+    var tour = reportTour ? String(reportTour.value || "").trim() : "";
+    var directory = getReportCreatorDirectory(tour);
+    fillCreatorDatalist("cb-report-creators", directory);
+    setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", directory, "report");
+  }
+
+  if(bookingInput){
+    bookingInput.addEventListener("input", updateBookingIdentity);
+    bookingInput.addEventListener("change", function(){
+      var entry = setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", getKnownCreatorDirectory(), "booking");
+      if(entry) bookingInput.value = entry.name;
+    });
+  }
+
+  if(reportInput){
+    reportInput.addEventListener("input", updateReportIdentity);
+    reportInput.addEventListener("change", function(){
+      var tour = reportTour ? String(reportTour.value || "").trim() : "";
+      var entry = setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", getReportCreatorDirectory(tour), "report");
+      if(entry) reportInput.value = entry.name;
+    });
+  }
+
+  if(reportTour) reportTour.addEventListener("change", updateReportIdentity);
+  renderCreatorOptions();
 }
 
 function normalizeTour(v){
@@ -4088,11 +4340,14 @@ function applyRemoteRows(allRows){
   bookings = allRows.filter(function(item){
     return !item.type || item.type !== "content_report";
   });
+
+  creatorDirectoryReady = true;
 }
 
 function renderDataViews(){
   renderTours(getFormDate());
   renderReportTours();
+  renderCreatorOptions();
   renderCalendar();
   renderDetails(getFormDate());
   renderAnalytics();
@@ -4176,6 +4431,12 @@ function submitBooking(){
     return;
   }
 
+  var knownCreator = findCreatorEntry(tg, getKnownCreatorDirectory());
+  if(knownCreator){
+    tg = knownCreator.name;
+    $("cb-telegram").value = tg;
+  }
+
   var fingerprint = bookingFingerprint(date, tg);
 
   if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
@@ -4189,6 +4450,10 @@ function submitBooking(){
 
   refreshRemoteDataForCheck()
     .then(function(){
+      var refreshedCreator = findCreatorEntry(tg, getKnownCreatorDirectory());
+      if(refreshedCreator) tg = refreshedCreator.name;
+      fingerprint = bookingFingerprint(date, tg);
+
       if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
         bookingSubmitting = false;
         setSubmitBusy("cb-submit", false, "");
@@ -4316,6 +4581,18 @@ function submitReport(){
     return;
   }
 
+  var creatorEntry = findCreatorEntry(tg, getReportCreatorDirectory(tour));
+  if(creatorDirectoryReady && !creatorEntry){
+    setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", getReportCreatorDirectory(tour), "report");
+    setMessage("Выберите ник креатора, который ранее записывался на этот тур.", true);
+    return;
+  }
+
+  if(creatorEntry){
+    tg = creatorEntry.name;
+    $("cb-report-telegram").value = tg;
+  }
+
   if(!isValidContentLink(link)){
     setMessage("Укажите корректную ссылку на ваше творение.", true);
     return;
@@ -4340,6 +4617,17 @@ function submitReport(){
         setMessage("Такая ссылка уже добавлена.", true);
         return;
       }
+
+      var refreshedCreator = findCreatorEntry(tg, getReportCreatorDirectory(tour));
+      if(!refreshedCreator){
+        reportSubmitting = false;
+        setSubmitBusy("cb-report-submit", false, "");
+        renderCreatorOptions();
+        setMessage("Ник не найден среди актуальных записей на выбранный тур.", true);
+        return;
+      }
+
+      tg = refreshedCreator.name;
 
       var match = findReportBooking(tg, tour);
       if(!match){
@@ -4377,6 +4665,7 @@ function submitReport(){
         $("cb-report-tour").value = "";
         $("cb-report-link").value = "";
         renderResults();
+        renderCreatorOptions();
         reportSubmitting = false;
         setSubmitBusy("cb-report-submit", false, "");
         setMessage("Контент добавлен и связан с записью креатора.", false);
@@ -4404,6 +4693,7 @@ function init(){
   setupCalendarCarousel();
   renderReportTours();
   renderResults();
+  setupCreatorIdentityInputs();
 
   var submit = $("cb-submit");
   var dateInput = $("cb-date");
