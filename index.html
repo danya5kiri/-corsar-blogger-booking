@@ -454,8 +454,8 @@ body.cb-lock-scroll {
   position: relative;
   z-index: 1;
   display: grid;
-  align-content: stretch;
-  grid-template-rows: 1.25fr .75fr .75fr;
+  align-content: start;
+  grid-template-rows: repeat(4, max-content);
   gap: 10px;
   min-width: 0;
 }
@@ -479,7 +479,8 @@ body.cb-lock-scroll {
   background: #e9f8fb;
 }
 
-.cb-stat-card:nth-child(3) {
+.cb-stat-card:nth-child(3),
+.cb-stat-card:nth-child(4) {
   background:
     radial-gradient(circle at 90% 8%, rgba(255,255,255,.68), transparent 34%),
     linear-gradient(135deg, #ffd66b 0%, #ffb09e 38%, #cbbdff 70%, #8ce8f4 100%);
@@ -526,7 +527,12 @@ body.cb-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-top: 8px;
+  width: fit-content;
+  min-height: 30px;
+  margin-top: 10px;
+  padding: 0 10px;
+  border: 1px solid rgba(23, 23, 25, .16);
+  background: rgba(255, 255, 255, .62);
   font-size: 10px;
   font-weight: 820;
   letter-spacing: .065em;
@@ -1910,6 +1916,10 @@ body.cb-lock-scroll {
     grid-column: 1 / -1;
   }
 
+  .cb-content-leader-card {
+    grid-column: 1 / -1;
+  }
+
   .cb-section-head {
     display: block;
   }
@@ -2160,11 +2170,17 @@ body.cb-lock-scroll {
             </div>
           </div>
         </article>
-        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона">
-          <div class="cb-stat-label">Лидер сезона</div>
+        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона по количеству туров">
+          <div class="cb-stat-label">Лидер сезона по количеству туров</div>
           <div id="cb-leader-name" class="cb-leader-name">—</div>
           <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
           <span id="cb-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
+        </button>
+        <button type="button" id="cb-content-leader-card" class="cb-stat-card cb-leader-card cb-content-leader-card" aria-disabled="true" aria-label="Лидер по опубликованному контенту">
+          <div class="cb-stat-label">Лидер по опубликованному контенту</div>
+          <div id="cb-content-leader-name" class="cb-leader-name">—</div>
+          <div id="cb-content-leader-count" class="cb-leader-visits">Загружаем публикации...</div>
+          <span id="cb-content-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
         </button>
       </div>
 
@@ -4296,7 +4312,7 @@ function renderAnalytics(){
   var leaderAction = $("cb-leader-action");
   if(ranking.length){
     leaderName.textContent = ranking[0].name;
-    leaderVisits.textContent = ranking[0].visits + " " + pluralCount(ranking[0].visits, "посещение", "посещения", "посещений") + " · первое место";
+    leaderVisits.textContent = ranking[0].visits + " " + pluralCount(ranking[0].visits, "тур", "тура", "туров") + " · первое место";
     if(leaderCard){
       leaderCard.setAttribute("data-creator", ranking[0].name);
       leaderCard.setAttribute("aria-disabled", "false");
@@ -4357,6 +4373,61 @@ function getReportTour(report){
   return String((report && (report.tour || report.tourName)) || "").trim();
 }
 
+function getPublishedContentItems(){
+  var seen = {};
+  return reports.slice().reverse().filter(function(report){
+    var link = getReportLink(report);
+    var key = normalizeContentLink(link);
+    var matchStatus = String((report && report.matchStatus) || "").trim();
+    if(matchStatus && matchStatus !== "Есть запись") return false;
+    if(!isValidContentLink(link) || seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+}
+
+function renderContentLeader(){
+  var leaderName = $("cb-content-leader-name");
+  var leaderCount = $("cb-content-leader-count");
+  var leaderCard = $("cb-content-leader-card");
+  var leaderAction = $("cb-content-leader-action");
+  if(!leaderName || !leaderCount || !leaderCard) return;
+
+  var totals = {};
+  getPublishedContentItems().forEach(function(report){
+    var creator = getReportCreator(report);
+    if(!creator || isAnalyticsExcludedCreator(creator)) return;
+    if(!totals[creator]) totals[creator] = 0;
+    totals[creator] += 1;
+  });
+
+  var ranking = Object.keys(totals).map(function(creator){
+    return {name: creator, materials: totals[creator]};
+  }).sort(function(a, b){
+    return b.materials - a.materials || a.name.localeCompare(b.name, "ru");
+  });
+
+  if(ranking.length){
+    leaderName.textContent = ranking[0].name;
+    leaderCount.textContent = ranking[0].materials + " " + pluralCount(ranking[0].materials, "опубликованная работа", "опубликованные работы", "опубликованных работ") + " · первое место";
+    leaderCard.setAttribute("data-creator", ranking[0].name);
+    leaderCard.setAttribute("aria-disabled", "false");
+    leaderCard.setAttribute("aria-label", "Показать опубликованные работы лидера по контенту " + ranking[0].name);
+    leaderCard.onclick = function(){
+      focusCreatorResults(this.getAttribute("data-creator"));
+    };
+    if(leaderAction) leaderAction.hidden = false;
+  } else {
+    leaderName.textContent = "Пока нет";
+    leaderCount.textContent = "Первая публикация определит лидера";
+    leaderCard.removeAttribute("data-creator");
+    leaderCard.setAttribute("aria-disabled", "true");
+    leaderCard.setAttribute("aria-label", "Лидер по опубликованному контенту пока не определён");
+    leaderCard.onclick = null;
+    if(leaderAction) leaderAction.hidden = true;
+  }
+}
+
 function getContentPlatform(link){
   var host = "";
   try {
@@ -4405,19 +4476,12 @@ function renderResults(){
   var root = $("cb-results");
   if(!root) return;
 
+  renderContentLeader();
+
   var select = $("cb-results-filter");
   var summary = $("cb-results-summary");
 
-  var seen = {};
-  var items = reports.slice().reverse().filter(function(report){
-    var link = getReportLink(report);
-    var key = normalizeContentLink(link);
-    var matchStatus = String((report && report.matchStatus) || "").trim();
-    if(matchStatus && matchStatus !== "Есть запись") return false;
-    if(!isValidContentLink(link) || seen[key]) return false;
-    seen[key] = true;
-    return true;
-  });
+  var items = getPublishedContentItems();
 
   var groupsByCreator = {};
   items.forEach(function(report){
