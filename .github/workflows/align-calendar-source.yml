@@ -1,0 +1,45 @@
+name: Сверка календаря с расписанием Корсара
+
+on:
+  push:
+    branches:
+      - calendar-source-match-2026-07-22
+    paths:
+      - tools/align_calendar_to_source.py
+      - .github/workflows/align-calendar-source.yml
+
+permissions:
+  contents: write
+
+jobs:
+  align:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить репозиторий и историю
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Настроить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Сверить календарь
+        run: python tools/align_calendar_to_source.py
+
+      - name: Проверить изменения
+        run: |
+          git diff --check
+          git diff --stat
+          test -n "$(git status --porcelain index.html)"
+          test -z "$(git status --porcelain | grep -v 'index.html' || true)"
+
+      - name: Сохранить проверенный календарь
+        run: |
+          git config user.name "corsar-calendar-check"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Привести календарь 22.07–20.10 к расписанию Корсара"
+          git push
