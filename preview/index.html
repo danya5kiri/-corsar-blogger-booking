@@ -465,8 +465,49 @@ body.cb-lock-scroll {
 }
 
 .cb-stat-card:nth-child(3) {
-  background: var(--cb-ink);
-  color: #fff;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,.68), transparent 34%),
+    linear-gradient(135deg, #ffd66b 0%, #ffb09e 38%, #cbbdff 70%, #8ce8f4 100%);
+  color: var(--cb-ink);
+}
+
+.cb-leader-card {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--cb-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: inset 0 0 0 1px rgba(23, 23, 25, .08), 0 14px 28px rgba(127, 103, 248, .14);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.cb-leader-card:hover,
+.cb-leader-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(23, 23, 25, .12), 0 18px 36px rgba(127, 103, 248, .22);
+}
+
+.cb-leader-card[aria-disabled="true"] {
+  cursor: default;
+}
+
+.cb-leader-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 11px;
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: .065em;
+  text-transform: uppercase;
+}
+
+.cb-leader-action[hidden] {
+  display: none;
 }
 
 .cb-stat-label {
@@ -721,6 +762,18 @@ body.cb-lock-scroll {
 .cb-submit:hover {
   transform: translateY(-2px);
   background: #2a2a2d;
+}
+
+#cb-submit {
+  border-color: transparent;
+  background: linear-gradient(105deg, var(--cb-blue) 0%, var(--cb-lilac-strong) 48%, var(--cb-rose) 100%);
+  box-shadow: 0 14px 30px rgba(80, 73, 190, .25);
+}
+
+#cb-submit:hover,
+#cb-submit:focus-visible {
+  background: linear-gradient(105deg, #1d4dbb 0%, #7259ed 48%, #dc4e9b 100%);
+  box-shadow: 0 18px 36px rgba(80, 73, 190, .34);
 }
 
 .cb-submit:disabled {
@@ -1015,8 +1068,217 @@ body.cb-lock-scroll {
 
 .cb-results-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
+}
+
+.cb-results-tools {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: -3px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(23, 23, 25, .08);
+  background: rgba(255, 255, 255, .66);
+}
+
+.cb-results-filter-field {
+  display: grid;
+  min-width: min(360px, 100%);
+  gap: 6px;
+}
+
+.cb-results-filter-field label {
+  color: #7f8491;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cb-results-filter-field select {
+  min-height: 40px;
+  padding: 0 34px 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--cb-lilac-strong);
+  border-radius: 0;
+  outline: 0;
+  background-color: transparent;
+  color: var(--cb-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.cb-results-summary {
+  color: var(--cb-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.cb-creator-group {
+  overflow: hidden;
+  border: 1px solid rgba(23, 23, 25, .09);
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 14px 34px rgba(54, 53, 86, .06);
+  scroll-margin-top: 104px;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+
+.cb-creator-group::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cb-blue), var(--cb-lilac-strong) 40%, var(--cb-cyan) 72%, var(--cb-coral));
+}
+
+.cb-creator-group[open] {
+  border-color: rgba(127, 103, 248, .28);
+  box-shadow: 0 18px 42px rgba(74, 67, 126, .11);
+}
+
+.cb-creator-group.is-highlighted {
+  border-color: var(--cb-lilac-strong);
+  box-shadow: 0 0 0 4px rgba(127, 103, 248, .14), 0 22px 48px rgba(74, 67, 126, .16);
+  transform: translateY(-2px);
+}
+
+.cb-creator-summary {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 14px;
+  min-height: 86px;
+  padding: 16px 20px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cb-creator-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cb-creator-index {
+  color: #9a9daa;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.cb-creator-name {
+  overflow: hidden;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 800;
+  letter-spacing: -.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cb-creator-count {
+  color: var(--cb-muted);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.cb-creator-chevron {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  transition: transform .2s ease;
+}
+
+.cb-creator-group[open] .cb-creator-chevron {
+  transform: rotate(45deg);
+}
+
+.cb-creator-materials {
+  display: grid;
+  margin: 0;
+  padding: 0 20px 8px;
+  border-top: 1px solid var(--cb-line);
+  list-style: none;
+}
+
+.cb-creator-material {
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.cb-creator-material:last-child {
+  border-bottom: 0;
+}
+
+.cb-material-link {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 86px;
+  padding: 12px 0;
+  color: var(--cb-ink);
+  text-decoration: none;
+  transition: transform .2s ease, color .2s ease;
+}
+
+.cb-material-link:hover {
+  color: var(--cb-blue);
+  transform: translateX(3px);
+}
+
+.cb-material-index {
+  color: #9a9daa;
+  font-size: 10px;
+  font-weight: 780;
+}
+
+.cb-material-copy {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.cb-material-platform {
+  width: fit-content;
+  padding: 5px 7px;
+  background: #f3efff;
+  color: #684aa2;
+  font-size: 8px;
+  font-weight: 820;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.cb-material-tour {
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.cb-material-date {
+  color: var(--cb-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.cb-material-open {
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cb-results-reset {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--cb-ink);
+  background: var(--cb-ink);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 780;
 }
 
 .cb-result-card {
@@ -1215,6 +1477,34 @@ body.cb-lock-scroll {
   font-weight: 780;
 }
 
+.cb-footer-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  max-width: 720px;
+  margin: 18px auto 0;
+  padding: 15px 18px;
+  border: 1px solid var(--cb-line);
+  background: linear-gradient(100deg, #f5f1ff, #eefbfe);
+  color: var(--cb-muted);
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.cb-footer-feedback a {
+  flex: 0 0 auto;
+  color: var(--cb-ink);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cb-footer-feedback a:hover {
+  color: var(--cb-blue);
+}
+
 .cb-empty-state {
   padding: 24px 0;
   color: rgba(255,255,255,.55);
@@ -1402,6 +1692,49 @@ body.cb-lock-scroll {
     grid-template-columns: 1fr;
   }
 
+  .cb-results-tools,
+  .cb-footer-feedback {
+    display: grid;
+  }
+
+  .cb-results-summary {
+    text-align: left;
+  }
+
+  .cb-creator-summary {
+    grid-template-columns: 34px minmax(0, 1fr) 22px;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .cb-creator-count {
+    grid-column: 2;
+    font-size: 10px;
+  }
+
+  .cb-creator-chevron {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .cb-creator-materials {
+    padding: 0 14px 6px;
+  }
+
+  .cb-material-link {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .cb-material-date {
+    grid-column: 2;
+  }
+
+  .cb-material-open {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
   .cb-result-card {
     min-height: 238px;
   }
@@ -1475,11 +1808,12 @@ body.cb-lock-scroll {
           <div id="cb-weather-temp" class="cb-weather-temp">—</div>
           <div id="cb-weather-meta" class="cb-weather-meta">Получаем погоду...</div>
         </article>
-        <article class="cb-stat-card">
+        <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона">
           <div class="cb-stat-label">Лидер сезона</div>
           <div id="cb-leader-name" class="cb-leader-name">—</div>
           <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
-        </article>
+          <span id="cb-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
+        </button>
       </div>
 
       <svg class="cb-route-line" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
@@ -1599,6 +1933,13 @@ body.cb-lock-scroll {
       </div>
       <p class="cb-section-note">Готовые видео и публикации участников мастерской. Новые материалы появляются здесь сразу после отправки формы.</p>
     </div>
+    <div class="cb-results-tools">
+      <div class="cb-results-filter-field">
+        <label for="cb-results-filter">Фильтр по креатору</label>
+        <select id="cb-results-filter"><option value="">Все креаторы</option></select>
+      </div>
+      <div id="cb-results-summary" class="cb-results-summary">Загружаем опубликованные материалы...</div>
+    </div>
     <div id="cb-results" class="cb-results-grid" aria-live="polite"></div>
   </section>
 
@@ -1613,6 +1954,10 @@ body.cb-lock-scroll {
         <span class="cb-footer-role">CEO</span>
         <span class="cb-footer-handle">@ksenivere</span>
       </a>
+    </div>
+    <div class="cb-footer-feedback">
+      <span>Направляйте предложения по улучшению сайта и коммуникаций</span>
+      <a href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer">Написать в Telegram ↗</a>
     </div>
   </footer>
 </main>
@@ -2529,6 +2874,7 @@ var reports = [];
 var selectedDate = "";
 var bookingSubmitting = false;
 var reportSubmitting = false;
+var resultsCreatorFilter = "";
 
 var BOOKING_STORAGE_KEY = "corsar_recent_bookings_v1";
 var CONTENT_STORAGE_KEY = "corsar_recent_content_v1";
@@ -3183,12 +3529,30 @@ function renderAnalytics(){
 
   var leaderName = $("cb-leader-name");
   var leaderVisits = $("cb-leader-visits");
+  var leaderCard = $("cb-leader-card");
+  var leaderAction = $("cb-leader-action");
   if(ranking.length){
     leaderName.textContent = ranking[0].name;
     leaderVisits.textContent = ranking[0].visits + " " + pluralCount(ranking[0].visits, "посещение", "посещения", "посещений") + " · первое место";
+    if(leaderCard){
+      leaderCard.setAttribute("data-creator", ranking[0].name);
+      leaderCard.setAttribute("aria-disabled", "false");
+      leaderCard.setAttribute("aria-label", "Показать опубликованные работы лидера " + ranking[0].name);
+      leaderCard.onclick = function(){
+        focusCreatorResults(this.getAttribute("data-creator"));
+      };
+    }
+    if(leaderAction) leaderAction.hidden = false;
   } else {
     leaderName.textContent = "Пока нет";
     leaderVisits.textContent = "Первая поездка откроет рейтинг";
+    if(leaderCard){
+      leaderCard.removeAttribute("data-creator");
+      leaderCard.setAttribute("aria-disabled", "true");
+      leaderCard.setAttribute("aria-label", "Лидер сезона пока не определён");
+      leaderCard.onclick = null;
+    }
+    if(leaderAction) leaderAction.hidden = true;
   }
 
   if(!ranking.length){
@@ -3232,9 +3596,41 @@ function getContentPlatform(link){
   return "Готовый материал";
 }
 
+function getCreatorGroupId(creator){
+  var value = String(creator || "creator");
+  var hash = 0;
+  for(var i = 0; i < value.length; i++){
+    hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;
+  }
+  return "cb-creator-" + (hash >>> 0).toString(36);
+}
+
+function focusCreatorResults(creator){
+  var normalized = normalizeTelegram(creator);
+  if(!normalized) return;
+
+  resultsCreatorFilter = normalized;
+  renderResults();
+
+  window.requestAnimationFrame(function(){
+    var group = $(getCreatorGroupId(normalized));
+    var section = $("results");
+    if(group) group.open = true;
+    var target = group || section;
+    if(target) target.scrollIntoView({behavior: "smooth", block: "start"});
+    if(group){
+      group.classList.add("is-highlighted");
+      setTimeout(function(){ group.classList.remove("is-highlighted"); }, 1800);
+    }
+  });
+}
+
 function renderResults(){
   var root = $("cb-results");
   if(!root) return;
+
+  var select = $("cb-results-filter");
+  var summary = $("cb-results-summary");
 
   var seen = {};
   var items = reports.slice().reverse().filter(function(report){
@@ -3247,29 +3643,101 @@ function renderResults(){
     return true;
   });
 
+  var groupsByCreator = {};
+  items.forEach(function(report){
+    var creator = getReportCreator(report);
+    var key = creator || "__corsar_creator__";
+    if(!groupsByCreator[key]){
+      groupsByCreator[key] = {
+        key: key,
+        creator: creator || "участник «Корсар»",
+        items: []
+      };
+    }
+    groupsByCreator[key].items.push(report);
+  });
+
+  var groups = Object.keys(groupsByCreator).map(function(key){
+    return groupsByCreator[key];
+  }).sort(function(a, b){
+    return a.creator.localeCompare(b.creator, "ru");
+  });
+
+  if(select){
+    var options = '<option value="">Все креаторы</option>' + groups.map(function(group){
+      return '<option value="' + escapeHtml(group.key) + '">' + escapeHtml(group.creator) + ' · ' + group.items.length + '</option>';
+    }).join("");
+
+    if(resultsCreatorFilter && !groupsByCreator[resultsCreatorFilter]){
+      options += '<option value="' + escapeHtml(resultsCreatorFilter) + '">' + escapeHtml(resultsCreatorFilter) + ' · пока без работ</option>';
+    }
+
+    select.innerHTML = options;
+    select.value = resultsCreatorFilter;
+    select.onchange = function(){
+      resultsCreatorFilter = this.value;
+      renderResults();
+    };
+  }
+
   if(!items.length){
+    if(summary) summary.textContent = "Опубликованных материалов пока нет";
     root.innerHTML = '<div class="cb-results-empty">Пока здесь нет опубликованных материалов.<br>Первое готовое видео появится сразу после отправки формы выше.</div>';
     return;
   }
 
-  root.innerHTML = items.map(function(report, index){
-    var link = getReportLink(report);
-    var creator = getReportCreator(report) || "участник «Корсар»";
-    var tour = getReportTour(report) || "Морское путешествие «Корсар»";
-    var date = normalizeDate(report.date);
-    var dateText = /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDateRu(date) : "";
+  var visibleGroups = resultsCreatorFilter ? groups.filter(function(group){
+    return group.key === resultsCreatorFilter;
+  }) : groups;
 
-    return '<article class="cb-result-card">' +
-      '<div class="cb-result-topline">' +
-        '<span class="cb-result-index">МАТЕРИАЛ ' + String(index + 1).padStart(2, "0") + '</span>' +
-        '<span class="cb-result-platform">' + escapeHtml(getContentPlatform(link)) + '</span>' +
-      '</div>' +
-      '<h3 class="cb-result-tour">' + escapeHtml(tour) + '</h3>' +
-      '<div class="cb-result-meta"><span class="cb-result-creator">' + escapeHtml(creator) + '</span>' +
-        (dateText ? '<span>' + escapeHtml(dateText) + '</span>' : '') +
-      '</div>' +
-      '<a class="cb-result-link" href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть материал участника ' + escapeHtml(creator) + '">Смотреть видео <span>↗</span></a>' +
-    '</article>';
+  if(summary){
+    var visibleMaterialCount = visibleGroups.reduce(function(total, group){ return total + group.items.length; }, 0);
+    summary.textContent = visibleGroups.length + " " + pluralCount(visibleGroups.length, "креатор", "креатора", "креаторов") +
+      " · " + visibleMaterialCount + " " + pluralCount(visibleMaterialCount, "материал", "материала", "материалов");
+  }
+
+  if(!visibleGroups.length){
+    root.innerHTML = '<div class="cb-results-empty">У <b>' + escapeHtml(resultsCreatorFilter) + '</b> пока нет опубликованных работ.' +
+      '<button type="button" id="cb-results-reset" class="cb-results-reset">Показать всех креаторов</button></div>';
+    var reset = $("cb-results-reset");
+    if(reset) reset.onclick = function(){
+      resultsCreatorFilter = "";
+      renderResults();
+    };
+    return;
+  }
+
+  root.innerHTML = visibleGroups.map(function(group, groupIndex){
+    var groupOpen = resultsCreatorFilter || groupIndex === 0;
+    var materials = group.items.map(function(report, materialIndex){
+      var link = getReportLink(report);
+      var tour = getReportTour(report) || "Морское путешествие «Корсар»";
+      var date = normalizeDate(report.date);
+      var dateText = /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDateRu(date) : "";
+      var platform = getContentPlatform(link);
+
+      return '<li class="cb-creator-material">' +
+        '<a class="cb-material-link" href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть ' + escapeHtml(platform) + ': ' + escapeHtml(tour) + '">' +
+          '<span class="cb-material-index">' + String(materialIndex + 1).padStart(2, "0") + '</span>' +
+          '<span class="cb-material-copy">' +
+            '<span class="cb-material-platform">' + escapeHtml(platform) + '</span>' +
+            '<strong class="cb-material-tour">' + escapeHtml(tour) + '</strong>' +
+          '</span>' +
+          '<span class="cb-material-date">' + escapeHtml(dateText) + '</span>' +
+          '<span class="cb-material-open">Открыть ↗</span>' +
+        '</a>' +
+      '</li>';
+    }).join("");
+
+    return '<details id="' + getCreatorGroupId(group.key) + '" class="cb-creator-group" data-creator="' + escapeHtml(group.key) + '"' + (groupOpen ? ' open' : '') + '>' +
+      '<summary class="cb-creator-summary">' +
+        '<span class="cb-creator-index">' + String(groupIndex + 1).padStart(2, "0") + '</span>' +
+        '<span class="cb-creator-name">' + escapeHtml(group.creator) + '</span>' +
+        '<span class="cb-creator-count">' + group.items.length + " " + pluralCount(group.items.length, "работа", "работы", "работ") + '</span>' +
+        '<span class="cb-creator-chevron" aria-hidden="true">+</span>' +
+      '</summary>' +
+      '<ol class="cb-creator-materials">' + materials + '</ol>' +
+    '</details>';
   }).join("");
 }
 
