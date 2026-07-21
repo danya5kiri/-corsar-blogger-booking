@@ -4643,7 +4643,9 @@ function renderDetails(date){
     html += '<div class="cb-small" style="margin-bottom:12px">Программы и текущая занятость</div><div class="cb-window-list">';
     tours.forEach(function(tour){
       var tourCount = rows.filter(function(row){ return normalizeTour(row.tour) === normalizeTour(tour); }).length;
-      var occupiedText = tourCount > 1 ? "занято · " + tourCount + " записи" : "занято";
+      var occupiedText = tourCount > 1
+        ? "занято · " + tourCount + " " + pluralCount(tourCount, "запись", "записи", "записей")
+        : "занято";
       html += '<div class="cb-window-row"><span>' + escapeHtml(tour) + '</span><span class="cb-window-status' + (tourCount ? ' has-bookings' : '') + '">' + (tourCount ? occupiedText : 'свободно') + '</span></div>';
     });
     html += '</div>';
