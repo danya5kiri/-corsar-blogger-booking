@@ -159,7 +159,7 @@ def main() -> None:
 
   return original;
 }'''
-    updated, count = function_pattern.subn(canonical_function, updated, count=1)
+    updated, count = function_pattern.subn(lambda _match: canonical_function, updated, count=1)
     if count != 1:
         raise RuntimeError("Не удалось заменить canonicalTourName")
 
