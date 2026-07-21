@@ -777,15 +777,21 @@ body.cb-lock-scroll {
 }
 
 #cb-submit {
-  border-color: transparent;
-  background: linear-gradient(105deg, var(--cb-blue) 0%, var(--cb-lilac-strong) 48%, var(--cb-rose) 100%);
-  box-shadow: 0 14px 30px rgba(80, 73, 190, .25);
+  border-color: rgba(23, 23, 25, .08);
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,.64), transparent 34%),
+    linear-gradient(105deg, #ffd66b 0%, #ffb09e 38%, #cbbdff 70%, #8ce8f4 100%);
+  color: var(--cb-ink);
+  box-shadow: 0 14px 30px rgba(127, 103, 248, .20);
 }
 
 #cb-submit:hover,
 #cb-submit:focus-visible {
-  background: linear-gradient(105deg, #1d4dbb 0%, #7259ed 48%, #dc4e9b 100%);
-  box-shadow: 0 18px 36px rgba(80, 73, 190, .34);
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,.72), transparent 34%),
+    linear-gradient(105deg, #ffcf51 0%, #ffa78f 38%, #c1b0ff 70%, #75deed 100%);
+  color: var(--cb-ink);
+  box-shadow: 0 18px 36px rgba(127, 103, 248, .29);
 }
 
 .cb-submit:disabled {
@@ -857,16 +863,90 @@ body.cb-lock-scroll {
   border-color: #d8dbe2;
 }
 
-.cb-calendar {
+.cb-calendar-controls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid rgba(23, 23, 25, .08);
+  background: linear-gradient(100deg, #f5f1ff, #eefbfe);
+}
+
+.cb-calendar-nav {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(23, 23, 25, .13);
+  background: rgba(255,255,255,.82);
+  color: var(--cb-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.cb-calendar-nav:hover,
+.cb-calendar-nav:focus-visible {
+  border-color: var(--cb-lilac-strong);
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.cb-calendar-nav:disabled {
+  cursor: default;
+  opacity: .28;
+  transform: none;
+}
+
+.cb-calendar-current {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+
+.cb-calendar-current span {
+  color: #858a97;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cb-calendar-current strong {
+  font-size: 18px;
+  font-weight: 790;
+  letter-spacing: -.03em;
+}
+
+.cb-calendar {
+  position: relative;
+  display: flex;
   gap: 12px;
   margin: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.cb-calendar::-webkit-scrollbar {
+  display: none;
 }
 
 .cb-calendar-card {
+  flex: 0 0 100%;
+  min-width: 100%;
   padding: 18px;
   background: #f7f7fa;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .cb-month-title {
@@ -1506,15 +1586,25 @@ body.cb-lock-scroll {
 }
 
 .cb-footer-feedback a {
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(23, 23, 25, .10);
+  background: linear-gradient(105deg, #ffd66b, #ffb09e 42%, #cbbdff 72%, #8ce8f4);
   color: var(--cb-ink);
   font-weight: 800;
   text-decoration: none;
   white-space: nowrap;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .cb-footer-feedback a:hover {
-  color: var(--cb-blue);
+  color: var(--cb-ink);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(127, 103, 248, .19);
 }
 
 .cb-empty-state {
@@ -1595,7 +1685,7 @@ body.cb-lock-scroll {
   }
 
   .cb-calendar {
-    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .cb-nav-brand {
@@ -1707,6 +1797,11 @@ body.cb-lock-scroll {
   .cb-results-tools,
   .cb-footer-feedback {
     display: grid;
+  }
+
+  .cb-footer-feedback a {
+    width: 100%;
+    white-space: normal;
   }
 
   .cb-results-summary {
@@ -1919,6 +2014,14 @@ body.cb-lock-scroll {
       <span><i></i>Есть записи</span>
       <span><i></i>Нет программы</span>
     </div>
+    <div class="cb-calendar-controls" aria-label="Переключение месяцев">
+      <button type="button" id="cb-calendar-prev" class="cb-calendar-nav" aria-label="Предыдущий месяц">‹</button>
+      <div class="cb-calendar-current">
+        <span>Листайте месяцы</span>
+        <strong id="cb-calendar-current">—</strong>
+      </div>
+      <button type="button" id="cb-calendar-next" class="cb-calendar-nav" aria-label="Следующий месяц">›</button>
+    </div>
     <div id="cb-calendar" class="cb-calendar"></div>
     <div id="cb-details" class="cb-details-card">
       <h3>Выберите дату</h3>
@@ -1969,7 +2072,7 @@ body.cb-lock-scroll {
     </div>
     <div class="cb-footer-feedback">
       <span>Направляйте предложения по улучшению сайта и коммуникаций</span>
-      <a href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer">Написать в Telegram ↗</a>
+      <a href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer">Написать в Telegram</a>
     </div>
   </footer>
 </main>
@@ -2887,6 +2990,14 @@ var selectedDate = "";
 var bookingSubmitting = false;
 var reportSubmitting = false;
 var resultsCreatorFilter = "";
+var calendarScrollTicking = false;
+var calendarMonthPosition = (function(){
+  var now = new Date();
+  var lastPosition = CONFIG.END_MONTH - CONFIG.START_MONTH;
+  if(now.getFullYear() < CONFIG.YEAR) return 0;
+  if(now.getFullYear() > CONFIG.YEAR) return lastPosition;
+  return Math.max(0, Math.min(lastPosition, now.getMonth() - CONFIG.START_MONTH));
+})();
 
 var BOOKING_STORAGE_KEY = "corsar_recent_bookings_v1";
 var CONTENT_STORAGE_KEY = "corsar_recent_content_v1";
@@ -3303,10 +3414,95 @@ function getFormDate(){
   return el ? String(el.value || "").trim() : "";
 }
 
+function clampCalendarPosition(position){
+  return Math.max(0, Math.min(CONFIG.END_MONTH - CONFIG.START_MONTH, Number(position) || 0));
+}
+
+function updateCalendarControls(){
+  var label = $("cb-calendar-current");
+  var prev = $("cb-calendar-prev");
+  var next = $("cb-calendar-next");
+  var monthIndex = CONFIG.START_MONTH + calendarMonthPosition;
+
+  if(label) label.textContent = months[monthIndex] + " " + CONFIG.YEAR;
+  if(prev) prev.disabled = calendarMonthPosition <= 0;
+  if(next) next.disabled = calendarMonthPosition >= CONFIG.END_MONTH - CONFIG.START_MONTH;
+}
+
+function scrollCalendarToPosition(smooth){
+  var root = $("cb-calendar");
+  if(!root) return;
+  var cards = root.querySelectorAll(".cb-calendar-card");
+  var card = cards[calendarMonthPosition];
+
+  updateCalendarControls();
+  if(!card) return;
+
+  var left = card.offsetLeft;
+  if(typeof root.scrollTo === "function"){
+    root.scrollTo({left: left, behavior: smooth ? "smooth" : "auto"});
+  } else {
+    root.scrollLeft = left;
+  }
+}
+
+function setCalendarMonthPosition(position, smooth){
+  calendarMonthPosition = clampCalendarPosition(position);
+  scrollCalendarToPosition(smooth !== false);
+}
+
+function setupCalendarCarousel(){
+  var root = $("cb-calendar");
+  var prev = $("cb-calendar-prev");
+  var next = $("cb-calendar-next");
+  if(!root) return;
+
+  if(prev) prev.onclick = function(){
+    setCalendarMonthPosition(calendarMonthPosition - 1, true);
+  };
+
+  if(next) next.onclick = function(){
+    setCalendarMonthPosition(calendarMonthPosition + 1, true);
+  };
+
+  root.addEventListener("scroll", function(){
+    if(calendarScrollTicking) return;
+    calendarScrollTicking = true;
+    window.requestAnimationFrame(function(){
+      calendarScrollTicking = false;
+      var cards = root.querySelectorAll(".cb-calendar-card");
+      if(!cards.length) return;
+
+      var nearest = 0;
+      var nearestDistance = Infinity;
+      Array.prototype.forEach.call(cards, function(card, index){
+        var distance = Math.abs(card.offsetLeft - root.scrollLeft);
+        if(distance < nearestDistance){
+          nearestDistance = distance;
+          nearest = index;
+        }
+      });
+
+      if(nearest !== calendarMonthPosition){
+        calendarMonthPosition = nearest;
+        updateCalendarControls();
+      }
+    });
+  }, {passive: true});
+
+  updateCalendarControls();
+}
+
 function setFormDate(date){
   selectedDate = date;
   var el = $("cb-date");
   if(el) el.value = date;
+
+  var parts = String(date || "").match(/^(\d{4})-(\d{2})-/);
+  if(parts && Number(parts[1]) === CONFIG.YEAR){
+    var monthPosition = Number(parts[2]) - 1 - CONFIG.START_MONTH;
+    calendarMonthPosition = clampCalendarPosition(monthPosition);
+  }
 }
 
 function isDateInSeason(date){
@@ -3392,6 +3588,8 @@ function renderCalendar(){
 
     var monthBlock = document.createElement("div");
     monthBlock.className = "cb-calendar-card";
+    monthBlock.setAttribute("data-calendar-position", String(m - CONFIG.START_MONTH));
+    monthBlock.setAttribute("aria-label", months[m] + " " + CONFIG.YEAR);
 
     var title = document.createElement("div");
     title.className = "cb-month-title";
@@ -3461,6 +3659,10 @@ function renderCalendar(){
     monthBlock.appendChild(daysGrid);
     root.appendChild(monthBlock);
   }
+
+  window.requestAnimationFrame(function(){
+    scrollCalendarToPosition(false);
+  });
 }
 
 function renderDetails(date){
@@ -4110,6 +4312,7 @@ function init(){
   setInterval(updateSeasonCounter, 3600000);
   loadWeather();
   setupStickyNav();
+  setupCalendarCarousel();
   renderReportTours();
   renderResults();
 
