@@ -1,0 +1,19 @@
+{
+  "target": "https://www.instagram.com/reel/DaJ47gkItzE/?igsh=Z3ZjajVrNjhmZ2Fz",
+  "normalizedTarget": "https://instagram.com/reel/daj47gkitze",
+  "totalRows": 82,
+  "matchCount": 1,
+  "matches": [
+    {
+      "index": 81,
+      "type": "content_report",
+      "telegram": "@a4anaseva",
+      "date": "2026-06-25T07:00:00.000Z",
+      "tour": "Вечерняя прогулка с саксофоном на катамаране",
+      "link": "https://www.instagram.com/reel/DaJ47gkItzE/?igsh=Z3ZjajVrNjhmZ2Fz",
+      "matchStatus": "Запись не найдена",
+      "createdAt": "2026-07-10T23:23:21.069Z",
+      "dedupeKey": null
+    }
+  ]
+}
