@@ -1513,7 +1513,7 @@ body.cb-lock-scroll {
         <div class="cb-section-kicker">01 / Бронирование</div>
         <h2 class="cb-section-title">Выберите <strong>тур</strong></h2>
       </div>
-      <p class="cb-section-note">Выберите дату, время и доступную программу. После оформления откроется WhatsApp с готовым сообщением для согласования поездки.</p>
+      <p class="cb-section-note">Выберите дату и доступную программу. После оформления откроется WhatsApp с готовым сообщением для согласования поездки.</p>
     </div>
 
     <div class="cb-form-grid">
@@ -1527,12 +1527,7 @@ body.cb-lock-scroll {
         <input id="cb-date" type="date" min="2026-04-01" max="2026-10-01">
         <div class="cb-field-hint">Дату можно также выбрать в календаре свободных окон.</div>
       </div>
-      <div class="cb-field">
-        <label for="cb-time">Время</label>
-        <input id="cb-time" type="time" value="10:00">
-        <div class="cb-field-hint">Укажите время начала поездки для сообщения в WhatsApp.</div>
-      </div>
-      <div class="cb-field">
+      <div class="cb-field" style="grid-column: 1 / -1;">
         <label for="cb-tour">Название тура</label>
         <select id="cb-tour"><option value="">Сначала выберите дату</option></select>
       </div>
@@ -2637,6 +2632,11 @@ function normalizeTelegram(v){
   return tg;
 }
 
+function isAnalyticsExcludedCreator(v){
+  var creator = normalizeTelegram(v).replace(/^@/, "");
+  return ["ник", "тест", "nik", "test"].indexOf(creator) !== -1;
+}
+
 function normalizeTour(v){
   return String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -3140,8 +3140,7 @@ function renderDetails(date){
     rows.forEach(function(b){
       var tg = normalizeTelegram(b.telegram) || "без Telegram";
       var tour = b.tour || "тур не указан";
-      var time = b.time ? ' · ' + escapeHtml(b.time) : '';
-      html += '<div class="cb-date-row"><b>' + escapeHtml(tg) + time + '</b><span class="cb-tour-name">' + escapeHtml(tour) + '</span></div>';
+      html += '<div class="cb-date-row"><b>' + escapeHtml(tg) + '</b><span class="cb-tour-name">' + escapeHtml(tour) + '</span></div>';
     });
     html += '</div>';
   }
@@ -3173,6 +3172,7 @@ function renderAnalytics(){
   bookings.forEach(function(b){
     if(isInactiveBooking(b)) return;
     var tg = normalizeTelegram(b.telegram);
+    if(isAnalyticsExcludedCreator(tg)) return;
     if(tg){
       if(!users[tg]) users[tg] = 0;
       users[tg] += 1;
@@ -3358,7 +3358,6 @@ function loadData(){
 function submitBooking(){
   var date = getFormDate();
   var tg = normalizeTelegram($("cb-telegram").value);
-  var time = $("cb-time") ? String($("cb-time").value || "").trim() : "";
   var tour = $("cb-tour") ? String($("cb-tour").value || "").trim() : "";
 
   if(bookingSubmitting){
@@ -3405,11 +3404,6 @@ function submitBooking(){
     return;
   }
 
-  if(!time){
-    setMessage("Укажите время поездки.", true);
-    return;
-  }
-
   if(!tg){
     setMessage("Введите Telegram.", true);
     return;
@@ -3439,7 +3433,6 @@ function submitBooking(){
         date: date,
         telegram: tg,
         tour: tour,
-        time: time,
         name: "",
         phone: "",
         count: 1,
@@ -3471,7 +3464,6 @@ function submitBooking(){
           "",
           "Креатор: " + tg,
           "Дата: " + formatDateRu(date),
-          "Время: " + time,
           "Тур: " + tour,
           "",
           "Прошу согласовать участие."
