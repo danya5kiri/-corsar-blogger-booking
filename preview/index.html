@@ -2362,11 +2362,12 @@ body.cb-lock-scroll {
       <div class="cb-field" style="grid-column: 1 / -1;">
         <label for="cb-tour">Название тура</label>
         <select id="cb-tour"><option value="">Сначала выберите дату</option></select>
+        <div class="cb-field-hint">Сначала показаны туры текущей даты. В группе «Добавить новый тур» доступны остальные однодневные программы сезона.</div>
       </div>
       <div class="cb-field cb-booking-mode-field">
         <label for="cb-booking-mode">Действие с записью</label>
         <select id="cb-booking-mode">
-          <option value="new">Добавить новый тур</option>
+          <option value="new">Новая запись</option>
           <option value="transfer">Перенести существующую запись</option>
         </select>
         <div class="cb-field-hint">При переносе прежняя запись будет исключена из календаря, рейтинга и общей статистики.</div>
@@ -4348,7 +4349,24 @@ function renderTourSelect(date, selectId, emptyText){
 }
 
 function getAllTours(){
-  return CANONICAL_TOURS.slice();
+  var seen = Object.create(null);
+  var tours = [];
+
+  function addTour(tour){
+    if(!tour || isExcludedTour(tour)) return;
+    var displayName = canonicalTourName(tour);
+    var key = normalizeTour(displayName);
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    tours.push(displayName);
+  }
+
+  CANONICAL_TOURS.forEach(addTour);
+  Object.keys(TOURS_BY_DATE).sort().forEach(function(date){
+    (TOURS_BY_DATE[date] || []).forEach(addTour);
+  });
+
+  return tours;
 }
 
 function renderReportTours(){
@@ -4468,7 +4486,7 @@ function isBookableDate(date){
 }
 
 function isExcludedTour(tour){
-  return /(?:2\s*[-–]?\s*х|двух)\s*днев/i.test(String(tour || ""));
+  return /(?:2\s*[-–—]?\s*[хx]?\s*[-–—]?\s*днев|двух\s*[-–—]?\s*днев|два\s+дн)/i.test(String(tour || ""));
 }
 
 function getToursByDate(date){
@@ -4494,27 +4512,47 @@ function renderTours(date){
     return;
   }
 
-  var tours = getToursByDate(date);
+  var scheduledTours = getToursByDate(date);
+  var scheduledKeys = Object.create(null);
+  var additionalTours = [];
 
-  if(!tours.length){
-    select.innerHTML = '<option value="">На эту дату туров нет</option>';
-    return;
-  }
+  scheduledTours = scheduledTours.filter(function(tour){
+    var key = normalizeTour(tour);
+    if(!key || scheduledKeys[key]) return false;
+    scheduledKeys[key] = true;
+    return true;
+  });
 
-  var allOccupied = tours.every(function(tour){
+  additionalTours = getAllTours().filter(function(tour){
+    return !scheduledKeys[normalizeTour(tour)];
+  });
+
+  var availableTours = scheduledTours.concat(additionalTours);
+  var allOccupied = availableTours.length > 0 && availableTours.every(function(tour){
     return hasBookingSlotConflict(date, tour);
   });
 
   select.innerHTML = '<option value="">' + (allOccupied ? "Все туры на эту дату заняты" : "Выберите свободный тур") + '</option>';
 
-  tours.forEach(function(t){
-    var opt = document.createElement("option");
-    var occupied = hasBookingSlotConflict(date, t);
-    opt.value = t;
-    opt.textContent = t + (occupied ? " — занято" : "");
-    opt.disabled = occupied;
-    select.appendChild(opt);
-  });
+  function appendGroup(label, tours){
+    if(!tours.length) return;
+    var group = document.createElement("optgroup");
+    group.label = label;
+
+    tours.forEach(function(tour){
+      var opt = document.createElement("option");
+      var occupied = hasBookingSlotConflict(date, tour);
+      opt.value = canonicalTourName(tour);
+      opt.textContent = canonicalTourName(tour) + (occupied ? " — занято" : "");
+      opt.disabled = occupied;
+      group.appendChild(opt);
+    });
+
+    select.appendChild(group);
+  }
+
+  appendGroup("Туры по календарю", scheduledTours);
+  appendGroup("Добавить новый тур", additionalTours);
 }
 
 function getBookingsByDate(date){
@@ -5114,8 +5152,8 @@ function submitBooking(){
     return;
   }
 
-  if(!getToursByDate(date).length){
-    setMessage("На выбранную дату нет туров в расписании.", true);
+  if(!getAllTours().length){
+    setMessage("Список доступных туров временно пуст.", true);
     return;
   }
 
@@ -5124,12 +5162,12 @@ function submitBooking(){
     return;
   }
 
-  var tourIsAvailable = getToursByDate(date).some(function(item){
+  var tourIsAvailable = getAllTours().some(function(item){
     return normalizeTour(item) === normalizeTour(tour);
   });
 
   if(!tourIsAvailable){
-    setMessage("Выбранный тур недоступен на эту дату.", true);
+    setMessage("Выберите тур из доступного списка.", true);
     return;
   }
 
