@@ -2278,7 +2278,7 @@ body.cb-lock-scroll {
           <div class="cb-stat-label">До конца сезона</div>
           <div id="cb-season-days" class="cb-season-days">считаем...</div>
           <div class="cb-season-bar"><div id="cb-season-fill" class="cb-season-fill"></div></div>
-          <div id="cb-season-caption" class="cb-season-caption">Сезон завершится 1 октября 2026 года.</div>
+          <div id="cb-season-caption" class="cb-season-caption">Сезон завершится 20 октября 2026 года.</div>
           <div class="cb-season-metrics" aria-label="Статистика участников сезона">
             <div class="cb-season-metric">
               <strong id="cb-season-creators">—</strong>
@@ -2356,7 +2356,7 @@ body.cb-lock-scroll {
       </div>
       <div class="cb-field">
         <label for="cb-date">Дата поездки</label>
-        <input id="cb-date" type="date" min="2026-04-01" max="2026-10-01">
+        <input id="cb-date" type="date" min="2026-07-22" max="2026-10-20">
         <div class="cb-field-hint">Дату можно также выбрать в календаре свободных окон.</div>
       </div>
       <div class="cb-field" style="grid-column: 1 / -1;">
@@ -2501,7 +2501,8 @@ var CONFIG = {
   START_MONTH: 3,
   END_MONTH: 9,
   SEASON_START: "2026-04-01",
-  SEASON_END: "2026-10-01",
+  BOOKING_START: "2026-07-22",
+  SEASON_END: "2026-10-20",
   WHATSAPP_NUMBER: "79149753285"
 };
 
@@ -4200,7 +4201,7 @@ function updateSeasonCounter(){
   if(!daysEl || !fillEl || !captionEl) return;
 
   var seasonStart = new Date(2026, 3, 1);
-  var seasonEnd = new Date(2026, 9, 1, 23, 59, 59);
+  var seasonEnd = new Date(2026, 9, 20, 23, 59, 59);
   var now = new Date();
 
   var totalMs = seasonEnd.getTime() - seasonStart.getTime();
@@ -4214,7 +4215,7 @@ function updateSeasonCounter(){
     var daysToStart = Math.ceil((seasonStart.getTime() - now.getTime()) / 86400000);
     daysEl.innerHTML = "<strong>" + daysToStart + "</strong> дн.";
     fillEl.style.width = "0%";
-    captionEl.textContent = "Старт 1 апреля · финиш 1 октября 2026 года";
+    captionEl.textContent = "Старт 1 апреля · финиш 20 октября 2026 года";
     return;
   }
 
@@ -4230,7 +4231,7 @@ function updateSeasonCounter(){
 
   daysEl.innerHTML = "<strong>" + daysLeft + "</strong> дн.";
   fillEl.style.width = progress + "%";
-  captionEl.textContent = "До 1 октября · сезон пройден на " + progress + "%";
+  captionEl.textContent = "До 20 октября · сезон пройден на " + progress + "%";
 }
 
 function weatherLabel(code){
@@ -4482,7 +4483,7 @@ function isDateInSeason(date){
 }
 
 function isBookableDate(date){
-  return isDateInSeason(date) && date >= getTodayKey();
+  return isDateInSeason(date) && date >= CONFIG.BOOKING_START && date >= getTodayKey();
 }
 
 function isExcludedTour(tour){
@@ -5143,7 +5144,7 @@ function submitBooking(){
   }
 
   if(!isDateInSeason(date)){
-    setMessage("Дата должна быть в период с 1 апреля по 1 октября 2026 года.", true);
+    setMessage("Дата должна быть не позднее 20 октября 2026 года.", true);
     return;
   }
 
