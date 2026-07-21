@@ -4924,14 +4924,28 @@ function getReportTour(report){
   return String((report && (report.tour || report.tourName)) || "").trim();
 }
 
+function resolveHistoricalContentReport(report){
+  var matchStatus = String((report && report.matchStatus) || "").trim();
+  if(matchStatus !== "Запись не найдена") return report;
+
+  var match = findReportBooking(getReportCreator(report), getReportTour(report));
+  if(!match) return report;
+
+  var resolved = Object.assign({}, report);
+  resolved.date = normalizeDate(match.date);
+  resolved.telegram = normalizeTelegram(match.telegram || getReportCreator(report));
+  resolved.matchStatus = "Есть запись";
+  return resolved;
+}
+
 function getPublishedContentItems(){
   var seen = {};
-  return reports.slice().reverse().filter(function(report){
+  return reports.slice().reverse().map(resolveHistoricalContentReport).filter(function(report){
     var link = getReportLink(report);
     var key = normalizeContentLink(link);
     var matchStatus = String((report && report.matchStatus) || "").trim();
     if(isDeletedCreator(getReportCreator(report))) return false;
-    if(matchStatus && matchStatus !== "Есть запись") return false;
+    if(matchStatus && matchStatus !== "Есть запись" && matchStatus !== "Запись не найдена") return false;
     if(!isValidContentLink(link) || seen[key]) return false;
     seen[key] = true;
     return true;
