@@ -14,11 +14,14 @@
   --cb-ink: #171719;
   --cb-muted: #737887;
   --cb-paper: #ffffff;
-  --cb-canvas: #e9edf5;
+  --cb-canvas: #edf1f8;
   --cb-lilac: #ded4ff;
-  --cb-lilac-strong: #8d75ff;
+  --cb-lilac-strong: #7f67f8;
   --cb-cyan: #4ecbed;
   --cb-coral: #ff8f76;
+  --cb-blue: #2558c8;
+  --cb-rose: #ea5aa7;
+  --cb-yellow: #ffd66b;
   --cb-mint: #dff6ec;
   --cb-line: #e3e5eb;
 }
@@ -33,8 +36,10 @@ body {
   min-width: 320px;
   font-family: "Montserrat", Arial, sans-serif;
   background:
-    radial-gradient(circle at 8% 2%, rgba(141, 117, 255, .15), transparent 24rem),
-    radial-gradient(circle at 98% 18%, rgba(78, 203, 237, .13), transparent 24rem),
+    radial-gradient(circle at 8% 2%, rgba(127, 103, 248, .22), transparent 26rem),
+    radial-gradient(circle at 98% 18%, rgba(78, 203, 237, .20), transparent 25rem),
+    radial-gradient(circle at 12% 72%, rgba(255, 143, 118, .13), transparent 24rem),
+    radial-gradient(circle at 92% 88%, rgba(234, 90, 167, .11), transparent 22rem),
     var(--cb-canvas);
 }
 
@@ -60,6 +65,10 @@ body.cb-lock-scroll {
 
 #corsar-blogger-booking * {
   box-sizing: border-box;
+}
+
+#corsar-blogger-booking section[id] {
+  scroll-margin-top: 104px;
 }
 
 .cb-splash {
@@ -173,6 +182,84 @@ body.cb-lock-scroll {
   padding: 0 4px;
 }
 
+.cb-sticky-nav {
+  position: sticky;
+  z-index: 1200;
+  top: max(8px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+  margin: 0 0 18px;
+  padding: 8px 10px 8px 16px;
+  overflow: hidden;
+  border: 1px solid rgba(23, 23, 25, .08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .88);
+  box-shadow: 0 14px 38px rgba(42, 45, 59, .10);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.cb-nav-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  color: var(--cb-ink);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: .03em;
+}
+
+.cb-nav-brand::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cb-blue), var(--cb-cyan) 45%, var(--cb-rose));
+  box-shadow: 0 0 0 5px rgba(127, 103, 248, .12);
+}
+
+.cb-nav-links {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.cb-nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+.cb-nav-links a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 13px;
+  border-radius: 12px;
+  color: #696e7c;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 760;
+  transition: color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.cb-nav-links a:hover,
+.cb-nav-links a.is-active {
+  background: var(--cb-ink);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 .cb-wordmark {
   font-size: 18px;
   font-weight: 800;
@@ -204,7 +291,7 @@ body.cb-lock-scroll {
   overflow: hidden;
   border: 0;
   border-radius: 32px;
-  background: var(--cb-paper) !important;
+  background: linear-gradient(135deg, #fff 0%, #fff 52%, #f3efff 100%) !important;
   box-shadow: 0 20px 70px rgba(28, 31, 41, .08);
 }
 
@@ -223,6 +310,31 @@ body.cb-lock-scroll {
   content: "";
   position: absolute;
   pointer-events: none;
+}
+
+.cb-route-line {
+  position: absolute;
+  z-index: 0;
+  left: -2%;
+  bottom: -8px;
+  width: 72%;
+  height: 210px;
+  pointer-events: none;
+  opacity: .96;
+}
+
+.cb-route-line path {
+  vector-effect: non-scaling-stroke;
+}
+
+.cb-route-stop {
+  fill: #fff;
+  stroke-width: 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.cb-route-ship {
+  filter: drop-shadow(0 8px 12px rgba(27, 64, 139, .22));
 }
 
 .cb-hero-inner::before {
@@ -413,12 +525,43 @@ body.cb-lock-scroll {
 }
 
 .cb-section {
+  position: relative;
   margin-top: 22px;
   padding: clamp(24px, 4vw, 44px);
+  overflow: hidden;
   border: 0;
   border-radius: 30px;
   background: var(--cb-paper);
   box-shadow: 0 18px 58px rgba(28, 31, 41, .065);
+}
+
+.cb-section:not(.cb-ranking-section)::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  display: block;
+  background: linear-gradient(90deg, var(--cb-blue), var(--cb-lilac-strong) 35%, var(--cb-cyan) 67%, var(--cb-coral));
+}
+
+.cb-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cb-section.cb-form-card {
+  background: linear-gradient(140deg, #fff 0%, #fff 58%, #f3efff 100%);
+}
+
+.cb-section.cb-report-card {
+  background: linear-gradient(140deg, #fff 0%, #fff 58%, #eafafd 100%);
+}
+
+.cb-section.cb-calendar-shell {
+  background: linear-gradient(145deg, #fff 0%, #fff 72%, #fff1ec 100%);
 }
 
 .cb-section-head {
@@ -455,8 +598,6 @@ body.cb-lock-scroll {
   line-height: 1.55;
 }
 
-.cb-form-card,
-.cb-report-card,
 .cb-calendar-card,
 .cb-details-card,
 .cb-analytics-card {
@@ -468,12 +609,38 @@ body.cb-lock-scroll {
   box-shadow: none;
 }
 
-.cb-form-card::before,
-.cb-report-card::before,
 .cb-calendar-card::before,
 .cb-details-card::before,
 .cb-analytics-card::before {
   display: none;
+}
+
+.cb-form-card .cb-field:nth-child(1) input {
+  border-bottom-color: var(--cb-coral);
+}
+
+.cb-form-card .cb-field:nth-child(2) input {
+  border-bottom-color: var(--cb-lilac-strong);
+}
+
+.cb-form-card .cb-field:nth-child(3) input {
+  border-bottom-color: var(--cb-cyan);
+}
+
+.cb-form-card .cb-field:nth-child(4) select {
+  border-bottom-color: var(--cb-blue);
+}
+
+.cb-report-card .cb-field:nth-child(1) input {
+  border-bottom-color: var(--cb-lilac-strong);
+}
+
+.cb-report-card .cb-field:nth-child(2) select {
+  border-bottom-color: var(--cb-cyan);
+}
+
+.cb-report-card .cb-field:nth-child(3) input {
+  border-bottom-color: var(--cb-coral);
 }
 
 .cb-form-grid {
@@ -830,6 +997,145 @@ body.cb-lock-scroll {
   font-size: 11px;
 }
 
+.cb-results-section {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(78, 203, 237, .28), transparent 18rem),
+    radial-gradient(circle at 6% 92%, rgba(234, 90, 167, .16), transparent 19rem),
+    linear-gradient(135deg, #f5f0ff 0%, #ffffff 52%, #eefbfe 100%);
+}
+
+.cb-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cb-result-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(23, 23, 25, .08);
+  background: rgba(255, 255, 255, .88);
+  box-shadow: 0 14px 34px rgba(54, 53, 86, .07);
+}
+
+.cb-result-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cb-blue), var(--cb-cyan));
+}
+
+.cb-result-card:nth-child(3n + 2)::before {
+  background: linear-gradient(90deg, var(--cb-lilac-strong), var(--cb-rose));
+}
+
+.cb-result-card:nth-child(3n + 3)::before {
+  background: linear-gradient(90deg, var(--cb-coral), var(--cb-yellow));
+}
+
+.cb-result-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.cb-result-index {
+  color: #9296a3;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.cb-result-platform {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  background: #eef5ff;
+  color: #25519a;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.cb-result-card:nth-child(3n + 2) .cb-result-platform {
+  background: #f4edff;
+  color: #7147a5;
+}
+
+.cb-result-card:nth-child(3n + 3) .cb-result-platform {
+  background: #fff1e7;
+  color: #975132;
+}
+
+.cb-result-tour {
+  margin: 0;
+  font-size: clamp(19px, 2.6vw, 27px);
+  font-weight: 780;
+  line-height: 1.15;
+  letter-spacing: -.045em;
+}
+
+.cb-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  margin-top: 16px;
+  color: var(--cb-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cb-result-creator {
+  color: var(--cb-ink);
+  font-weight: 800;
+}
+
+.cb-result-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  margin-top: auto;
+  padding: 0 15px;
+  border: 1px solid var(--cb-ink);
+  background: var(--cb-ink);
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 780;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.cb-result-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(23, 23, 25, .16);
+}
+
+.cb-results-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  padding: 28px;
+  border: 1px dashed rgba(23, 23, 25, .2);
+  background: rgba(255, 255, 255, .56);
+  color: var(--cb-muted);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .cb-empty-state {
   padding: 24px 0;
   color: rgba(255,255,255,.55);
@@ -910,11 +1216,37 @@ body.cb-lock-scroll {
   .cb-calendar {
     grid-template-columns: 1fr;
   }
+
+  .cb-nav-brand {
+    display: none;
+  }
+
+  .cb-nav-links {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 600px) {
   .cb-topbar {
     margin-bottom: 12px;
+  }
+
+  #corsar-blogger-booking section[id] {
+    scroll-margin-top: 88px;
+  }
+
+  .cb-sticky-nav {
+    min-height: 54px;
+    margin-right: -2px;
+    margin-left: -2px;
+    padding: 6px;
+    border-radius: 15px;
+  }
+
+  .cb-nav-links a {
+    min-height: 40px;
+    padding: 0 11px;
+    font-size: 10px;
   }
 
   .cb-hero,
@@ -930,6 +1262,14 @@ body.cb-lock-scroll {
   .cb-hero-title {
     margin: 42px 0 16px;
     font-size: clamp(43px, 16vw, 67px);
+  }
+
+  .cb-route-line {
+    bottom: 284px;
+    left: -28%;
+    width: 135%;
+    height: 160px;
+    opacity: .58;
   }
 
   .cb-hero-actions {
@@ -978,6 +1318,14 @@ body.cb-lock-scroll {
   .cb-rank-score {
     font-size: 27px;
   }
+
+  .cb-results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cb-result-card {
+    min-height: 238px;
+  }
 }
 </style>
 </head>
@@ -996,7 +1344,19 @@ body.cb-lock-scroll {
     <div class="cb-test-badge">Предпросмотр · новая версия</div>
   </div>
 
-  <section class="cb-hero">
+  <nav class="cb-sticky-nav" aria-label="Навигация по разделам">
+    <a class="cb-nav-brand" href="#home">КОРСАР</a>
+    <div class="cb-nav-links">
+      <a href="#home" data-section="home" class="is-active">Главная</a>
+      <a href="#booking" data-section="booking">Запись</a>
+      <a href="#content" data-section="content">Контент</a>
+      <a href="#calendar" data-section="calendar">Календарь</a>
+      <a href="#ranking" data-section="ranking">Рейтинг</a>
+      <a href="#results" data-section="results">Итоги</a>
+    </div>
+  </nav>
+
+  <section id="home" class="cb-hero">
     <div class="cb-hero-inner">
       <div class="cb-hero-copy">
         <div>
@@ -1028,6 +1388,25 @@ body.cb-lock-scroll {
           <div id="cb-leader-visits" class="cb-leader-visits">Загружаем рейтинг...</div>
         </article>
       </div>
+
+      <svg class="cb-route-line" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="cb-route-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#2558c8"/>
+            <stop offset="38%" stop-color="#7f67f8"/>
+            <stop offset="70%" stop-color="#4ecbed"/>
+            <stop offset="100%" stop-color="#ea5aa7"/>
+          </linearGradient>
+        </defs>
+        <path d="M-30 92 C125 28 178 202 338 154 S520 44 664 125 S846 210 1030 38" fill="none" stroke="url(#cb-route-gradient)" stroke-width="4" stroke-linecap="round"/>
+        <circle class="cb-route-stop" cx="337" cy="154" r="8" stroke="#7f67f8"/>
+        <circle class="cb-route-stop" cx="663" cy="125" r="8" stroke="#4ecbed"/>
+        <g class="cb-route-ship" transform="translate(487 82) rotate(-13)">
+          <path d="M0 20 L46 20 L35 32 L10 32 Z" fill="#ffffff" stroke="#2558c8" stroke-width="3"/>
+          <path d="M20 19 L20 -19 L38 14 Z" fill="#ffffff" stroke="#2558c8" stroke-width="3"/>
+          <path d="M18 0 L4 15 L18 15 Z" fill="#ded4ff" stroke="#2558c8" stroke-width="3"/>
+        </g>
+      </svg>
     </div>
   </section>
 
@@ -1113,7 +1492,7 @@ body.cb-lock-scroll {
     </div>
   </section>
 
-  <section class="cb-section cb-ranking-section">
+  <section id="ranking" class="cb-section cb-ranking-section">
     <div class="cb-section-head">
       <div>
         <div class="cb-section-kicker">04 / Статистика</div>
@@ -1122,6 +1501,17 @@ body.cb-lock-scroll {
       <p class="cb-section-note">Место определяется по общему количеству записей на туры в действующей системе.</p>
     </div>
     <div id="cb-analytics" class="cb-analytics-card"></div>
+  </section>
+
+  <section id="results" class="cb-section cb-results-section">
+    <div class="cb-section-head">
+      <div>
+        <div class="cb-section-kicker">05 / Итоги туров</div>
+        <h2 class="cb-section-title">Смотрите <strong>результаты</strong></h2>
+      </div>
+      <p class="cb-section-note">Готовые видео и публикации участников мастерской. Новые материалы появляются здесь сразу после отправки формы.</p>
+    </div>
+    <div id="cb-results" class="cb-results-grid" aria-live="polite"></div>
   </section>
 </main>
 
@@ -2044,6 +2434,53 @@ function $(id){ return document.getElementById(id); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function makeDate(y,m,d){ return y + "-" + pad(m+1) + "-" + pad(d); }
 
+function setupStickyNav(){
+  var links = Array.prototype.slice.call(document.querySelectorAll(".cb-nav-links a[data-section]"));
+  var sections = links.map(function(link){
+    return $(link.getAttribute("data-section"));
+  }).filter(Boolean);
+
+  if(!links.length || !sections.length) return;
+
+  function setActive(id){
+    links.forEach(function(link){
+      var active = link.getAttribute("data-section") === id;
+      link.classList.toggle("is-active", active);
+      if(active){
+        link.setAttribute("aria-current", "location");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  var ticking = false;
+  function updateActiveSection(){
+    var marker = window.scrollY + 150;
+    var current = sections[0];
+    sections.forEach(function(section){
+      if(section.offsetTop <= marker) current = section;
+    });
+    setActive(current.id);
+    ticking = false;
+  }
+
+  window.addEventListener("scroll", function(){
+    if(!ticking){
+      ticking = true;
+      window.requestAnimationFrame(updateActiveSection);
+    }
+  }, {passive: true});
+
+  links.forEach(function(link){
+    link.addEventListener("click", function(){
+      setActive(this.getAttribute("data-section"));
+    });
+  });
+
+  updateActiveSection();
+}
+
 function escapeHtml(v){
   return String(v || "")
     .replace(/&/g, "&amp;")
@@ -2527,6 +2964,72 @@ function renderAnalytics(){
   }).join("") + '</div>';
 }
 
+function getReportLink(report){
+  return String((report && (report.link || report.url || report.contentUrl)) || "").trim();
+}
+
+function getReportCreator(report){
+  return normalizeTelegram(report && (report.telegram || report.creator || report.nickname || report.name));
+}
+
+function getReportTour(report){
+  return String((report && (report.tour || report.tourName)) || "").trim();
+}
+
+function getContentPlatform(link){
+  var host = "";
+  try {
+    host = new URL(link).hostname.toLowerCase().replace(/^www\./, "");
+  } catch(e) {}
+
+  if(host.indexOf("instagram.com") !== -1) return "Instagram / Reels";
+  if(host.indexOf("tiktok.com") !== -1) return "TikTok";
+  if(host.indexOf("youtube.com") !== -1 || host.indexOf("youtu.be") !== -1) return "YouTube";
+  if(host.indexOf("vk.com") !== -1 || host.indexOf("vkvideo.ru") !== -1) return "VK Видео";
+  if(host.indexOf("rutube.ru") !== -1) return "Rutube";
+  if(host.indexOf("dzen.ru") !== -1) return "Дзен";
+  return "Готовый материал";
+}
+
+function renderResults(){
+  var root = $("cb-results");
+  if(!root) return;
+
+  var seen = {};
+  var items = reports.slice().reverse().filter(function(report){
+    var link = getReportLink(report);
+    var key = link.toLowerCase();
+    if(!isValidContentLink(link) || seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+
+  if(!items.length){
+    root.innerHTML = '<div class="cb-results-empty">Пока здесь нет опубликованных материалов.<br>Первое готовое видео появится сразу после отправки формы выше.</div>';
+    return;
+  }
+
+  root.innerHTML = items.map(function(report, index){
+    var link = getReportLink(report);
+    var creator = getReportCreator(report) || "участник «Корсар»";
+    var tour = getReportTour(report) || "Морское путешествие «Корсар»";
+    var date = normalizeDate(report.date);
+    var dateText = /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDateRu(date) : "";
+
+    return '<article class="cb-result-card">' +
+      '<div class="cb-result-topline">' +
+        '<span class="cb-result-index">МАТЕРИАЛ ' + String(index + 1).padStart(2, "0") + '</span>' +
+        '<span class="cb-result-platform">' + escapeHtml(getContentPlatform(link)) + '</span>' +
+      '</div>' +
+      '<h3 class="cb-result-tour">' + escapeHtml(tour) + '</h3>' +
+      '<div class="cb-result-meta"><span class="cb-result-creator">' + escapeHtml(creator) + '</span>' +
+        (dateText ? '<span>' + escapeHtml(dateText) + '</span>' : '') +
+      '</div>' +
+      '<a class="cb-result-link" href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть материал участника ' + escapeHtml(creator) + '">Смотреть видео <span>↗</span></a>' +
+    '</article>';
+  }).join("");
+}
+
 function loadData(){
   startLoader();
 
@@ -2537,6 +3040,7 @@ function loadData(){
     renderCalendar();
     renderDetails("");
     renderAnalytics();
+    renderResults();
   }, 12000);
 
   window[callbackName] = function(data){
@@ -2557,6 +3061,7 @@ function loadData(){
       renderCalendar();
       renderDetails(getFormDate());
       renderAnalytics();
+      renderResults();
       finishLoader("Мастерская открыта");
     } catch(e) {
       failLoader("Ошибка обработки данных");
@@ -2577,6 +3082,7 @@ function loadData(){
     renderCalendar();
     renderDetails("");
     renderAnalytics();
+    renderResults();
     failLoader("Расписание временно недоступно");
     setMessage("Не удалось загрузить рабочее расписание.", true);
   };
@@ -2767,6 +3273,7 @@ function submitReport(){
     $("cb-report-telegram").value = "";
     $("cb-report-tour").value = "";
     $("cb-report-link").value = "";
+    renderResults();
     setMessage(
       isTest
         ? "Контент добавлен в тестовом режиме. Рабочая таблица не изменена."
@@ -2801,7 +3308,9 @@ function init(){
   updateSeasonCounter();
   setInterval(updateSeasonCounter, 3600000);
   loadWeather();
+  setupStickyNav();
   renderReportTours();
+  renderResults();
 
   var submit = $("cb-submit");
   var dateInput = $("cb-date");
