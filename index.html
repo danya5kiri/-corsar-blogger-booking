@@ -3524,6 +3524,15 @@ var KNOWN_BOOKING_TRANSFERS = [{
     tour: "Путешествие на остров Аскольд на катере 32ft"
   }
 }];
+var KNOWN_SCHEDULE_EXCLUSIONS = [{
+  date: "2026-07-26",
+  tour: "Барбекю на островах"
+}];
+var KNOWN_BOOKING_CANCELLATIONS = [{
+  date: "2026-07-26",
+  telegram: "@evgivl",
+  tour: "Барбекю на островах"
+}];
 var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту"];
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -4098,11 +4107,26 @@ function getTransferSourceFingerprint(booking){
   return marker ? decodeTransferFingerprint(marker[1]) : "";
 }
 
+function isKnownScheduleExclusion(date, tour){
+  var slot = bookingSlotFingerprint(date, tour);
+  return KNOWN_SCHEDULE_EXCLUSIONS.some(function(correction){
+    return bookingSlotFingerprint(correction.date, correction.tour) === slot;
+  });
+}
+
+function isKnownBookingCancellation(booking){
+  if(!booking) return false;
+  var key = bookingFingerprint(booking.date, booking.telegram, booking.tour);
+  return KNOWN_BOOKING_CANCELLATIONS.some(function(correction){
+    return bookingFingerprint(correction.date, correction.telegram, correction.tour) === key;
+  });
+}
+
 function resolveEffectiveBookings(rows){
   var unique = Object.create(null);
 
   (Array.isArray(rows) ? rows : []).forEach(function(booking, index){
-    if(!booking || isInactiveBooking(booking) || isDeletedCreator(booking.telegram)) return;
+    if(!booking || isInactiveBooking(booking) || isDeletedCreator(booking.telegram) || isKnownBookingCancellation(booking)) return;
     var key = bookingFingerprint(booking.date, booking.telegram, booking.tour);
     unique[key] = {booking: booking, index: index};
   });
@@ -4565,7 +4589,7 @@ function isExcludedTour(tour){
 function getToursByDate(date){
   if(!isDateInSeason(date)) return [];
   return (TOURS_BY_DATE[date] || []).filter(function(tour){
-    return !isExcludedTour(tour);
+    return !isExcludedTour(tour) && !isKnownScheduleExclusion(date, tour);
   });
 }
 
