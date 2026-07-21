@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ===== Corsar creative workshop — test redesign ===== */
+/* ===== Corsar creative workshop ===== */
 :root {
   --cb-ink: #171719;
   --cb-muted: #737887;
@@ -266,22 +266,22 @@ body.cb-lock-scroll {
   letter-spacing: -.04em;
 }
 
-.cb-test-badge {
+.cb-developer-brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #5e6472;
-  font-size: 12px;
-  font-weight: 700;
+  color: var(--cb-ink);
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1;
+  letter-spacing: -.055em;
 }
 
-.cb-test-badge::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--cb-coral);
-  box-shadow: 0 0 0 5px rgba(255, 143, 118, .14);
+.cb-brand-crea {
+  font-weight: 850;
+}
+
+.cb-brand-cloud {
+  font-weight: 300;
 }
 
 .cb-hero {
@@ -727,6 +727,12 @@ body.cb-lock-scroll {
   background: #2a2a2d;
 }
 
+.cb-submit:disabled {
+  cursor: wait;
+  opacity: .62;
+  transform: none;
+}
+
 .cb-inline-note {
   grid-column: 1 / -1;
   display: flex;
@@ -1143,6 +1149,76 @@ body.cb-lock-scroll {
   line-height: 1.55;
 }
 
+.cb-footer {
+  position: relative;
+  margin-top: 22px;
+  padding: 42px 24px 38px;
+  overflow: hidden;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 18px 58px rgba(28, 31, 41, .065);
+  text-align: center;
+}
+
+.cb-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cb-blue), var(--cb-lilac-strong) 35%, var(--cb-cyan) 67%, var(--cb-coral));
+}
+
+.cb-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cb-ink);
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1;
+  letter-spacing: -.075em;
+}
+
+.cb-footer-team {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.cb-footer-person {
+  display: grid;
+  min-width: 220px;
+  gap: 6px;
+  padding: 15px 22px;
+  border: 1px solid var(--cb-line);
+  background: #f7f7fa;
+  color: var(--cb-ink);
+  text-decoration: none;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.cb-footer-person:hover {
+  transform: translateY(-2px);
+  border-color: var(--cb-lilac-strong);
+  background: #f3efff;
+}
+
+.cb-footer-role {
+  color: #8a8e99;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.cb-footer-handle {
+  font-size: 14px;
+  font-weight: 780;
+}
+
 .cb-empty-state {
   padding: 24px 0;
   color: rgba(255,255,255,.55);
@@ -1333,6 +1409,20 @@ body.cb-lock-scroll {
   .cb-result-card {
     min-height: 238px;
   }
+
+  .cb-footer {
+    padding: 36px 18px 24px;
+    border-radius: 24px;
+  }
+
+  .cb-footer-team {
+    display: grid;
+  }
+
+  .cb-footer-person {
+    min-width: 0;
+    width: 100%;
+  }
 }
 </style>
 </head>
@@ -1348,7 +1438,7 @@ body.cb-lock-scroll {
 <main id="corsar-blogger-booking">
   <div class="cb-topbar">
     <div class="cb-wordmark">КОРСАР / CREATORS</div>
-    <div class="cb-test-badge">Предпросмотр · новая версия</div>
+    <a class="cb-developer-brand" href="#creacloud" aria-label="Разработано CREACLOUD"><strong class="cb-brand-crea">CREA</strong><span class="cb-brand-cloud">CLOUD</span></a>
   </div>
 
   <nav class="cb-sticky-nav" aria-label="Навигация по разделам">
@@ -1423,7 +1513,7 @@ body.cb-lock-scroll {
         <div class="cb-section-kicker">01 / Бронирование</div>
         <h2 class="cb-section-title">Выберите <strong>тур</strong></h2>
       </div>
-      <p class="cb-section-note">Двухдневные программы исключены. После оформления откроется WhatsApp с готовым сообщением для согласования поездки.</p>
+      <p class="cb-section-note">Выберите дату, время и доступную программу. После оформления откроется WhatsApp с готовым сообщением для согласования поездки.</p>
     </div>
 
     <div class="cb-form-grid">
@@ -1520,6 +1610,20 @@ body.cb-lock-scroll {
     </div>
     <div id="cb-results" class="cb-results-grid" aria-live="polite"></div>
   </section>
+
+  <footer id="creacloud" class="cb-footer">
+    <div class="cb-footer-brand" aria-label="CREACLOUD"><strong class="cb-brand-crea">CREA</strong><span class="cb-brand-cloud">CLOUD</span></div>
+    <div class="cb-footer-team">
+      <a class="cb-footer-person" href="https://t.me/danya5kiri" target="_blank" rel="noopener noreferrer">
+        <span class="cb-footer-role">FOUNDER</span>
+        <span class="cb-footer-handle">@danya5kiri</span>
+      </a>
+      <a class="cb-footer-person" href="https://t.me/ksenivere" target="_blank" rel="noopener noreferrer">
+        <span class="cb-footer-role">CEO</span>
+        <span class="cb-footer-handle">@ksenivere</span>
+      </a>
+    </div>
+  </footer>
 </main>
 
 <div id="cb-message" class="cb-message" role="status" aria-live="polite"></div>
@@ -1533,8 +1637,7 @@ var CONFIG = {
   END_MONTH: 9,
   SEASON_START: "2026-04-01",
   SEASON_END: "2026-10-01",
-  WHATSAPP_NUMBER: "79149753285",
-  TEST_MODE: false
+  WHATSAPP_NUMBER: "79149753285"
 };
 
 var TOURS_BY_DATE = {
@@ -2433,6 +2536,12 @@ var TOURS_BY_DATE = {
 var bookings = [];
 var reports = [];
 var selectedDate = "";
+var bookingSubmitting = false;
+var reportSubmitting = false;
+
+var BOOKING_STORAGE_KEY = "corsar_recent_bookings_v1";
+var CONTENT_STORAGE_KEY = "corsar_recent_content_v1";
+var RECENT_SUBMISSION_TTL = 15 * 60 * 1000;
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 var weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
@@ -2526,6 +2635,113 @@ function normalizeTelegram(v){
   var tg = String(v || "").trim().toLowerCase().replace(/\s+/g,"");
   if(tg && tg.charAt(0) !== "@") tg = "@" + tg;
   return tg;
+}
+
+function normalizeTour(v){
+  return String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function normalizeContentLink(v){
+  var raw = String(v || "").trim();
+  if(!raw) return "";
+
+  try {
+    var url = new URL(raw);
+    url.hash = "";
+
+    var removable = [];
+    url.searchParams.forEach(function(value, key){
+      var normalizedKey = String(key || "").toLowerCase();
+      if(normalizedKey.indexOf("utm_") === 0 || ["igsh", "igshid", "si", "feature", "share"].indexOf(normalizedKey) !== -1){
+        removable.push(key);
+      }
+    });
+    removable.forEach(function(key){ url.searchParams.delete(key); });
+    if(url.searchParams.sort) url.searchParams.sort();
+
+    var path = url.pathname.replace(/\/+$/, "") || "/";
+    var query = url.searchParams.toString();
+    var hostname = url.hostname.toLowerCase().replace(/^www\./, "");
+    return (url.protocol.toLowerCase() + "//" + hostname + (url.port ? ":" + url.port : "") + path + (query ? "?" + query : "")).toLowerCase();
+  } catch(e) {
+    return raw.toLowerCase().replace(/\/+$/, "");
+  }
+}
+
+function getTodayKey(){
+  try {
+    var parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Vladivostok",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date());
+    var values = {};
+    parts.forEach(function(part){ values[part.type] = part.value; });
+    return values.year + "-" + values.month + "-" + values.day;
+  } catch(e) {
+    var now = new Date();
+    return now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+  }
+}
+
+function bookingFingerprint(date, telegram){
+  return [normalizeDate(date), normalizeTelegram(telegram)].join("|");
+}
+
+function isInactiveBooking(booking){
+  var status = String((booking && booking.status) || "").trim().toLowerCase();
+  return status === "отмена" || status === "не пришел" || status === "не пришёл" || status === "отменено" || status === "cancelled" || status === "canceled";
+}
+
+function hasBookingDuplicate(date, telegram){
+  return bookings.some(function(booking){
+    return !isInactiveBooking(booking) &&
+      normalizeDate(booking.date) === normalizeDate(date) &&
+      normalizeTelegram(booking.telegram) === normalizeTelegram(telegram);
+  });
+}
+
+function hasContentDuplicate(link){
+  var normalized = normalizeContentLink(link);
+  return reports.some(function(report){
+    return normalizeContentLink(getReportLink(report)) === normalized;
+  });
+}
+
+function readRecentSubmissions(storageKey){
+  try {
+    var values = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    if(!Array.isArray(values)) return [];
+    var now = Date.now();
+    var fresh = values.filter(function(item){
+      return item && item.key && Number(item.createdAt) > now - RECENT_SUBMISSION_TTL;
+    });
+    localStorage.setItem(storageKey, JSON.stringify(fresh));
+    return fresh;
+  } catch(e) {
+    return [];
+  }
+}
+
+function wasRecentlySubmitted(storageKey, key){
+  return readRecentSubmissions(storageKey).some(function(item){ return item.key === key; });
+}
+
+function rememberSubmission(storageKey, key){
+  try {
+    var values = readRecentSubmissions(storageKey);
+    values.push({key: key, createdAt: Date.now()});
+    localStorage.setItem(storageKey, JSON.stringify(values.slice(-30)));
+  } catch(e) {}
+}
+
+function setSubmitBusy(buttonId, busy, busyText){
+  var button = $(buttonId);
+  if(!button) return;
+  if(!button.getAttribute("data-idle-text")) button.setAttribute("data-idle-text", button.textContent);
+  button.disabled = !!busy;
+  button.textContent = busy ? busyText : button.getAttribute("data-idle-text");
 }
 
 var messageTimer = null;
@@ -2743,6 +2959,10 @@ function isDateInSeason(date){
   return /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= CONFIG.SEASON_START && date <= CONFIG.SEASON_END;
 }
 
+function isBookableDate(date){
+  return isDateInSeason(date) && date >= getTodayKey();
+}
+
 function isExcludedTour(tour){
   return /(?:2\s*[-–]?\s*х|двух)\s*днев/i.test(String(tour || ""));
 }
@@ -2765,6 +2985,11 @@ function renderTours(date){
     return;
   }
 
+  if(!isBookableDate(date)){
+    select.innerHTML = '<option value="">Эта дата недоступна для записи</option>';
+    return;
+  }
+
   var tours = getToursByDate(date);
 
   if(!tours.length){
@@ -2784,7 +3009,7 @@ function renderTours(date){
 
 function getBookingsByDate(date){
   return bookings.filter(function(b){
-    return normalizeDate(b.date) === date && !isExcludedTour(b.tour) && isDateInSeason(date);
+    return !isInactiveBooking(b) && normalizeDate(b.date) === date && !isExcludedTour(b.tour) && isDateInSeason(date);
   });
 }
 
@@ -2845,7 +3070,7 @@ function renderCalendar(){
         var date = makeDate(CONFIG.YEAR, monthIndex, day);
         var count = countByDate(date);
         var toursCount = getToursByDate(date).length;
-        var active = isDateInSeason(date) && toursCount > 0;
+        var active = isBookableDate(date) && toursCount > 0;
 
         var cell = document.createElement("button");
         cell.type = "button";
@@ -2946,6 +3171,7 @@ function renderAnalytics(){
   var users = {};
 
   bookings.forEach(function(b){
+    if(isInactiveBooking(b)) return;
     var tg = normalizeTelegram(b.telegram);
     if(tg){
       if(!users[tg]) users[tg] = 0;
@@ -3017,7 +3243,9 @@ function renderResults(){
   var seen = {};
   var items = reports.slice().reverse().filter(function(report){
     var link = getReportLink(report);
-    var key = link.toLowerCase();
+    var key = normalizeContentLink(link);
+    var matchStatus = String((report && report.matchStatus) || "").trim();
+    if(matchStatus && matchStatus !== "Есть запись") return false;
     if(!isValidContentLink(link) || seen[key]) return false;
     seen[key] = true;
     return true;
@@ -3049,64 +3277,82 @@ function renderResults(){
   }).join("");
 }
 
+function fetchRemoteRows(timeoutMs){
+  return new Promise(function(resolve, reject){
+    var callbackName = "corsarDataCallback_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    var script = document.createElement("script");
+    var settled = false;
+    var timer = null;
+
+    function cleanup(){
+      if(timer) clearTimeout(timer);
+      if(script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[callbackName]; } catch(e) { window[callbackName] = undefined; }
+    }
+
+    function succeed(data){
+      if(settled) return;
+      settled = true;
+      cleanup();
+      resolve(Array.isArray(data) ? data : []);
+    }
+
+    function fail(){
+      if(settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error("remote-data"));
+    }
+
+    window[callbackName] = succeed;
+    script.id = callbackName;
+    script.src = CONFIG.API_URL + "?callback=" + callbackName + "&t=" + Date.now();
+    script.onerror = fail;
+    timer = setTimeout(fail, timeoutMs || 12000);
+    document.body.appendChild(script);
+  });
+}
+
+function applyRemoteRows(allRows){
+  reports = allRows.filter(function(item){
+    return item && item.type === "content_report";
+  });
+
+  bookings = allRows.filter(function(item){
+    return !item.type || item.type !== "content_report";
+  });
+}
+
+function renderDataViews(){
+  renderTours(getFormDate());
+  renderReportTours();
+  renderCalendar();
+  renderDetails(getFormDate());
+  renderAnalytics();
+  renderResults();
+}
+
+function refreshRemoteDataForCheck(){
+  return fetchRemoteRows(10000).then(function(allRows){
+    applyRemoteRows(allRows);
+    return allRows;
+  });
+}
+
 function loadData(){
   startLoader();
 
-  var callbackName = "corsarBookingsCallback_" + Date.now();
-  var loadTimeout = setTimeout(function(){
-    failLoader("Не удалось получить расписание");
-    renderReportTours();
-    renderCalendar();
-    renderDetails("");
-    renderAnalytics();
-    renderResults();
-  }, 12000);
-
-  window[callbackName] = function(data){
-    clearTimeout(loadTimeout);
-    try {
-      var allRows = Array.isArray(data) ? data : [];
-
-      reports = allRows.filter(function(item){
-        return item && item.type === "content_report";
-      });
-
-      bookings = allRows.filter(function(item){
-        return !item.type || item.type !== "content_report";
-      });
-
-      renderTours(getFormDate());
-      renderReportTours();
-      renderCalendar();
-      renderDetails(getFormDate());
-      renderAnalytics();
-      renderResults();
+  fetchRemoteRows(12000)
+    .then(function(allRows){
+      applyRemoteRows(allRows);
+      renderDataViews();
       finishLoader("Мастерская открыта");
-    } catch(e) {
-      failLoader("Ошибка обработки данных");
-      setMessage("Не удалось обработать расписание.", true);
-    } finally {
-      var oldScript = document.getElementById(callbackName);
-      if(oldScript) oldScript.remove();
-      try { delete window[callbackName]; } catch(e) {}
-    }
-  };
-
-  var script = document.createElement("script");
-  script.id = callbackName;
-  script.src = CONFIG.API_URL + "?callback=" + callbackName + "&t=" + Date.now();
-  script.onerror = function(){
-    clearTimeout(loadTimeout);
-    renderReportTours();
-    renderCalendar();
-    renderDetails("");
-    renderAnalytics();
-    renderResults();
-    failLoader("Расписание временно недоступно");
-    setMessage("Не удалось загрузить рабочее расписание.", true);
-  };
-
-  document.body.appendChild(script);
+    })
+    .catch(function(){
+      renderDataViews();
+      failLoader("Расписание временно недоступно");
+      setMessage("Не удалось загрузить рабочее расписание.", true);
+    });
 }
 
 function submitBooking(){
@@ -3115,6 +3361,11 @@ function submitBooking(){
   var time = $("cb-time") ? String($("cb-time").value || "").trim() : "";
   var tour = $("cb-tour") ? String($("cb-tour").value || "").trim() : "";
 
+  if(bookingSubmitting){
+    setMessage("Заявка уже обрабатывается.", true);
+    return;
+  }
+
   if(!date){
     setMessage("Укажите дату.", true);
     return;
@@ -3122,6 +3373,11 @@ function submitBooking(){
 
   if(!isDateInSeason(date)){
     setMessage("Дата должна быть в период с 1 апреля по 1 октября 2026 года.", true);
+    return;
+  }
+
+  if(!isBookableDate(date)){
+    setMessage("Выбранная дата уже прошла или недоступна для записи.", true);
     return;
   }
 
@@ -3135,8 +3391,17 @@ function submitBooking(){
     return;
   }
 
+  var tourIsAvailable = getToursByDate(date).some(function(item){
+    return normalizeTour(item) === normalizeTour(tour);
+  });
+
+  if(!tourIsAvailable){
+    setMessage("Выбранный тур недоступен на эту дату.", true);
+    return;
+  }
+
   if(isExcludedTour(tour)){
-    setMessage("Двухдневные туры недоступны для записи креаторов.", true);
+    setMessage("Эта программа недоступна для записи.", true);
     return;
   }
 
@@ -3150,81 +3415,101 @@ function submitBooking(){
     return;
   }
 
-  var duplicate = bookings.some(function(b){
-    return normalizeDate(b.date) === date && normalizeTelegram(b.telegram) === tg && String(b.tour || "").trim() === tour;
-  });
+  var fingerprint = bookingFingerprint(date, tg);
 
-  if(duplicate){
-    setMessage("Этот Telegram уже записан на выбранный тур в эту дату.", true);
+  if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
+    setMessage("Этот креатор уже записан на поездку в выбранную дату.", true);
     return;
   }
 
-  var payload = {
-    date: date,
-    telegram: tg,
-    tour: tour,
-    time: time,
-    name: "",
-    phone: "",
-    count: 1,
-    participants: 1,
-    status: "Новая заявка",
-    comment: ""
-  };
+  bookingSubmitting = true;
+  setSubmitBusy("cb-submit", true, "Проверяем запись...");
+  setMessage("Проверяем актуальные записи...", false);
 
-  function completeBooking(isTest){
-    bookings.push(payload);
-    $("cb-telegram").value = "";
-    renderCalendar();
-    renderDetails(date);
-    renderAnalytics();
+  refreshRemoteDataForCheck()
+    .then(function(){
+      if(hasBookingDuplicate(date, tg) || wasRecentlySubmitted(BOOKING_STORAGE_KEY, fingerprint)){
+        bookingSubmitting = false;
+        setSubmitBusy("cb-submit", false, "");
+        setMessage("Этот креатор уже записан на поездку в выбранную дату.", true);
+        return;
+      }
 
-    var text = [
-      "Здравствуйте! Заявка на бронирование поездки блогера.",
-      "",
-      "Креатор: " + tg,
-      "Дата: " + formatDateRu(date),
-      "Время: " + time,
-      "Тур: " + tour,
-      "",
-      "Прошу согласовать участие."
-    ].join("\n");
-    var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
+      var payload = {
+        date: date,
+        telegram: tg,
+        tour: tour,
+        time: time,
+        name: "",
+        phone: "",
+        count: 1,
+        participants: 1,
+        status: "Новая заявка",
+        comment: "",
+        dedupeKey: "booking:" + fingerprint,
+        requestId: "booking-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+      };
 
-    setMessage(isTest ? "Тестовая заявка сформирована. Открываем WhatsApp — рабочая таблица не изменена." : "Заявка записана. Открываем WhatsApp для согласования.", false);
-    setTimeout(function(){ window.location.href = whatsappUrl; }, 650);
-  }
+      setSubmitBusy("cb-submit", true, "Сохраняем заявку...");
+      setMessage("Сохраняем заявку...", false);
 
-  if(CONFIG.TEST_MODE){
-    completeBooking(true);
-    return;
-  }
+      fetch(CONFIG.API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload)
+      })
+      .then(function(){
+        bookings.push(payload);
+        rememberSubmission(BOOKING_STORAGE_KEY, fingerprint);
+        $("cb-telegram").value = "";
+        renderDataViews();
+        bookingSubmitting = false;
+        setSubmitBusy("cb-submit", false, "");
 
-  setMessage("Сохраняем заявку...", false);
+        var text = [
+          "Здравствуйте! Заявка на бронирование поездки блогера.",
+          "",
+          "Креатор: " + tg,
+          "Дата: " + formatDateRu(date),
+          "Время: " + time,
+          "Тур: " + tour,
+          "",
+          "Прошу согласовать участие."
+        ].join("\n");
+        var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
 
-  fetch(CONFIG.API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(payload)
-  })
-  .then(function(){
-    completeBooking(false);
-  })
-  .catch(function(){
-    setMessage("Не удалось отправить заявку.", true);
-  });
+        setMessage("Заявка записана. Открываем WhatsApp для согласования.", false);
+        setTimeout(function(){ window.location.href = whatsappUrl; }, 650);
+      })
+      .catch(function(){
+        bookingSubmitting = false;
+        setSubmitBusy("cb-submit", false, "");
+        setMessage("Не удалось отправить заявку. Повторите попытку.", true);
+      });
+    })
+    .catch(function(){
+      bookingSubmitting = false;
+      setSubmitBusy("cb-submit", false, "");
+      setMessage("Не удалось проверить актуальные записи. Обновите страницу и попробуйте ещё раз.", true);
+    });
 }
 
 
 function isValidContentLink(link){
-  return /^https?:\/\/\S+\.\S+/.test(String(link || "").trim());
+  try {
+    var url = new URL(String(link || "").trim());
+    return (url.protocol === "https:" || url.protocol === "http:") && url.hostname.indexOf(".") !== -1;
+  } catch(e) {
+    return false;
+  }
 }
 
 function getReportMatchStatus(date, tg, tour){
   var found = bookings.some(function(b){
-    return normalizeDate(b.date) === date &&
+    return !isInactiveBooking(b) &&
+      normalizeDate(b.date) === date &&
       normalizeTelegram(b.telegram) === tg &&
-      String(b.tour || "").trim() === tour;
+      normalizeTour(b.tour) === normalizeTour(tour);
   });
 
   return found ? "Есть запись" : "Запись не найдена";
@@ -3232,13 +3517,13 @@ function getReportMatchStatus(date, tg, tour){
 
 function findReportBooking(tg, tour){
   var matches = bookings.filter(function(b){
-    return normalizeTelegram(b.telegram) === tg &&
-      String(b.tour || "").trim() === tour;
+    return !isInactiveBooking(b) &&
+      normalizeTelegram(b.telegram) === tg &&
+      normalizeTour(b.tour) === normalizeTour(tour);
   }).sort(function(a, b){
     return normalizeDate(b.date).localeCompare(normalizeDate(a.date));
   });
-  var today = new Date();
-  var todayKey = today.getFullYear() + "-" + pad(today.getMonth() + 1) + "-" + pad(today.getDate());
+  var todayKey = getTodayKey();
   var completed = matches.filter(function(b){ return normalizeDate(b.date) <= todayKey; });
   return completed[0] || matches[0] || null;
 }
@@ -3247,6 +3532,11 @@ function submitReport(){
   var tg = normalizeTelegram($("cb-report-telegram").value);
   var tour = $("cb-report-tour") ? String($("cb-report-tour").value || "").trim() : "";
   var link = String($("cb-report-link").value || "").trim();
+
+  if(reportSubmitting){
+    setMessage("Материал уже обрабатывается.", true);
+    return;
+  }
 
   if(!tg){
     setMessage("Укажите Telegram / ник креатора.", true);
@@ -3258,67 +3548,91 @@ function submitReport(){
     return;
   }
 
+  var tourExists = getAllTours().some(function(item){
+    return normalizeTour(item) === normalizeTour(tour);
+  });
+
+  if(!tourExists){
+    setMessage("Выберите тур из списка.", true);
+    return;
+  }
+
   if(!isValidContentLink(link)){
     setMessage("Укажите корректную ссылку на ваше творение.", true);
     return;
   }
 
-  var match = findReportBooking(tg, tour);
-  var date = match ? normalizeDate(match.date) : "";
+  var linkKey = normalizeContentLink(link);
 
-  var duplicate = reports.some(function(r){
-    return normalizeTelegram(r.telegram) === tg &&
-      String(r.tour || "").trim() === tour &&
-      String(r.link || "").trim() === link;
-  });
-
-  if(duplicate){
+  if(hasContentDuplicate(link) || wasRecentlySubmitted(CONTENT_STORAGE_KEY, linkKey)){
     setMessage("Такая ссылка уже добавлена.", true);
     return;
   }
 
-  var payload = {
-    type: "content_report",
-    createdAt: new Date().toLocaleString("ru-RU"),
-    telegram: tg,
-    date: date,
-    tour: tour,
-    link: link,
-    matchStatus: getReportMatchStatus(date, tg, tour)
-  };
+  reportSubmitting = true;
+  setSubmitBusy("cb-report-submit", true, "Проверяем материал...");
+  setMessage("Проверяем запись и ссылку...", false);
 
-  function completeReport(isTest){
-    reports.push(payload);
-    $("cb-report-telegram").value = "";
-    $("cb-report-tour").value = "";
-    $("cb-report-link").value = "";
-    renderResults();
-    setMessage(
-      isTest
-        ? "Контент добавлен в тестовом режиме. Рабочая таблица не изменена."
-        : (payload.matchStatus === "Есть запись" ? "Контент добавлен и связан с записью креатора." : "Контент добавлен, но подходящая запись не найдена."),
-      !isTest && payload.matchStatus !== "Есть запись"
-    );
-  }
+  refreshRemoteDataForCheck()
+    .then(function(){
+      if(hasContentDuplicate(link) || wasRecentlySubmitted(CONTENT_STORAGE_KEY, linkKey)){
+        reportSubmitting = false;
+        setSubmitBusy("cb-report-submit", false, "");
+        setMessage("Такая ссылка уже добавлена.", true);
+        return;
+      }
 
-  if(CONFIG.TEST_MODE){
-    completeReport(true);
-    return;
-  }
+      var match = findReportBooking(tg, tour);
+      if(!match){
+        reportSubmitting = false;
+        setSubmitBusy("cb-report-submit", false, "");
+        setMessage("Не найдена поездка с таким ником и туром. Проверьте данные формы.", true);
+        return;
+      }
 
-  setMessage("Добавляем контент...", false);
+      var date = normalizeDate(match.date);
+      var payload = {
+        type: "content_report",
+        createdAt: new Date().toLocaleString("ru-RU"),
+        telegram: tg,
+        date: date,
+        tour: tour,
+        link: link,
+        matchStatus: "Есть запись",
+        dedupeKey: "content:" + linkKey,
+        requestId: "content-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+      };
 
-  fetch(CONFIG.API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(payload)
-  })
-  .then(function(){
-    completeReport(false);
-  })
-  .catch(function(){
-    setMessage("Не удалось отправить результат тура.", true);
-  });
+      setSubmitBusy("cb-report-submit", true, "Добавляем контент...");
+      setMessage("Добавляем контент...", false);
+
+      fetch(CONFIG.API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload)
+      })
+      .then(function(){
+        reports.push(payload);
+        rememberSubmission(CONTENT_STORAGE_KEY, linkKey);
+        $("cb-report-telegram").value = "";
+        $("cb-report-tour").value = "";
+        $("cb-report-link").value = "";
+        renderResults();
+        reportSubmitting = false;
+        setSubmitBusy("cb-report-submit", false, "");
+        setMessage("Контент добавлен и связан с записью креатора.", false);
+      })
+      .catch(function(){
+        reportSubmitting = false;
+        setSubmitBusy("cb-report-submit", false, "");
+        setMessage("Не удалось отправить результат тура. Повторите попытку.", true);
+      });
+    })
+    .catch(function(){
+      reportSubmitting = false;
+      setSubmitBusy("cb-report-submit", false, "");
+      setMessage("Не удалось проверить актуальные данные. Обновите страницу и попробуйте ещё раз.", true);
+    });
 }
 
 function init(){
@@ -3339,6 +3653,8 @@ function init(){
   if(reportSubmit) reportSubmit.onclick = submitReport;
 
   if(dateInput){
+    var todayKey = getTodayKey();
+    dateInput.min = todayKey > CONFIG.SEASON_START ? (todayKey <= CONFIG.SEASON_END ? todayKey : CONFIG.SEASON_END) : CONFIG.SEASON_START;
     dateInput.onchange = function(){
       setFormDate(this.value);
       renderTours(this.value);
