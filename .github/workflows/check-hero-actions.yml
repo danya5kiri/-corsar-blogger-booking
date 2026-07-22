@@ -1,0 +1,110 @@
+name: Проверить навигацию кнопок главной
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/reorder_hero_actions.py
+      - .github/workflows/check-hero-actions.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Обновить кнопки главной
+        run: python3 scripts/reorder_hero_actions.py
+
+      - name: Проверить порядок, ссылки и адаптивность
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+
+          text = Path('index.html').read_text(encoding='utf-8')
+
+          class HeroActionsParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_actions = False
+                  self.depth = 0
+                  self.current = None
+                  self.items = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  classes = attrs.get('class', '').split()
+                  if tag == 'div' and 'cb-hero-actions' in classes:
+                      self.in_actions = True
+                      self.depth = 1
+                      return
+                  if self.in_actions:
+                      if tag == 'div':
+                          self.depth += 1
+                      if tag == 'a':
+                          self.current = {'href': attrs.get('href', ''), 'text': ''}
+
+              def handle_data(self, data):
+                  if self.in_actions and self.current is not None:
+                      self.current['text'] += data
+
+              def handle_endtag(self, tag):
+                  if self.in_actions and tag == 'a' and self.current is not None:
+                      self.current['text'] = ' '.join(self.current['text'].split())
+                      self.items.append(self.current)
+                      self.current = None
+                  if self.in_actions and tag == 'div':
+                      self.depth -= 1
+                      if self.depth == 0:
+                          self.in_actions = False
+
+          parser = HeroActionsParser()
+          parser.feed(text)
+          assert parser.items == [
+              {'href': 'https://t.me/+nYzsW9t8e38xZGJi', 'text': '1 Вступить в чат'},
+              {'href': '#calendar', 'text': '2 Записаться на тур'},
+              {'href': '#content', 'text': '3 Добавить контент'},
+          ], parser.items
+
+          assert '.cb-link-button-booking {' in text
+          assert '.cb-link-button-sequenced {' in text
+          assert '.cb-link-button-step {' in text
+          assert re.search(r'@media \(max-width: 600px\).*?\.cb-link-button\s*\{\s*width:\s*100%;', text, re.S)
+          assert 'display: flex;' in text[text.index('.cb-hero-actions'):text.index('.cb-link-button {')]
+          assert 'flex-wrap: wrap;' in text[text.index('.cb-hero-actions'):text.index('.cb-link-button {')]
+          print('Порядок, ссылки, нумерация и адаптивность корректны')
+          PY
+
+      - name: Проверить синтаксис JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', text, re.S)
+          Path('/tmp/corsar-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/corsar-inline.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Изменений index.html нет"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Обновить последовательность кнопок главной"
+          git push origin HEAD:${{ github.head_ref }}
