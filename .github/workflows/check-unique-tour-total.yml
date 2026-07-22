@@ -46,7 +46,8 @@ jobs:
           assert 'var TOTAL_UNIQUE_TOURS = 5;' not in text
           assert 'var TOTAL_UNIQUE_TOURS = (function(){' in text
           assert 'canonical === CANONICAL_TOURS[1] || canonical === CANONICAL_TOURS[8]' in text
-          assert text.count('var key = getUniqueTourKey(booking.tour);') == 2
+          assert 'var key = getUniqueTourKey(booking.tour);' in text
+          assert 'var tourKey = getUniqueTourKey(booking.tour);' in text
           assert 'renderTourVarietyStars(uniqueTours)' in text
           assert '" из " + TOTAL_UNIQUE_TOURS' in text
           script = text.rsplit('<script>', 1)[1].split('</script>', 1)[0]
