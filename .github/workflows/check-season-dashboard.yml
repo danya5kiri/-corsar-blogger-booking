@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - index.html
-      - scripts/update_season_dashboard.py
+      - scripts/fix_season_metric_selector.py
       - .github/workflows/check-season-dashboard.yml
 
 permissions:
@@ -20,8 +20,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Применить изменение
-        run: python3 scripts/update_season_dashboard.py
+      - name: Уточнить селектор метрик
+        run: python3 scripts/fix_season_metric_selector.py
 
       - name: Проверить структуру и логику
         run: |
@@ -44,6 +44,7 @@ jobs:
               'class="cb-season-delta"',
               'firstBookingByCreator',
               'bookingsToday = activeBookings.filter(isActivityCreatedToday).length',
+              '.cb-season-metric > span {',
           ]
           for marker in required:
               if marker not in text:
@@ -52,6 +53,7 @@ jobs:
           forbidden = [
               '"</strong> дн."',
               'daysEl.textContent = "Сезон завершён";',
+              '.cb-season-metric span {',
               'window.visualViewport',
               'document.body.style.position = "fixed"',
           ]
@@ -85,5 +87,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Обновить сезонный дашборд и дневные показатели"
+          git commit -m "Исправить отображение дневных показателей"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
