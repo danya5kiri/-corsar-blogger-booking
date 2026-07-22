@@ -15,6 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Проверить исходные шаблоны
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          markers = {
+              'message-css': '.cb-message {\n',
+              'mobile-events': '  .cb-recent-events-mobile {\n    display: block;\n    grid-column: 1 / -1;\n  }\n',
+              'message-html': '<div id="cb-message" class="cb-message" role="status" aria-live="polite"></div>\n',
+              'weather-variable': 'var WEATHER_REFRESH_INTERVAL = 12 * 60 * 60 * 1000;\n',
+              'season-function': '\n\nfunction renderSeasonMetrics(){\n',
+              'loader-success': '      renderDataViews();\n      finishLoader("Мастерская открыта");\n',
+              'init': '  setupCreatorIdentityInputs();\n\n  var submit = $("cb-submit");\n',
+          }
+          for name, marker in markers.items():
+              print(name, text.count(marker))
+          PY
+
       - name: Применить изменение
         run: python3 scripts/restore_safe_notice.py
 
