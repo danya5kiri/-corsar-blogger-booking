@@ -459,7 +459,8 @@ body.cb-lock-scroll #corsar-blogger-booking {
 
 .cb-recent-events-desktop {
   z-index: 12;
-  max-width: 680px;
+  width: var(--cb-events-desktop-width, 100%);
+  max-width: 100%;
   margin: auto 0 0;
   overflow: visible;
 }
@@ -4559,6 +4560,8 @@ var rankingExpanded = false;
 var calendarScrollTicking = false;
 var leaderScrollTicking = false;
 var leaderCardPosition = 0;
+var leaderAutoTimer = null;
+var LEADER_AUTO_INTERVAL = 5000;
 var calendarMonthPosition = (function(){
   var now = new Date();
   var lastPosition = CONFIG.END_MONTH - CONFIG.START_MONTH;
@@ -4682,6 +4685,68 @@ function setupStickyNav(){
   }, 700);
 }
 
+function syncDesktopRecentEventsWidth(){
+  var events = $("cb-recent-events-desktop");
+  var actions = document.querySelector(".cb-hero-actions");
+  if(!events || !actions) return;
+
+  var desktop = !window.matchMedia || window.matchMedia("(min-width: 901px)").matches;
+  if(!desktop){
+    events.style.removeProperty("--cb-events-desktop-width");
+    return;
+  }
+
+  var buttons = actions.querySelectorAll(".cb-link-button");
+  if(!buttons.length) return;
+
+  var left = Infinity;
+  var right = -Infinity;
+  Array.prototype.forEach.call(buttons, function(button){
+    var rect = button.getBoundingClientRect();
+    left = Math.min(left, rect.left);
+    right = Math.max(right, rect.right);
+  });
+
+  var width = Math.ceil(right - left);
+  if(width > 0){
+    events.style.setProperty("--cb-events-desktop-width", Math.min(width, actions.clientWidth) + "px");
+  }
+}
+
+function setupDesktopRecentEventsWidth(){
+  syncDesktopRecentEventsWidth();
+  window.addEventListener("resize", function(){
+    window.requestAnimationFrame(syncDesktopRecentEventsWidth);
+  }, {passive: true});
+
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(syncDesktopRecentEventsWidth).catch(function(){});
+  }
+}
+
+function shouldAutoPlayLeaders(){
+  var root = $("cb-leaders-track");
+  if(!root || document.hidden) return false;
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  return root.querySelectorAll(".cb-leader-card").length > 1;
+}
+
+function stopLeaderAutoPlay(){
+  if(leaderAutoTimer){
+    clearTimeout(leaderAutoTimer);
+    leaderAutoTimer = null;
+  }
+}
+
+function scheduleLeaderAutoPlay(){
+  stopLeaderAutoPlay();
+  if(!shouldAutoPlayLeaders()) return;
+  leaderAutoTimer = setTimeout(function(){
+    setLeaderCardPosition(leaderCardPosition + 1, true);
+    scheduleLeaderAutoPlay();
+  }, LEADER_AUTO_INTERVAL);
+}
+
 function wrapLeaderCardPosition(position){
   var root = $("cb-leaders-track");
   var cardCount = root ? root.querySelectorAll(".cb-leader-card").length : 0;
@@ -4732,10 +4797,12 @@ function setupLeadersCarousel(){
 
   if(prev) prev.onclick = function(){
     setLeaderCardPosition(leaderCardPosition - 1, true);
+    scheduleLeaderAutoPlay();
   };
 
   if(next) next.onclick = function(){
     setLeaderCardPosition(leaderCardPosition + 1, true);
+    scheduleLeaderAutoPlay();
   };
 
   root.addEventListener("scroll", function(){
@@ -4763,6 +4830,23 @@ function setupLeadersCarousel(){
     });
   }, {passive: true});
 
+  root.addEventListener("pointerenter", stopLeaderAutoPlay);
+  root.addEventListener("pointerleave", scheduleLeaderAutoPlay);
+  root.addEventListener("pointerdown", stopLeaderAutoPlay, {passive: true});
+  root.addEventListener("pointerup", scheduleLeaderAutoPlay, {passive: true});
+  root.addEventListener("pointercancel", scheduleLeaderAutoPlay, {passive: true});
+  root.addEventListener("focusin", stopLeaderAutoPlay);
+  root.addEventListener("focusout", function(){
+    setTimeout(function(){
+      if(!root.contains(document.activeElement)) scheduleLeaderAutoPlay();
+    }, 0);
+  });
+
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) stopLeaderAutoPlay();
+    else scheduleLeaderAutoPlay();
+  });
+
   window.addEventListener("resize", function(){
     window.requestAnimationFrame(function(){
       scrollLeadersToPosition(false);
@@ -4770,6 +4854,7 @@ function setupLeadersCarousel(){
   }, {passive: true});
 
   scrollLeadersToPosition(false);
+  scheduleLeaderAutoPlay();
 }
 
 function escapeHtml(v){
@@ -7723,6 +7808,7 @@ function init(){
   setInterval(updateSeasonCounter, 3600000);
   setupWeatherRefresh();
   setupStickyNav();
+  setupDesktopRecentEventsWidth();
   setupLeadersCarousel();
   setupCalendarCarousel();
   renderReportTours();
