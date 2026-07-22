@@ -4636,7 +4636,14 @@ var KNOWN_BOOKING_CANCELLATIONS = [{
   tour: "Барбекю на островах"
 }];
 var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту", "По уникальным турам"];
-var TOTAL_UNIQUE_TOURS = 5;
+var TOTAL_UNIQUE_TOURS = (function(){
+  var seen = Object.create(null);
+  CANONICAL_TOURS.forEach(function(tour){
+    var key = getUniqueTourKey(tour);
+    if(key) seen[key] = true;
+  });
+  return Object.keys(seen).length;
+})();
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 var weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
@@ -5218,6 +5225,13 @@ function setupCreatorIdentityInputs(){
 
 function normalizeTour(v){
   return canonicalTourName(v).toLowerCase().replace(/\s+/g, " ");
+}
+
+function getUniqueTourKey(v){
+  var canonical = canonicalTourName(v);
+  if(!canonical) return "";
+  if(canonical === CANONICAL_TOURS[1] || canonical === CANONICAL_TOURS[8]) return "вечерняя программа";
+  return normalizeTour(canonical);
 }
 
 function normalizeContentLink(v){
@@ -6760,7 +6774,7 @@ function buildUniqueLeaderTransitionTimeline(){
     visits[creator] = (visits[creator] || 0) + 1;
     if(!seenTours[creator]) seenTours[creator] = Object.create(null);
     if(!isExcludedTour(booking.tour)){
-      var tourKey = normalizeTour(booking.tour);
+      var tourKey = getUniqueTourKey(booking.tour);
       if(tourKey) seenTours[creator][tourKey] = true;
     }
 
@@ -6969,7 +6983,7 @@ function getCreatorTourVariety(creator){
   var seen = Object.create(null);
   bookings.forEach(function(booking){
     if(isInactiveBooking(booking) || normalizeTelegram(booking.telegram) !== creator || isExcludedTour(booking.tour)) return;
-    var key = normalizeTour(booking.tour);
+    var key = getUniqueTourKey(booking.tour);
     if(key) seen[key] = true;
   });
   return Object.keys(seen).length;
