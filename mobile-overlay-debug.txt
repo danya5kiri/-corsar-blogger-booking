@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/scripts/fix_mobile_overlays.py", line 228, in <module>
+    raise RuntimeError(f"название блока: ожидалось 3 совпадения, найдено {text.count(old_title)}")
+RuntimeError: название блока: ожидалось 3 совпадения, найдено 4
+exit_status=1
