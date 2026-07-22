@@ -1,0 +1,80 @@
+name: Проверить мобильный загрузчик v2
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/fix_mobile_splash_v2.py
+      - .github/workflows/check-mobile-splash-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: fix-mobile-splash-viewport-v2
+          fetch-depth: 0
+
+      - name: Применить исправление
+        run: python3 scripts/fix_mobile_splash_v2.py
+
+      - name: Проверить покрытие и сохранность сайта
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+
+          text = Path('index.html').read_text(encoding='utf-8')
+          base = subprocess.check_output(['git', 'show', 'origin/main:index.html'], text=True)
+
+          splash = re.search(r'\.cb-splash\s*\{(.*?)\n\}', text, re.S)
+          assert splash, 'стили загрузчика не найдены'
+          splash_css = splash.group(1)
+          assert 'inset: -8px;' in splash_css
+          assert 'height: 100vh' not in splash_css
+          assert 'height: 100dvh' not in splash_css
+          assert 'min-height: 100svh' not in splash_css
+          assert 'touch-action: none;' in splash_css
+
+          assert 'body.cb-lock-scroll::before' in text
+          assert 'background: #f7f7fb !important;' in text
+          assert 'z-index: 2147483645;' in text
+          assert 'body.cb-lock-scroll #corsar-blogger-booking' in text
+
+          api = re.search(r'API_URL:\s*"([^"]+)"', text).group(1)
+          base_api = re.search(r'API_URL:\s*"([^"]+)"', base).group(1)
+          assert api == base_api
+
+          for marker in ['id="calendar"', 'id="booking"', 'id="content"', 'id="ranking"', 'id="results"', 'id="cb-submit"', 'id="cb-report-submit"']:
+              assert marker in text
+
+          print('mobile splash checks passed')
+          PY
+
+      - name: Проверить синтаксис JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', text, re.S)
+          assert scripts, 'inline script not found'
+          Path('/tmp/corsar-app.js').write_text(scripts[-1], encoding='utf-8')
+          PY
+          node --check /tmp/corsar-app.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Исправить покрытие мобильного загрузчика"
+          git push origin HEAD:fix-mobile-splash-viewport-v2
