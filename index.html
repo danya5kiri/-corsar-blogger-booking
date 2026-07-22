@@ -415,66 +415,99 @@ body.cb-lock-scroll {
 .cb-recent-events {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(23, 23, 25, .08);
-  background:
-    radial-gradient(circle at 94% 4%, rgba(255,255,255,.82), transparent 35%),
-    linear-gradient(118deg, #eafaf4 0%, #fff6dd 52%, #f1ecff 100%);
+  border: 1px solid rgba(23, 23, 25, .07);
+  background: rgba(255, 255, 255, .38);
   color: var(--cb-ink);
-  box-shadow: 0 14px 32px rgba(68, 78, 102, .08);
+  box-shadow: 0 10px 26px rgba(68, 78, 102, .045);
+  backdrop-filter: blur(12px) saturate(112%);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
 }
 
 .cb-recent-events::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 4px;
-  background: linear-gradient(180deg, var(--cb-mint), var(--cb-yellow), var(--cb-lilac-strong));
+  width: 2px;
+  background: linear-gradient(180deg, var(--cb-mint), var(--cb-cyan), var(--cb-lilac-strong));
+  opacity: .48;
 }
 
 .cb-recent-events-desktop {
   max-width: 680px;
-  margin: 24px 0 auto;
-  padding: 14px 16px 10px 18px;
+  margin: 18px 0 0;
 }
 
 .cb-recent-events-mobile {
   display: none;
-  padding: 15px 16px 10px 18px;
 }
 
 .cb-activity-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 24px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 4px;
+  gap: 10px;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 12px 9px 15px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.cb-activity-head::-webkit-details-marker {
+  display: none;
 }
 
 .cb-activity-title {
-  font-size: 11px;
-  font-weight: 840;
-  letter-spacing: .075em;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: .065em;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .cb-activity-live {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #557063;
-  font-size: 8px;
-  font-weight: 820;
-  letter-spacing: .09em;
+  color: #6f7974;
+  font-size: 7.5px;
+  font-weight: 780;
+  letter-spacing: .075em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .cb-activity-live::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #55b995;
-  box-shadow: 0 0 0 4px rgba(85, 185, 149, .13);
+  background: #76bca5;
+  box-shadow: 0 0 0 3px rgba(118, 188, 165, .10);
+}
+
+.cb-activity-toggle {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #747985;
+  font-size: 17px;
+  font-weight: 420;
+  transition: transform .2s ease, color .2s ease;
+}
+
+.cb-recent-events[open] .cb-activity-toggle {
+  color: var(--cb-ink);
+  transform: rotate(45deg);
+}
+
+.cb-activity-panel {
+  padding: 0 12px 7px 15px;
+  border-top: 1px solid rgba(23, 23, 25, .055);
 }
 
 .cb-activity-list {
@@ -485,19 +518,24 @@ body.cb-lock-scroll {
 
 .cb-activity-item {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto;
+  grid-template-columns: 7px minmax(0, 1fr) auto;
   align-items: start;
-  gap: 9px;
-  padding: 7px 0;
-  border-top: 1px solid rgba(23, 23, 25, .08);
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(23, 23, 25, .055);
+}
+
+.cb-activity-item:first-child {
+  border-top: 0;
 }
 
 .cb-activity-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   margin-top: 4px;
   border-radius: 50%;
   background: var(--cb-cyan);
+  opacity: .72;
 }
 
 .cb-activity-item.is-creator .cb-activity-dot {
@@ -510,35 +548,35 @@ body.cb-lock-scroll {
 
 .cb-activity-item.is-leader .cb-activity-dot {
   background: var(--cb-yellow);
-  box-shadow: 0 0 0 3px rgba(255, 214, 107, .22);
+  box-shadow: 0 0 0 2px rgba(255, 214, 107, .16);
 }
 
 .cb-activity-copy {
   min-width: 0;
-  color: #5f6572;
-  font-size: 10px;
-  line-height: 1.38;
+  color: #666b77;
+  font-size: 9.5px;
+  line-height: 1.36;
 }
 
 .cb-activity-copy strong {
   color: var(--cb-ink);
-  font-weight: 820;
+  font-weight: 800;
 }
 
 .cb-activity-time {
   padding-top: 1px;
   color: #8b8f99;
-  font-size: 8px;
-  font-weight: 720;
+  font-size: 7.5px;
+  font-weight: 700;
   line-height: 1.35;
   white-space: nowrap;
 }
 
 .cb-activity-empty {
-  padding: 14px 0 6px;
+  padding: 11px 0 5px;
   color: var(--cb-muted);
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: 9.5px;
+  line-height: 1.4;
 }
 
 .cb-link-button {
@@ -1847,6 +1885,66 @@ body.cb-lock-scroll {
   background: linear-gradient(90deg, var(--cb-blue), var(--cb-lilac-strong) 40%, var(--cb-cyan) 72%, var(--cb-coral));
 }
 
+
+.cb-creator-group.is-result-tone-1::before {
+  background: linear-gradient(90deg, #ffd66b, #ffb09e, #ded4ff);
+}
+
+.cb-creator-group.is-result-tone-2::before {
+  background: linear-gradient(90deg, #8ce8f4, #cbbdff, #4ecbed);
+}
+
+.cb-creator-group.is-result-tone-3::before {
+  background: linear-gradient(90deg, #ffb09e, #f3eaff, #dff6ec);
+}
+
+.cb-creator-group.is-result-tone-4::before {
+  background: linear-gradient(90deg, #dff6ec, #8ce8f4, #ded4ff);
+}
+
+.cb-creator-group.is-result-tone-5::before {
+  background: linear-gradient(90deg, #ded4ff, #f6dff0, #fff1e7);
+}
+
+.cb-creator-group.is-result-top-1 .cb-creator-summary {
+  background: linear-gradient(100deg, rgba(255, 226, 138, .58), rgba(255, 186, 167, .42), rgba(222, 212, 255, .45));
+}
+
+.cb-creator-group.is-result-top-2 .cb-creator-summary {
+  background: linear-gradient(100deg, rgba(223, 247, 251, .66), rgba(216, 208, 255, .52), rgba(244, 237, 255, .48));
+}
+
+.cb-creator-group.is-result-top-3 .cb-creator-summary {
+  background: linear-gradient(100deg, rgba(255, 226, 215, .62), rgba(243, 234, 255, .50), rgba(226, 248, 242, .52));
+}
+
+.cb-creator-group.is-result-tone-4 .cb-creator-summary {
+  background: rgba(233, 248, 251, .46);
+}
+
+.cb-creator-group.is-result-tone-5 .cb-creator-summary {
+  background: rgba(243, 239, 255, .48);
+}
+
+.cb-creator-group.is-result-top-1 .cb-creator-index,
+.cb-creator-group.is-result-top-2 .cb-creator-index,
+.cb-creator-group.is-result-top-3 .cb-creator-index {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(23, 23, 25, .12);
+  background: rgba(255, 255, 255, .62);
+  color: var(--cb-ink);
+  font-weight: 840;
+}
+
+.cb-creator-group.is-result-top-1 .cb-creator-index {
+  border-color: var(--cb-ink);
+  background: var(--cb-ink);
+  color: #fff;
+}
+
 .cb-creator-group[open] {
   border-color: rgba(127, 103, 248, .28);
   box-shadow: 0 18px 42px rgba(74, 67, 126, .11);
@@ -2562,10 +2660,10 @@ body.cb-lock-scroll {
           <h1 class="cb-hero-title">Привет, <strong>креатор!</strong></h1>
           <p class="cb-hero-text">Выбирайте морское путешествие, создавайте живой контент о Владивостоке и возвращайтесь сюда, чтобы поделиться готовой публикацией.</p>
         </div>
-        <div id="cb-recent-events-desktop" class="cb-recent-events cb-recent-events-desktop" aria-live="polite">
-          <div class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span></div>
-          <div class="cb-activity-empty">Загружаем последние события...</div>
-        </div>
+        <details id="cb-recent-events-desktop" class="cb-recent-events cb-recent-events-desktop">
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
+        </details>
         <div class="cb-hero-actions">
           <a class="cb-link-button cb-link-button-chat cb-link-button-sequenced" href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer"><span class="cb-link-button-step" aria-hidden="true">1</span><span>Вступить в чат</span></a>
           <a class="cb-link-button cb-link-button-booking cb-link-button-sequenced" href="#calendar"><span class="cb-link-button-step" aria-hidden="true">2</span><span>Записаться на тур</span></a>
@@ -2595,10 +2693,10 @@ body.cb-lock-scroll {
             </div>
           </div>
         </article>
-        <div id="cb-recent-events-mobile" class="cb-recent-events cb-recent-events-mobile" aria-live="polite">
-          <div class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span></div>
-          <div class="cb-activity-empty">Загружаем последние события...</div>
-        </div>
+        <details id="cb-recent-events-mobile" class="cb-recent-events cb-recent-events-mobile">
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
+        </details>
         <div class="cb-leaders-carousel" aria-label="Лидеры сезона">
           <div id="cb-leaders-track" class="cb-leaders-track">
             <button type="button" id="cb-leader-card" class="cb-stat-card cb-leader-card" aria-disabled="true" aria-label="Лидер сезона по количеству туров">
@@ -3796,6 +3894,7 @@ var selectedDate = "";
 var bookingSubmitting = false;
 var reportSubmitting = false;
 var resultsCreatorFilter = "";
+var resultsExpanded = false;
 var rankingExpanded = false;
 var calendarScrollTicking = false;
 var leaderScrollTicking = false;
@@ -5526,7 +5625,10 @@ function renderRecentCreatorEvents(){
   if(!roots.length) return;
 
   var events = creatorDirectoryReady ? buildRecentCreatorEvents() : [];
-  var body = '<div class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span></div>';
+  var activityLabel = events.length
+    ? events.length + " " + pluralCount(events.length, "событие", "события", "событий")
+    : "активность";
+  var body = '<summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">' + escapeHtml(activityLabel) + '</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary><div class="cb-activity-panel" aria-live="polite">';
 
   if(!creatorDirectoryReady){
     body += '<div class="cb-activity-empty">Загружаем последние события...</div>';
@@ -5542,6 +5644,7 @@ function renderRecentCreatorEvents(){
     }).join("") + '</ol>';
   }
 
+  body += '</div>';
   roots.forEach(function(root){ root.innerHTML = body; });
 }
 
@@ -5800,7 +5903,11 @@ function renderResults(){
   var groups = Object.keys(groupsByCreator).map(function(key){
     return groupsByCreator[key];
   }).sort(function(a, b){
-    return a.creator.localeCompare(b.creator, "ru");
+    return b.items.length - a.items.length || a.creator.localeCompare(b.creator, "ru");
+  });
+
+  groups.forEach(function(group, index){
+    group.rank = index + 1;
   });
 
   if(select){
@@ -5816,6 +5923,7 @@ function renderResults(){
     select.value = resultsCreatorFilter;
     select.onchange = function(){
       resultsCreatorFilter = this.value;
+      resultsExpanded = false;
       renderResults();
     };
   }
@@ -5842,13 +5950,14 @@ function renderResults(){
     var reset = $("cb-results-reset");
     if(reset) reset.onclick = function(){
       resultsCreatorFilter = "";
+      resultsExpanded = false;
       renderResults();
     };
     return;
   }
 
-  root.innerHTML = visibleGroups.map(function(group, groupIndex){
-    var groupOpen = resultsCreatorFilter || groupIndex === 0;
+  var groupsToRender = resultsCreatorFilter || resultsExpanded ? visibleGroups : visibleGroups.slice(0, 5);
+  var markup = groupsToRender.map(function(group){
     var materials = group.items.map(function(report, materialIndex){
       var link = getReportLink(report);
       var tour = getReportTour(report) || "Морское путешествие «Корсар»";
@@ -5869,9 +5978,11 @@ function renderResults(){
       '</li>';
     }).join("");
 
-    return '<details id="' + getCreatorGroupId(group.key) + '" class="cb-creator-group" data-creator="' + escapeHtml(group.key) + '"' + (groupOpen ? ' open' : '') + '>' +
+    var tone = ((group.rank - 1) % 5) + 1;
+    var topClass = group.rank <= 3 ? ' is-result-top-' + group.rank : '';
+    return '<details id="' + getCreatorGroupId(group.key) + '" class="cb-creator-group is-result-tone-' + tone + topClass + '" data-creator="' + escapeHtml(group.key) + '">' +
       '<summary class="cb-creator-summary">' +
-        '<span class="cb-creator-index">' + String(groupIndex + 1).padStart(2, "0") + '</span>' +
+        '<span class="cb-creator-index">' + String(group.rank).padStart(2, "0") + '</span>' +
         '<span class="cb-creator-name">' + escapeHtml(group.creator) + '</span>' +
         '<span class="cb-creator-count">' + group.items.length + " " + pluralCount(group.items.length, "работа", "работы", "работ") + '</span>' +
         '<span class="cb-creator-chevron" aria-hidden="true">+</span>' +
@@ -5879,6 +5990,22 @@ function renderResults(){
       '<ol class="cb-creator-materials">' + materials + '</ol>' +
     '</details>';
   }).join("");
+
+  if(!resultsCreatorFilter && visibleGroups.length > 5){
+    markup += '<button type="button" id="cb-results-toggle" class="cb-ranking-toggle cb-results-toggle" aria-expanded="' + (resultsExpanded ? 'true' : 'false') + '">' +
+      (resultsExpanded ? 'Свернуть до 5 мест' : 'Показать все') +
+    '</button>';
+  }
+
+  root.innerHTML = markup;
+
+  var toggle = $("cb-results-toggle");
+  if(toggle){
+    toggle.onclick = function(){
+      resultsExpanded = !resultsExpanded;
+      renderResults();
+    };
+  }
 }
 
 function fetchRemoteRows(timeoutMs){
