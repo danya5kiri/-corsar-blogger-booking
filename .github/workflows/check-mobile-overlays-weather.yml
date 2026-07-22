@@ -1,0 +1,75 @@
+name: Проверить мобильные оверлеи и погоду
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/fix_mobile_overlays_weather.py
+      - .github/workflows/check-mobile-overlays-weather.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: fix-mobile-overlays-weather
+          fetch-depth: 0
+
+      - name: Применить безопасные исправления
+        run: python3 scripts/fix_mobile_overlays_weather.py
+
+      - name: Проверить структуру изменений
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          checks = {
+              'динамическая высота загрузки': 'height: 100dvh;' in text and 'min-height: 100svh;' in text,
+              'скрытие сайта под загрузкой': 'body.cb-lock-scroll #corsar-blogger-booking' in text,
+              'короткое название': 'Последние события креаторов' not in text and text.count('Последние события') >= 3,
+              'погода над датой': text.index('class="cb-day-weather"', text.index('cell.innerHTML =')) < text.index('class="cb-day-num"', text.index('cell.innerHTML =')),
+              'сохранение прокрутки': 'function lockWeeklyPushViewport()' in text and 'function unlockWeeklyPushViewport()' in text,
+              'мобильное уведомление по dynamic viewport': 'max-height: calc(100dvh - 24px);' in text,
+          }
+          failed = [name for name, ok in checks.items() if not ok]
+          if failed:
+              raise SystemExit('Не пройдены проверки: ' + ', '.join(failed))
+          print('Структурные проверки успешны')
+          PY
+
+      - name: Проверить синтаксис JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', text, flags=re.S)
+          if not scripts:
+              raise SystemExit('JavaScript не найден')
+          Path('/tmp/corsar.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/corsar.js
+
+      - name: Проверить сохранность API и форм
+        run: |
+          grep -F 'AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec' index.html
+          grep -F 'id="cb-submit"' index.html
+          grep -F 'id="cb-report-submit"' index.html
+          grep -F 'id="cb-calendar"' index.html
+          grep -F 'function submitBooking()' index.html
+          grep -F 'function submitReport()' index.html
+
+      - name: Сохранить проверенный index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Исправить мобильную загрузку, уведомление и погоду"
+          git push origin HEAD:fix-mobile-overlays-weather
