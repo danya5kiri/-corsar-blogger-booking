@@ -22,12 +22,13 @@ jobs:
           ref: fix-mobile-overlays-weather-title
           fetch-depth: 0
 
-      - name: Уточнить замену названия блока
+      - name: Уточнить мобильные подстановки
         run: |
           python3 - <<'PY'
           from pathlib import Path
           path = Path('scripts/fix_mobile_overlays.py')
           text = path.read_text(encoding='utf-8')
+
           old = '''old_title = "Последние события креаторов"
           if text.count(old_title) != 3:
               raise RuntimeError(f"название блока: ожидалось 3 совпадения, найдено {text.count(old_title)}")
@@ -39,7 +40,18 @@ jobs:
           text = text.replace(static_old, static_new)'''
           if text.count(old) != 1:
               raise RuntimeError('не найден технический блок замены названия')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          text = text.replace(old, new, 1)
+
+          viewport_old = '''  height: 100svh;
+            height: 100lvh;'''
+          viewport_new = '''  height: 100svh;
+            height: 100dvh;
+            height: 100lvh;'''
+          if text.count(viewport_old) != 2:
+              raise RuntimeError(f'ожидалось 2 блока viewport, найдено {text.count(viewport_old)}')
+          text = text.replace(viewport_old, viewport_new)
+
+          path.write_text(text, encoding='utf-8')
           PY
 
       - name: Применить исправления
@@ -56,8 +68,8 @@ jobs:
 
           assert text.count('<span class="cb-activity-title">Последние события</span>') == 3
           assert text.count('Последние события креаторов') == 1
-          assert 'height: 100lvh;' in text
-          assert 'height: 100dvh;' in text
+          assert text.count('height: 100dvh;') >= 2
+          assert text.count('height: 100lvh;') >= 2
           assert 'function lockViewportScroll(reason)' in text
           assert 'function unlockViewportScroll(reason)' in text
           assert 'lockViewportScroll("splash")' in text
