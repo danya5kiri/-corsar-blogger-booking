@@ -1,0 +1,88 @@
+name: Проверить центрирование, сообщения и события
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/adjust_mobile_center_events.py
+      - .github/workflows/check-center-toast-events.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: center-mobile-splash-toast-events
+          fetch-depth: 0
+
+      - name: Применить визуальные исправления
+        run: python3 scripts/adjust_mobile_center_events.py
+
+      - name: Проверить структуру и неизменность логики
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+
+          text = Path('index.html').read_text(encoding='utf-8')
+          base = subprocess.check_output(['git', 'show', 'origin/main:index.html'], text=True)
+
+          required = [
+              '--cb-visual-center-y: 50svh;',
+              'top: var(--cb-visual-center-y, 50svh);',
+              'function syncVisualViewportMetrics()',
+              'function setupVisualViewportMetrics()',
+              'setupVisualViewportMetrics();',
+              'bottom: calc(var(--cb-visual-bottom-gap, 0px) + 14px);',
+              'left: 14px;',
+              '.cb-recent-events-desktop .cb-activity-panel',
+              'bottom: calc(100% + 7px);',
+              'margin: auto 0 0;',
+              'background: linear-gradient(112deg, rgba(250, 250, 252, .72)',
+          ]
+          for marker in required:
+              assert marker in text, marker
+
+          api = re.search(r'API_URL:\s*"([^"]+)"', text).group(1)
+          base_api = re.search(r'API_URL:\s*"([^"]+)"', base).group(1)
+          assert api == base_api
+
+          for marker in [
+              'id="calendar"', 'id="booking"', 'id="content"',
+              'id="ranking"', 'id="results"', 'id="cb-submit"',
+              'id="cb-report-submit"', 'function submitBooking()',
+              'function submitReport()', 'function renderCalendar()'
+          ]:
+              assert marker in text
+
+          assert text.count('class="cb-stat-card cb-leader-card') == base.count('class="cb-stat-card cb-leader-card')
+          print('structure checks passed')
+          PY
+
+      - name: Проверить синтаксис JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', text, re.S)
+          assert scripts, 'inline script not found'
+          Path('/tmp/corsar-app.js').write_text(scripts[-1], encoding='utf-8')
+          PY
+          node --check /tmp/corsar-app.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Отцентрировать мобильную загрузку и обновить события"
+          git push origin HEAD:center-mobile-splash-toast-events
