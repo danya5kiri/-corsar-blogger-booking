@@ -1,0 +1,66 @@
+name: Диагностика контрольных условий
+
+on:
+  push:
+    branches:
+      - fix-mobile-overlays-weather-title
+    paths:
+      - .github/workflows/debug-mobile-overlays-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-mobile-overlays-weather-title
+          fetch-depth: 0
+      - name: Применить патч и сохранить значения
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/fix_mobile_overlays.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''old_title = "Последние события креаторов"
+          if text.count(old_title) != 3:
+              raise RuntimeError(f"название блока: ожидалось 3 совпадения, найдено {text.count(old_title)}")
+          text = text.replace(old_title, "Последние события")'''
+          new = '''static_old = '<span class="cb-activity-title">Последние события креаторов</span>'
+          static_new = '<span class="cb-activity-title">Последние события</span>'
+          if text.count(static_old) != 3:
+              raise RuntimeError(f"название блока: ожидалось 3 заголовка, найдено {text.count(static_old)}")
+          text = text.replace(static_old, static_new)'''
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python3 scripts/fix_mobile_overlays.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          text = Path('index.html').read_text(encoding='utf-8')
+          base = subprocess.check_output(['git','show','origin/main:index.html'], text=True)
+          checks = {
+            'new_title_count': text.count('<span class="cb-activity-title">Последние события</span>'),
+            'old_phrase_count': text.count('Последние события креаторов'),
+            'height_100lvh': 'height: 100lvh;' in text,
+            'height_100dvh': 'height: 100dvh;' in text,
+            'lock_function': 'function lockViewportScroll(reason)' in text,
+            'unlock_function': 'function unlockViewportScroll(reason)' in text,
+            'lock_splash': 'lockViewportScroll("splash")' in text,
+            'unlock_splash': 'unlockViewportScroll("splash")' in text,
+            'lock_push': 'lockViewportScroll("weekly-push")' in text,
+            'unlock_push': 'unlockViewportScroll("weekly-push")' in text,
+            'orders': all(x in text for x in ['order: 1;', 'order: 2;', 'order: 3;']),
+            'mobile_dvh': 'max-height: calc(100dvh' in text,
+            'api_same': re.search(r'API_URL:\s*"([^"]+)"', text).group(1) == re.search(r'API_URL:\s*"([^"]+)"', base).group(1),
+            'leader_card_count': text.count('class="cb-stat-card cb-leader-card'),
+          }
+          Path('mobile-overlay-debug-v2.txt').write_text('\n'.join(f'{k}={v}' for k,v in checks.items())+'\n', encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mobile-overlay-debug-v2.txt
+          git commit -m "Сохранить диагностику мобильной проверки"
+          git push origin HEAD:fix-mobile-overlays-weather-title
