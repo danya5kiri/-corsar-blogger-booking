@@ -57,7 +57,7 @@ jobs:
 
               def handle_data(self, data):
                   if self.in_actions and self.current is not None:
-                      self.current['text'] += data
+                      self.current['text'] += ' ' + data
 
               def handle_endtag(self, tag):
                   if self.in_actions and tag == 'a' and self.current is not None:
