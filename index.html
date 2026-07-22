@@ -1283,6 +1283,7 @@ body.cb-lock-scroll {
 
 .cb-details-card {
   margin-top: 12px;
+  scroll-margin-top: 104px;
   padding: 20px;
   border: 1px solid rgba(23, 23, 25, .08);
   background:
@@ -1329,6 +1330,7 @@ body.cb-lock-scroll {
 .cb-window-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 14px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(23,23,25,.10);
@@ -1341,8 +1343,50 @@ body.cb-lock-scroll {
   white-space: nowrap;
 }
 
-.cb-window-status.has-bookings {
+.cb-window-action {
+  min-width: 88px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(40, 120, 102, .28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .58);
+  color: #287866;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.cb-window-action:hover,
+.cb-window-action:focus-visible {
+  transform: translateY(-1px);
+  outline: 0;
+  border-color: #287866;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(40, 120, 102, .12);
+}
+
+.cb-window-status.has-bookings,
+.cb-window-action:disabled {
+  border-color: rgba(174, 79, 64, .18);
+  background: rgba(255, 255, 255, .34);
   color: #ae4f40;
+  cursor: default;
+  opacity: .72;
+  transform: none;
+  box-shadow: none;
+}
+
+.cb-details-card.is-revealed {
+  animation: cb-details-reveal .36s ease both;
+}
+
+@keyframes cb-details-reveal {
+  from { opacity: .62; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .cb-ranking-section {
@@ -4734,10 +4778,14 @@ function renderCalendar(){
             setFormDate(date);
             renderTours(date);
             renderCalendar();
-            renderDetails(date);
-            setMessage("Выбрано: <b>" + formatDateRu(date) + "</b>. Теперь выберите тур.", false);
-            var bookingSection = $("booking");
-            if(bookingSection && window.innerWidth < 700) bookingSection.scrollIntoView({behavior: "smooth", block: "start"});
+            renderDetails(date, true);
+            setMessage("Выбрано: <b>" + formatDateRu(date) + "</b>. Нажмите «свободно» у нужного тура.", false);
+            var detailsSection = $("cb-details");
+            if(detailsSection){
+              window.requestAnimationFrame(function(){
+                detailsSection.scrollIntoView({behavior: "smooth", block: "start"});
+              });
+            }
           };
         }
 
@@ -4754,7 +4802,7 @@ function renderCalendar(){
   });
 }
 
-function renderDetails(date){
+function renderDetails(date, animate){
   var el = $("cb-details");
   if(!el) return;
 
@@ -4769,13 +4817,17 @@ function renderDetails(date){
   var html = '<h3>' + escapeHtml(formatDateRu(date)) + '</h3>';
 
   if(tours.length){
-    html += '<div class="cb-small" style="margin-bottom:12px">Программы и текущая занятость</div><div class="cb-window-list">';
-    tours.forEach(function(tour){
+    html += '<div class="cb-small" style="margin-bottom:12px">Программы и текущая занятость · нажмите «свободно», чтобы перейти к записи</div><div class="cb-window-list">';
+    tours.forEach(function(tour, tourIndex){
       var tourCount = rows.filter(function(row){ return normalizeTour(row.tour) === normalizeTour(tour); }).length;
+      var occupied = tourCount > 0;
       var occupiedText = tourCount > 1
         ? "занято · " + tourCount + " " + pluralCount(tourCount, "запись", "записи", "записей")
         : "занято";
-      html += '<div class="cb-window-row"><span>' + escapeHtml(tour) + '</span><span class="cb-window-status' + (tourCount ? ' has-bookings' : '') + '">' + (tourCount ? occupiedText : 'свободно') + '</span></div>';
+      var actionLabel = occupied ? "Тур занят: " + tour : "Выбрать свободный тур: " + tour;
+      html += '<div class="cb-window-row"><span>' + escapeHtml(tour) + '</span>' +
+        '<button type="button" class="cb-window-status cb-window-action' + (occupied ? ' has-bookings' : '') + '" data-tour-index="' + tourIndex + '" aria-label="' + escapeHtml(actionLabel) + '"' + (occupied ? ' disabled' : '') + '>' +
+        (occupied ? occupiedText : 'свободно') + '</button></div>';
     });
     html += '</div>';
   } else {
@@ -4794,6 +4846,49 @@ function renderDetails(date){
   }
 
   el.innerHTML = html;
+
+  if(animate){
+    el.classList.remove("is-revealed");
+    void el.offsetWidth;
+    el.classList.add("is-revealed");
+  }
+
+  Array.prototype.forEach.call(el.querySelectorAll(".cb-window-action:not(:disabled)"), function(action){
+    action.onclick = function(){
+      var tourIndex = Number(this.getAttribute("data-tour-index"));
+      var chosenTour = tours[tourIndex];
+      if(!chosenTour) return;
+
+      if(hasBookingSlotConflict(date, chosenTour)){
+        renderDetails(date, true);
+        setMessage("Этот тур уже занят. Выберите другую свободную программу.", true);
+        return;
+      }
+
+      setFormDate(date);
+      renderTours(date);
+
+      var tourSelect = $("cb-tour");
+      if(tourSelect){
+        var chosenKey = normalizeTour(chosenTour);
+        Array.prototype.some.call(tourSelect.options, function(option){
+          if(!option.disabled && normalizeTour(option.value) === chosenKey){
+            tourSelect.value = option.value;
+            return true;
+          }
+          return false;
+        });
+      }
+
+      renderCalendar();
+      renderDetails(date);
+      renderTransferOptions();
+      setMessage("Выбраны <b>" + formatDateRu(date) + "</b> и тур <b>" + escapeHtml(canonicalTourName(chosenTour)) + "</b>. Укажите ник креатора.", false);
+
+      var bookingSection = $("booking");
+      if(bookingSection) bookingSection.scrollIntoView({behavior: "smooth", block: "start"});
+    };
+  });
 }
 
 function renderMatchStatus(status){
