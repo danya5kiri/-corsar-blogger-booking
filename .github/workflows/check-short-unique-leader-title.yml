@@ -1,0 +1,53 @@
+name: Проверить короткий заголовок уникального лидера
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/patch_short_unique_leader_title.py
+      - .github/workflows/check-short-unique-leader-title.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Применить точечный патч
+        run: python scripts/patch_short_unique_leader_title.py
+
+      - name: Проверить разметку и JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          assert 'Лидер по количеству уникальных туров' not in text
+          assert text.count('Лидер по уникальным турам') >= 2
+          assert 'id="cb-unique-leader-card"' in text
+          assert 'id="cb-unique-leader-count"' in text
+          assert 'Смотреть расписание' in text
+          script = text.rsplit('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/corsar-site.js').write_text(script, encoding='utf-8')
+          PY
+          node --check /tmp/corsar-site.js
+
+      - name: Зафиксировать результат проверки
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html уже содержит короткий заголовок"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Сократить заголовок лидера по уникальным турам"
+          git push origin HEAD:${{ github.head_ref }}
