@@ -43,11 +43,15 @@ function getUniqueTourKey(v){
     "единый ключ вечерних программ",
 )
 
-old_key = 'var key = normalizeTour(booking.tour);'
-new_key = 'var key = getUniqueTourKey(booking.tour);'
-count = text.count(old_key)
-if count != 2:
-    raise RuntimeError(f"ключи уникальности: ожидалось 2 совпадения, найдено {count}")
-text = text.replace(old_key, new_key)
+replace_once(
+    'var key = normalizeTour(booking.tour);',
+    'var key = getUniqueTourKey(booking.tour);',
+    "ключ уникальности рейтинга",
+)
+replace_once(
+    'var tourKey = normalizeTour(booking.tour);',
+    'var tourKey = getUniqueTourKey(booking.tour);',
+    "ключ уникальности смены лидера",
+)
 
 path.write_text(text, encoding="utf-8")
