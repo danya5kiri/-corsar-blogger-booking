@@ -22,6 +22,26 @@ jobs:
           ref: fix-mobile-overlays-weather-title
           fetch-depth: 0
 
+      - name: Уточнить замену названия блока
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/fix_mobile_overlays.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''old_title = "Последние события креаторов"
+          if text.count(old_title) != 3:
+              raise RuntimeError(f"название блока: ожидалось 3 совпадения, найдено {text.count(old_title)}")
+          text = text.replace(old_title, "Последние события")'''
+          new = '''static_old = '<span class="cb-activity-title">Последние события креаторов</span>'
+          static_new = '<span class="cb-activity-title">Последние события</span>'
+          if text.count(static_old) != 3:
+              raise RuntimeError(f"название блока: ожидалось 3 заголовка, найдено {text.count(static_old)}")
+          text = text.replace(static_old, static_new)'''
+          if text.count(old) != 1:
+              raise RuntimeError('не найден технический блок замены названия')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: Применить исправления
         run: python3 scripts/fix_mobile_overlays.py
 
@@ -34,8 +54,8 @@ jobs:
           text = Path('index.html').read_text(encoding='utf-8')
           base = __import__('subprocess').check_output(['git', 'show', 'origin/main:index.html'], text=True)
 
-          assert 'Последние события креаторов' not in text
-          assert text.count('Последние события') >= 3
+          assert text.count('<span class="cb-activity-title">Последние события</span>') == 3
+          assert text.count('Последние события креаторов') == 1
           assert 'height: 100lvh;' in text
           assert 'height: 100dvh;' in text
           assert 'function lockViewportScroll(reason)' in text
