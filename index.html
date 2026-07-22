@@ -45,6 +45,14 @@ body {
 
 body.cb-lock-scroll {
   overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+body.cb-lock-scroll #corsar-blogger-booking {
+  visibility: hidden;
 }
 
 #corsar-blogger-booking {
@@ -73,12 +81,20 @@ body.cb-lock-scroll {
 
 .cb-splash {
   position: fixed;
-  z-index: 9999;
+  z-index: 2147483647;
   inset: 0;
   display: grid;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   place-items: center;
-  padding: 24px;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
   background: #f7f7fb;
+  isolation: isolate;
+  overscroll-behavior: none;
   transition: opacity .55s ease, visibility .55s ease;
 }
 
@@ -2352,6 +2368,7 @@ body.cb-lock-scroll {
 
 body.cb-push-open {
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .cb-weekly-push[hidden] {
@@ -2360,11 +2377,18 @@ body.cb-push-open {
 
 .cb-weekly-push {
   position: fixed;
-  z-index: 9800;
+  z-index: 2147483646;
   inset: 0;
   display: grid;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   place-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
   padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  overscroll-behavior: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity .28s ease, visibility .28s ease;
@@ -2861,8 +2885,8 @@ body.cb-push-open {
 
 @media (max-width: 600px) {
   .cb-day {
-    min-height: 64px;
-    padding: 5px 1px 6px;
+    min-height: 70px;
+    padding: 4px 1px 6px;
   }
 
   .cb-day-num {
@@ -2874,7 +2898,7 @@ body.cb-push-open {
     position: static;
     width: 14px;
     height: 14px;
-    margin: 1px auto 0;
+    margin: 0 auto 1px;
   }
 
   .cb-day-weather .cb-weather-icon {
@@ -2882,18 +2906,19 @@ body.cb-push-open {
     height: 14px;
   }
 
-  .cb-day-weather + .cb-day-count {
+  .cb-day-num + .cb-day-count {
     margin-top: 1px;
   }
 
   .cb-weekly-push {
-    align-items: end;
-    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+    align-items: center;
+    min-height: 100dvh;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   }
 
   .cb-weekly-push-card {
     width: 100%;
-    max-height: calc(100vh - max(24px, env(safe-area-inset-top)) - 12px);
+    max-height: calc(100dvh - 24px);
   }
 
   .cb-weekly-push-topline {
@@ -2951,7 +2976,7 @@ body.cb-push-open {
           <p class="cb-hero-text">Выбирайте морское путешествие, создавайте живой контент о Владивостоке и возвращайтесь сюда, чтобы поделиться готовой публикацией.</p>
         </div>
         <details id="cb-recent-events-desktop" class="cb-recent-events cb-recent-events-desktop">
-          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
           <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
         </details>
         <div class="cb-hero-actions">
@@ -2984,7 +3009,7 @@ body.cb-push-open {
           </div>
         </article>
         <details id="cb-recent-events-mobile" class="cb-recent-events cb-recent-events-mobile">
-          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
           <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
         </details>
         <div class="cb-leaders-carousel" aria-label="Лидеры сезона">
@@ -5600,8 +5625,8 @@ function renderCalendar(){
         cell.setAttribute("aria-label", ariaLabel);
 
         cell.innerHTML =
-          '<span class="cb-day-num">' + day + '</span>' +
           (forecast ? '<span class="cb-day-weather" title="' + escapeHtml(forecastLabel) + '">' + weatherIcon(forecast.code) + '</span>' : '') +
+          '<span class="cb-day-num">' + day + '</span>' +
           (toursCount > 0 ? '<span class="cb-day-count">туров: ' + toursCount + '</span>' : '<span class="cb-day-count">нет туров</span>') +
           (count > 0 ? '<span class="cb-day-count">записей: ' + count + '</span>' : '');
 
@@ -5935,7 +5960,7 @@ function renderRecentCreatorEvents(){
   var activityLabel = events.length
     ? events.length + " " + pluralCount(events.length, "событие", "события", "событий")
     : "активность";
-  var body = '<summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">' + escapeHtml(activityLabel) + '</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary><div class="cb-activity-panel" aria-live="polite">';
+  var body = '<summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">' + escapeHtml(activityLabel) + '</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary><div class="cb-activity-panel" aria-live="polite">';
 
   if(!creatorDirectoryReady){
     body += '<div class="cb-activity-empty">Загружаем последние события...</div>';
@@ -5955,6 +5980,30 @@ function renderRecentCreatorEvents(){
   roots.forEach(function(root){ root.innerHTML = body; });
 }
 
+
+var weeklyPushScrollY = 0;
+
+function lockWeeklyPushViewport(){
+  weeklyPushScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = "fixed";
+  document.body.style.top = "-" + weeklyPushScrollY + "px";
+  document.body.style.right = "0";
+  document.body.style.left = "0";
+  document.body.style.width = "100%";
+  document.body.classList.add("cb-push-open");
+}
+
+function unlockWeeklyPushViewport(){
+  var restoreY = weeklyPushScrollY;
+  document.body.classList.remove("cb-push-open");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.right = "";
+  document.body.style.left = "";
+  document.body.style.width = "";
+  weeklyPushScrollY = 0;
+  window.scrollTo(0, restoreY);
+}
 
 function getWeekdayFromDateKey(dateKey){
   var parts = String(dateKey || "").split("-");
@@ -5987,7 +6036,7 @@ function buildWeeklyPushMarkup(){
   var updates = [
     'Свои бронирования теперь можно перенести или удалить прямо в разделе записи.',
     'В календаре появился прогноз погоды для активных дат, а на главной — прогноз на завтра.',
-    'Последние события креаторов обновляются заново при каждом входе на сайт.'
+    'Последние события обновляются заново при каждом входе на сайт.'
   ];
   var events = creatorDirectoryReady ? buildRecentCreatorEvents().slice(0, 3) : [];
   var eventMarkup = events.length
@@ -6009,7 +6058,7 @@ function closeWeeklyPush(){
   if(!modal || modal.hidden) return;
   rememberWeeklyPushSeen();
   modal.classList.remove("is-visible");
-  document.body.classList.remove("cb-push-open");
+  unlockWeeklyPushViewport();
   setTimeout(function(){
     modal.hidden = true;
     if(weeklyPushRestoreFocus && typeof weeklyPushRestoreFocus.focus === "function") weeklyPushRestoreFocus.focus();
@@ -6026,7 +6075,9 @@ function showWeeklyPush(){
   weeklyPushRestoreFocus = document.activeElement;
   body.innerHTML = buildWeeklyPushMarkup();
   modal.hidden = false;
-  document.body.classList.add("cb-push-open");
+  lockWeeklyPushViewport();
+  var card = modal.querySelector(".cb-weekly-push-card");
+  if(card) card.scrollTop = 0;
   window.requestAnimationFrame(function(){ modal.classList.add("is-visible"); });
 
   var close = $("cb-weekly-push-close");
