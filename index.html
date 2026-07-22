@@ -2306,9 +2306,9 @@ body.cb-lock-scroll {
     <a class="cb-nav-brand" href="#home">КОРСАР</a>
     <div class="cb-nav-links">
       <a href="#home" data-section="home" class="is-active">Главная</a>
+      <a href="#calendar" data-section="calendar">Календарь</a>
       <a href="#booking" data-section="booking">Запись</a>
       <a href="#content" data-section="content">Контент</a>
-      <a href="#calendar" data-section="calendar">Календарь</a>
       <a href="#ranking" data-section="ranking">Рейтинг</a>
       <a href="#results" data-section="results">Итоги</a>
     </div>
@@ -2398,10 +2398,38 @@ body.cb-lock-scroll {
     </div>
   </section>
 
+  <section id="calendar" class="cb-section cb-calendar-shell">
+    <div class="cb-section-head">
+      <div>
+        <div class="cb-section-kicker">02 / Расписание</div>
+        <h2 class="cb-section-title">Календарь <strong>окон</strong></h2>
+      </div>
+      <p class="cb-section-note">Нажмите на дату, чтобы увидеть свободные программы и текущие записи креаторов. Занятый тур недоступен для новой записи.</p>
+    </div>
+    <div class="cb-legend">
+      <span><i></i>Есть туры</span>
+      <span><i></i>Есть записи</span>
+      <span><i></i>Нет программы</span>
+    </div>
+    <div class="cb-calendar-controls" aria-label="Переключение месяцев">
+      <button type="button" id="cb-calendar-prev" class="cb-calendar-nav" aria-label="Предыдущий месяц">‹</button>
+      <div class="cb-calendar-current">
+        <span>Листайте месяцы</span>
+        <strong id="cb-calendar-current">—</strong>
+      </div>
+      <button type="button" id="cb-calendar-next" class="cb-calendar-nav" aria-label="Следующий месяц">›</button>
+    </div>
+    <div id="cb-calendar" class="cb-calendar"></div>
+    <div id="cb-details" class="cb-details-card">
+      <h3>Выберите дату</h3>
+      <div class="cb-small">Покажем доступные туры и текущие записи.</div>
+    </div>
+  </section>
+
   <section id="booking" class="cb-section cb-form-card">
     <div class="cb-section-head">
       <div>
-        <div class="cb-section-kicker">01 / Бронирование</div>
+        <div class="cb-section-kicker">03 / Бронирование</div>
         <h2 class="cb-section-title">Выберите <strong>тур</strong></h2>
       </div>
       <p class="cb-section-note">Выберите дату и доступную программу. После оформления откроется WhatsApp с готовым сообщением для согласования поездки.</p>
@@ -2447,7 +2475,7 @@ body.cb-lock-scroll {
   <section id="content" class="cb-section cb-report-card">
     <div class="cb-section-head">
       <div>
-        <div class="cb-section-kicker">02 / Готовый материал</div>
+        <div class="cb-section-kicker">04 / Готовый материал</div>
         <h2 class="cb-section-title">Добавьте <strong>контент</strong></h2>
       </div>
       <p class="cb-section-note">Укажите ник, выберите название тура и прикрепите прямую ссылку на Reels, пост, видео или обзор.</p>
@@ -2474,38 +2502,10 @@ body.cb-lock-scroll {
     </div>
   </section>
 
-  <section id="calendar" class="cb-section cb-calendar-shell">
-    <div class="cb-section-head">
-      <div>
-        <div class="cb-section-kicker">03 / Расписание</div>
-        <h2 class="cb-section-title">Календарь <strong>окон</strong></h2>
-      </div>
-      <p class="cb-section-note">Нажмите на дату, чтобы увидеть свободные программы и текущие записи креаторов. Занятый тур недоступен для новой записи.</p>
-    </div>
-    <div class="cb-legend">
-      <span><i></i>Есть туры</span>
-      <span><i></i>Есть записи</span>
-      <span><i></i>Нет программы</span>
-    </div>
-    <div class="cb-calendar-controls" aria-label="Переключение месяцев">
-      <button type="button" id="cb-calendar-prev" class="cb-calendar-nav" aria-label="Предыдущий месяц">‹</button>
-      <div class="cb-calendar-current">
-        <span>Листайте месяцы</span>
-        <strong id="cb-calendar-current">—</strong>
-      </div>
-      <button type="button" id="cb-calendar-next" class="cb-calendar-nav" aria-label="Следующий месяц">›</button>
-    </div>
-    <div id="cb-calendar" class="cb-calendar"></div>
-    <div id="cb-details" class="cb-details-card">
-      <h3>Выберите дату</h3>
-      <div class="cb-small">Покажем доступные туры и текущие записи.</div>
-    </div>
-  </section>
-
   <section id="ranking" class="cb-section cb-ranking-section">
     <div class="cb-section-head">
       <div>
-        <div class="cb-section-kicker">04 / Статистика</div>
+        <div class="cb-section-kicker">05 / Статистика</div>
         <h2 class="cb-section-title">Рейтинг <strong>креаторов</strong></h2>
       </div>
       <p class="cb-section-note">Место определяется по общему количеству записей на туры в действующей системе.</p>
@@ -2516,7 +2516,7 @@ body.cb-lock-scroll {
   <section id="results" class="cb-section cb-results-section">
     <div class="cb-section-head">
       <div>
-        <div class="cb-section-kicker">05 / Итоги туров</div>
+        <div class="cb-section-kicker">06 / Итоги туров</div>
         <h2 class="cb-section-title">Смотрите <strong>результаты</strong></h2>
       </div>
       <p class="cb-section-note">Готовые видео и публикации участников мастерской. Новые материалы появляются здесь сразу после отправки формы.</p>
