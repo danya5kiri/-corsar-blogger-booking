@@ -1,0 +1,71 @@
+name: Проверить положение декоративной линии
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/move_desktop_route_line.py
+      - .github/workflows/check-desktop-route-line.yml
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Применить изменение
+        run: python3 scripts/move_desktop_route_line.py
+
+      - name: Проверить точечную desktop-правку
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('index.html').read_text(encoding='utf-8')
+          marker = '''@media (min-width: 901px) {
+            .cb-route-line {
+              bottom: clamp(170px, 18vw, 220px);
+            }
+          '''
+          if marker not in text:
+              raise SystemExit('Не найдена desktop-позиция декоративной линии')
+
+          mobile_marker = '''  .cb-route-line {
+              bottom: 284px;
+              left: -28%;
+          '''
+          if mobile_marker not in text:
+              raise SystemExit('Изменена мобильная позиция декоративной линии')
+
+          if 'API_URL: "https://script.google.com/macros/s/' not in text:
+              raise SystemExit('API_URL повреждён')
+
+          scripts = re.findall(r'<script>([\s\S]*?)</script>', text)
+          if len(scripts) != 1:
+              raise SystemExit(f'Ожидался один встроенный script, найдено {len(scripts)}')
+          Path('/tmp/site.js').write_text(scripts[0], encoding='utf-8')
+          print('Изменено только desktop-положение линии')
+          PY
+
+      - name: Проверить JavaScript
+        run: node --check /tmp/site.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html не изменился"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Поднять декоративную линию в desktop-версии"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
