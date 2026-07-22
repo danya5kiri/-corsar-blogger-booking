@@ -1,0 +1,74 @@
+name: Проверить безопасное уведомление
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/restore_safe_notice.py
+      - .github/workflows/check-safe-notice.yml
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Применить изменение
+        run: python3 scripts/restore_safe_notice.py
+
+      - name: Проверить структуру и логику
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('index.html').read_text(encoding='utf-8')
+
+          required = [
+              'id="cb-compact-notice"',
+              'COMPACT_NOTICE_TEST_DATE = "2026-07-22"',
+              'getWeekdayFromDateKey(today) !== 5',
+              'scheduleCompactNotice();',
+              'setupCompactNotice();',
+              '.cb-recent-events-mobile .cb-activity-panel',
+              'bottom: calc(100% + 7px);',
+              'max-height: min(250px, 48vh);',
+              'Свою бронь можно перенести или удалить',
+              'buildRecentCreatorEvents()[0]',
+          ]
+          for marker in required:
+              if marker not in text:
+                  raise SystemExit(f'Не найден обязательный маркер: {marker}')
+
+          forbidden = [
+              'window.visualViewport',
+              'document.body.style.position = "fixed"',
+              'document.body.classList.add("cb-push-open")',
+              'body.cb-push-open',
+          ]
+          for marker in forbidden:
+              if marker in text:
+                  raise SystemExit(f'Возвращена нестабильная мобильная логика: {marker}')
+
+          success = 'renderDataViews();\n      finishLoader("Мастерская открыта");\n      scheduleCompactNotice();'
+          if success not in text:
+              raise SystemExit('Уведомление запускается не после полной загрузки данных')
+
+          if 'API_URL: "https://script.google.com/macros/s/' not in text:
+              raise SystemExit('API_URL повреждён')
+
+          for section in ['id="calendar"', 'id="booking"', 'id="content"', 'id="ranking"', 'id="results"']:
+              if section not in text:
+                  raise SystemExit(f'Потерян раздел: {section}')
+
+          scripts = re.findall(r'<script>([\s\S]*?)</script>', text)
+          if len(scripts) != 1:
+              raise SystemExit(f'Ожидался один встроенный script, найдено {len(scripts)}')
+          Path('/tmp/site.js').write_text(scripts[0], encoding='utf-8')
+          print('Структура уведомления и мобильного блока корректна')
+          PY
+
+      - name: Проверить JavaScript
+        run: node --check /tmp/site.js
