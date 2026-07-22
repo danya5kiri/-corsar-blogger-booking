@@ -27,6 +27,7 @@
 }
 
 html {
+  min-height: 100%;
   scroll-behavior: smooth;
   background: var(--cb-canvas);
 }
@@ -34,6 +35,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
+  min-height: 100%;
   font-family: "Montserrat", Arial, sans-serif;
   background:
     radial-gradient(circle at 8% 2%, rgba(127, 103, 248, .22), transparent 26rem),
@@ -43,8 +45,14 @@ body {
     var(--cb-canvas);
 }
 
+html.cb-overlay-lock {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body.cb-lock-scroll {
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 #corsar-blogger-booking {
@@ -76,8 +84,19 @@ body.cb-lock-scroll {
   z-index: 9999;
   inset: 0;
   display: grid;
+  width: 100vw;
+  min-width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  height: 100lvh;
   place-items: center;
-  padding: 24px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  isolation: isolate;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
   background: #f7f7fb;
   transition: opacity .55s ease, visibility .55s ease;
 }
@@ -2352,6 +2371,7 @@ body.cb-lock-scroll {
 
 body.cb-push-open {
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .cb-weekly-push[hidden] {
@@ -2363,7 +2383,17 @@ body.cb-push-open {
   z-index: 9800;
   inset: 0;
   display: grid;
+  width: 100vw;
+  min-width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  height: 100lvh;
   place-items: center;
+  overflow: hidden;
+  overscroll-behavior: none;
+  isolation: isolate;
   padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
   opacity: 0;
   visibility: hidden;
@@ -2387,7 +2417,7 @@ body.cb-push-open {
   position: relative;
   z-index: 1;
   width: min(520px, 100%);
-  max-height: min(720px, calc(100vh - 36px));
+  max-height: min(720px, calc(100dvh - 36px));
   overflow: auto;
   border: 1px solid rgba(23, 23, 25, .09);
   background:
@@ -2861,20 +2891,20 @@ body.cb-push-open {
 
 @media (max-width: 600px) {
   .cb-day {
-    min-height: 64px;
-    padding: 5px 1px 6px;
-  }
-
-  .cb-day-num {
-    min-height: 17px;
-    line-height: 17px;
+    display: flex;
+    min-height: 68px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 4px 1px 6px;
   }
 
   .cb-day-weather {
     position: static;
+    order: 1;
     width: 14px;
     height: 14px;
-    margin: 1px auto 0;
+    margin: 0 auto 1px;
   }
 
   .cb-day-weather .cb-weather-icon {
@@ -2882,18 +2912,25 @@ body.cb-push-open {
     height: 14px;
   }
 
-  .cb-day-weather + .cb-day-count {
+  .cb-day-num {
+    order: 2;
+    min-height: 17px;
+    line-height: 17px;
+  }
+
+  .cb-day-count {
+    order: 3;
     margin-top: 1px;
   }
 
   .cb-weekly-push {
     align-items: end;
-    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   }
 
   .cb-weekly-push-card {
     width: 100%;
-    max-height: calc(100vh - max(24px, env(safe-area-inset-top)) - 12px);
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom)));
   }
 
   .cb-weekly-push-topline {
@@ -2951,7 +2988,7 @@ body.cb-push-open {
           <p class="cb-hero-text">Выбирайте морское путешествие, создавайте живой контент о Владивостоке и возвращайтесь сюда, чтобы поделиться готовой публикацией.</p>
         </div>
         <details id="cb-recent-events-desktop" class="cb-recent-events cb-recent-events-desktop">
-          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
           <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
         </details>
         <div class="cb-hero-actions">
@@ -2984,7 +3021,7 @@ body.cb-push-open {
           </div>
         </article>
         <details id="cb-recent-events-mobile" class="cb-recent-events cb-recent-events-mobile">
-          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
+          <summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
           <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
         </details>
         <div class="cb-leaders-carousel" aria-label="Лидеры сезона">
@@ -4217,6 +4254,8 @@ var WEEKLY_PUSH_STORAGE_KEY = "corsar_weekly_push_seen_v1";
 var WEEKLY_PUSH_TEST_DATE = "2026-07-22";
 var weeklyPushTimer = null;
 var weeklyPushRestoreFocus = null;
+var viewportLockScrollY = 0;
+var viewportLocks = Object.create(null);
 var weatherLastRequestedAt = 0;
 var weatherForecastByDate = Object.create(null);
 var weatherActiveMonthKey = "";
@@ -4258,6 +4297,39 @@ var weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 function $(id){ return document.getElementById(id); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function makeDate(y,m,d){ return y + "-" + pad(m+1) + "-" + pad(d); }
+
+function lockViewportScroll(reason){
+  var key = String(reason || "overlay");
+  if(viewportLocks[key]) return;
+
+  if(!Object.keys(viewportLocks).length){
+    viewportLockScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.classList.add("cb-overlay-lock");
+    document.body.style.position = "fixed";
+    document.body.style.top = (-viewportLockScrollY) + "px";
+    document.body.style.right = "0";
+    document.body.style.left = "0";
+    document.body.style.width = "100%";
+  }
+
+  viewportLocks[key] = true;
+}
+
+function unlockViewportScroll(reason){
+  var key = String(reason || "overlay");
+  if(!viewportLocks[key]) return;
+  delete viewportLocks[key];
+  if(Object.keys(viewportLocks).length) return;
+
+  var restoreY = viewportLockScrollY;
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.right = "";
+  document.body.style.left = "";
+  document.body.style.width = "";
+  document.documentElement.classList.remove("cb-overlay-lock");
+  window.requestAnimationFrame(function(){ window.scrollTo(0, restoreY); });
+}
 
 function setupStickyNav(){
   var links = Array.prototype.slice.call(document.querySelectorAll(".cb-nav-links a[data-section]"));
@@ -5070,6 +5142,7 @@ function finishLoader(text){
     var splash = $("cb-splash");
     if(splash) splash.classList.add("is-hidden");
     document.body.classList.remove("cb-lock-scroll");
+    unlockViewportScroll("splash");
     scheduleWeeklyPush();
   }, 520);
 }
@@ -5081,6 +5154,7 @@ function failLoader(text){
     var splash = $("cb-splash");
     if(splash) splash.classList.add("is-hidden");
     document.body.classList.remove("cb-lock-scroll");
+    unlockViewportScroll("splash");
   }, 1100);
 }
 
@@ -5935,7 +6009,7 @@ function renderRecentCreatorEvents(){
   var activityLabel = events.length
     ? events.length + " " + pluralCount(events.length, "событие", "события", "событий")
     : "активность";
-  var body = '<summary class="cb-activity-head"><span class="cb-activity-title">Последние события креаторов</span><span class="cb-activity-live">' + escapeHtml(activityLabel) + '</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary><div class="cb-activity-panel" aria-live="polite">';
+  var body = '<summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">' + escapeHtml(activityLabel) + '</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary><div class="cb-activity-panel" aria-live="polite">';
 
   if(!creatorDirectoryReady){
     body += '<div class="cb-activity-empty">Загружаем последние события...</div>';
@@ -6012,6 +6086,7 @@ function closeWeeklyPush(){
   document.body.classList.remove("cb-push-open");
   setTimeout(function(){
     modal.hidden = true;
+    unlockViewportScroll("weekly-push");
     if(weeklyPushRestoreFocus && typeof weeklyPushRestoreFocus.focus === "function") weeklyPushRestoreFocus.focus();
     weeklyPushRestoreFocus = null;
   }, 280);
@@ -6026,6 +6101,7 @@ function showWeeklyPush(){
   weeklyPushRestoreFocus = document.activeElement;
   body.innerHTML = buildWeeklyPushMarkup();
   modal.hidden = false;
+  lockViewportScroll("weekly-push");
   document.body.classList.add("cb-push-open");
   window.requestAnimationFrame(function(){ modal.classList.add("is-visible"); });
 
@@ -7035,6 +7111,7 @@ function submitReport(){
 function init(){
   if(!$("corsar-blogger-booking")) return;
 
+  lockViewportScroll("splash");
   updateSeasonCounter();
   setInterval(updateSeasonCounter, 3600000);
   setupWeatherRefresh();
