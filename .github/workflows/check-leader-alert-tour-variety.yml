@@ -1,0 +1,94 @@
+name: Проверить лидеров и уникальные туры
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/add_leader_alert_and_tour_variety.py
+      - .github/workflows/check-leader-alert-tour-variety.yml
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Применить изменение
+        run: python3 scripts/add_leader_alert_and_tour_variety.py
+
+      - name: Проверить структуру и логику
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('index.html').read_text(encoding='utf-8')
+
+          required = [
+              'id="cb-leader-change-notice"',
+              'function getLeaderChangesForToday()',
+              'buildLeaderTransitionTimeline(bookings, "visits"',
+              'buildLeaderTransitionTimeline(getPublishedContentItems(), "content"',
+              'scheduleSiteNotices();',
+              'setupLeaderChangeNotice();',
+              'Уведомление будет доступно весь день',
+              'function getCreatorTourVariety(creator)',
+              'isExcludedTour(booking.tour)',
+              'cb-rank-coverage-dots',
+              'renderTourVarietyDots(item.uniqueTours, item.visits)',
+              '<span class="cb-rank-score">' + "' + item.visits + '",
+          ]
+          for marker in required:
+              if marker not in text:
+                  raise SystemExit(f'Не найден обязательный маркер: {marker}')
+
+          forbidden = [
+              'window.visualViewport',
+              'document.body.style.position = "fixed"',
+              'document.body.classList.add("cb-push-open")',
+          ]
+          for marker in forbidden:
+              if marker in text:
+                  raise SystemExit(f'Возвращена нестабильная мобильная логика: {marker}')
+
+          if 'return b.visits - a.visits || a.name.localeCompare(b.name, "ru");' not in text:
+              raise SystemExit('Изменена действующая сортировка рейтинга')
+
+          if 'if(!users[tg]) users[tg] = 0;\n      users[tg] += 1;' not in text:
+              raise SystemExit('Изменён текущий подсчёт общего количества поездок')
+
+          if 'API_URL: "https://script.google.com/macros/s/' not in text:
+              raise SystemExit('API_URL повреждён')
+
+          success = 'renderDataViews();\n      finishLoader("Мастерская открыта");\n      scheduleSiteNotices();'
+          if success not in text:
+              raise SystemExit('Уведомления запускаются не после полной загрузки данных')
+
+          scripts = re.findall(r'<script>([\s\S]*?)</script>', text)
+          if len(scripts) != 1:
+              raise SystemExit(f'Ожидался один встроенный script, найдено {len(scripts)}')
+          Path('/tmp/site.js').write_text(scripts[0], encoding='utf-8')
+          print('Структура уведомления и рейтинга корректна')
+          PY
+
+      - name: Проверить JavaScript
+        run: node --check /tmp/site.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html не изменился"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Добавить уведомление о смене лидеров и уникальные туры"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
