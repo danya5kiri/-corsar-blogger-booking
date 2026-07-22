@@ -35,7 +35,7 @@ jobs:
               'var TOTAL_UNIQUE_TOURS = 5;',
               'function renderTourVarietyStars(uniqueTours)',
               'cb-rank-coverage-stars',
-              'cb-rank-coverage-star is-filled',
+              'cb-rank-coverage-star',
               "' из ' + TOTAL_UNIQUE_TOURS",
               'Math.min(getCreatorTourVariety(tg), TOTAL_UNIQUE_TOURS)',
               '<span class="cb-rank-score">' + "' + item.visits + '",
