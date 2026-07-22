@@ -7,6 +7,7 @@ on:
     paths:
       - index.html
       - scripts/add_leader_alert_and_tour_variety.py
+      - scripts/fix_leader_patch_markers.py
       - .github/workflows/check-leader-alert-tour-variety.yml
 
 permissions:
@@ -19,6 +20,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Уточнить селекторы патча
+        run: python3 scripts/fix_leader_patch_markers.py
 
       - name: Применить изменение
         run: python3 scripts/add_leader_alert_and_tour_variety.py
