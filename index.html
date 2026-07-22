@@ -3903,7 +3903,7 @@ function renderTransferOptions(){
 
   if(label) label.textContent = isCancel ? "Какую бронь удалить" : "Какую запись перенести";
   if(hint) hint.textContent = isCancel
-    ? "Показаны только активные брони выбранного ника. После удаления место сразу освободится."
+    ? "Дата и тур берутся из выбранной ниже брони. Показаны только активные записи этого ника; после удаления место освободится."
     : "Выберите прежнюю дату, а выше укажите новую дату и программу.";
 
   if(button && !bookingSubmitting){
@@ -4170,8 +4170,12 @@ function getCancellationSourceFingerprint(booking){
 
   var operation = String(booking.operation || "").trim().toLowerCase();
   var direct = booking.cancelBookingKey || booking.cancelsBookingKey || booking.deletedBookingKey;
-  if(operation !== "cancel" && !direct) return "";
   if(direct) return decodeTransferFingerprint(direct);
+
+  var comment = String(booking.comment || "");
+  var marker = comment.match(/\[cancelBooking:([^\]]+)\]/i);
+  if(marker) return decodeTransferFingerprint(marker[1]);
+  if(operation !== "cancel") return "";
 
   var previousDate = normalizeDate(booking.previousDate || booking.date);
   var previousTour = booking.previousTour || booking.tour;
