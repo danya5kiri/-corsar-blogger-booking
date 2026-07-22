@@ -1,0 +1,30 @@
+name: Диагностика мобильной правки
+
+on:
+  push:
+    branches:
+      - fix-mobile-overlays-weather-title
+    paths:
+      - .github/workflows/debug-mobile-overlays.yml
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-mobile-overlays-weather-title
+      - name: Сохранить точную ошибку
+        run: |
+          set +e
+          python3 scripts/fix_mobile_overlays.py > mobile-overlay-debug.txt 2>&1
+          status=$?
+          echo "exit_status=$status" >> mobile-overlay-debug.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mobile-overlay-debug.txt
+          git commit -m "Сохранить диагностику мобильной правки"
+          git push origin HEAD:fix-mobile-overlays-weather-title
