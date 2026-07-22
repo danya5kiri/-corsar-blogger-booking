@@ -1,0 +1,67 @@
+name: Проверить восемь уникальных туров
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - scripts/patch_unique_tour_total.py
+      - .github/workflows/check-unique-tour-total.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Применить точечный патч
+        run: python scripts/patch_unique_tour_total.py
+
+      - name: Проверить структуру и JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          required_tours = [
+              'Барбекю на островах',
+              'Вечерний круиз на яхте с саксофоном',
+              'Путешествие на остров Рикорда',
+              'Путешествие на остров Русский',
+              'Отдых на катере с рыбалкой',
+              'Путешествие на остров Шкота',
+              'Прогулка \\"Архипелаг\\"',
+              'Путешествие на остров Аскольд',
+              'Вечерняя прогулка на катере с рассказами от капитана',
+          ]
+          for tour in required_tours:
+              assert tour in text, tour
+          assert 'var TOTAL_UNIQUE_TOURS = 5;' not in text
+          assert 'var TOTAL_UNIQUE_TOURS = (function(){' in text
+          assert 'canonical === CANONICAL_TOURS[1] || canonical === CANONICAL_TOURS[8]' in text
+          assert text.count('var key = getUniqueTourKey(booking.tour);') == 2
+          assert 'renderTourVarietyStars(uniqueTours)' in text
+          assert '" из " + TOTAL_UNIQUE_TOURS' in text
+          script = text.rsplit('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/corsar-site.js').write_text(script, encoding='utf-8')
+          PY
+          node --check /tmp/corsar-site.js
+
+      - name: Зафиксировать результат проверки
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html уже содержит нужную логику"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Пересчитать уникальные туры по восьми категориям"
+          git push origin HEAD:${{ github.head_ref }}
