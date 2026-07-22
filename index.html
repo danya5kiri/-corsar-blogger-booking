@@ -446,6 +446,22 @@ body.cb-lock-scroll {
   box-shadow: 0 16px 30px rgba(42, 45, 59, .15);
 }
 
+.cb-link-button-chat {
+  border-color: transparent;
+  background: linear-gradient(105deg, var(--cb-blue) 0%, var(--cb-cyan) 66%, #8ce8f4 100%);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(37, 88, 200, .22);
+  transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.cb-link-button-chat:hover,
+.cb-link-button-chat:focus-visible {
+  border-color: transparent;
+  color: #fff;
+  filter: saturate(1.08) brightness(1.03);
+  box-shadow: 0 16px 32px rgba(37, 88, 200, .28);
+}
+
 .cb-link-button:hover {
   transform: translateY(-2px);
 }
@@ -2309,6 +2325,7 @@ body.cb-lock-scroll {
         <div class="cb-hero-actions">
           <a class="cb-link-button" href="#booking">Записаться на тур</a>
           <a class="cb-link-button cb-link-button-content" href="#content">Добавить контент</a>
+          <a class="cb-link-button cb-link-button-chat" href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer">Вступить в чат</a>
         </div>
       </div>
 
