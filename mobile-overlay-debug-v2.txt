@@ -1,0 +1,14 @@
+new_title_count=3
+old_phrase_count=1
+height_100lvh=True
+height_100dvh=False
+lock_function=True
+unlock_function=True
+lock_splash=True
+unlock_splash=True
+lock_push=True
+unlock_push=True
+orders=True
+mobile_dvh=True
+api_same=True
+leader_card_count=2
