@@ -1,0 +1,56 @@
+name: Проверить кнопку Telegram-чата
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/add_telegram_chat_button.py
+      - .github/workflows/check-telegram-chat-button.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Настроить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Добавить кнопку
+        run: python scripts/add_telegram_chat_button.py
+
+      - name: Проверить изменение
+        run: |
+          git diff --check
+          python - <<'PY'
+          from pathlib import Path
+          text = Path("index.html").read_text(encoding="utf-8")
+          assert text.count('class="cb-link-button cb-link-button-chat"') == 1
+          assert text.count('https://t.me/+nYzsW9t8e38xZGJi') == 1
+          assert text.count('.cb-link-button-chat {') == 1
+          assert 'target="_blank" rel="noopener noreferrer">Вступить в чат</a>' in text
+          assert text.count('<script>') == 1
+          print("Проверка кнопки и ссылки пройдена")
+          PY
+
+      - name: Сохранить проверенный index.html
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Изменений index.html нет"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Добавить кнопку вступления в чат"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
