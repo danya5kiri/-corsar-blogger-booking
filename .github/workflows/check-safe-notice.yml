@@ -9,32 +9,45 @@ on:
       - scripts/restore_safe_notice.py
       - .github/workflows/check-safe-notice.yml
 
+permissions:
+  contents: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: restore-safe-weekly-notice-mobile-events
+          fetch-depth: 0
 
-      - name: Проверить исходные шаблоны
+      - name: Применить изменение к ветке
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          text = Path('index.html').read_text(encoding='utf-8')
-          markers = {
-              'message-css': '.cb-message {\n',
-              'mobile-events': '  .cb-recent-events-mobile {\n    display: block;\n    grid-column: 1 / -1;\n  }\n',
-              'message-html': '<div id="cb-message" class="cb-message" role="status" aria-live="polite"></div>\n',
-              'weather-variable': 'var WEATHER_REFRESH_INTERVAL = 12 * 60 * 60 * 1000;\n',
-              'season-function': '\n\nfunction renderSeasonMetrics(){\n',
-              'loader-success': '      renderDataViews();\n      finishLoader("Мастерская открыта");\n',
-              'init': '  setupCreatorIdentityInputs();\n\n  var submit = $("cb-submit");\n',
-          }
-          for name, marker in markers.items():
-              print(name, text.count(marker))
+
+          index = Path('index.html')
+          current = index.read_text(encoding='utf-8')
+          if 'id="cb-compact-notice"' not in current:
+              script_path = Path('scripts/restore_safe_notice.py')
+              code = script_path.read_text(encoding='utf-8')
+              old = '    ".cb-message {\\n",\n    notice_css + ".cb-message {\\n",'
+              new = '    "\\n.cb-message {\\n",\n    "\\n" + notice_css + ".cb-message {\\n",'
+              if old not in code:
+                  raise SystemExit('Не найден шаблон исправления базового cb-message')
+              code = code.replace(old, new, 1)
+              exec(compile(code, str(script_path), 'exec'), {'__name__': '__main__'})
+          else:
+              print('Изменение уже применено к index.html')
           PY
 
-      - name: Применить изменение
-        run: python3 scripts/restore_safe_notice.py
+          if ! git diff --quiet -- index.html; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Вернуть безопасное уведомление и мобильное раскрытие событий"
+            git push origin HEAD:restore-safe-weekly-notice-mobile-events
+          fi
 
       - name: Проверить структуру и логику
         run: |
