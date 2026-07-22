@@ -426,7 +426,27 @@ body.cb-lock-scroll {
   transition: transform .2s ease, background .2s ease, color .2s ease;
 }
 
-.cb-link-button:first-child {
+.cb-link-button-sequenced {
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.cb-link-button-step {
+  display: inline-flex;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1;
+  opacity: .76;
+}
+
+.cb-link-button-booking {
   background: var(--cb-ink);
   color: #fff;
 }
@@ -2323,9 +2343,9 @@ body.cb-lock-scroll {
           <p class="cb-hero-text">Выбирайте морское путешествие, создавайте живой контент о Владивостоке и возвращайтесь сюда, чтобы поделиться готовой публикацией.</p>
         </div>
         <div class="cb-hero-actions">
-          <a class="cb-link-button" href="#booking">Записаться на тур</a>
-          <a class="cb-link-button cb-link-button-content" href="#content">Добавить контент</a>
-          <a class="cb-link-button cb-link-button-chat" href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer">Вступить в чат</a>
+          <a class="cb-link-button cb-link-button-chat cb-link-button-sequenced" href="https://t.me/+nYzsW9t8e38xZGJi" target="_blank" rel="noopener noreferrer"><span class="cb-link-button-step" aria-hidden="true">1</span><span>Вступить в чат</span></a>
+          <a class="cb-link-button cb-link-button-booking cb-link-button-sequenced" href="#calendar"><span class="cb-link-button-step" aria-hidden="true">2</span><span>Записаться на тур</span></a>
+          <a class="cb-link-button cb-link-button-content cb-link-button-sequenced" href="#content"><span class="cb-link-button-step" aria-hidden="true">3</span><span>Добавить контент</span></a>
         </div>
       </div>
 
