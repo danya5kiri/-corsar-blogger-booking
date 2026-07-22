@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
+# Отдельная точечная проверка вложенных значений дашборда.
 path = Path("index.html")
 text = path.read_text(encoding="utf-8")
 old = ".cb-season-metric span {\n"
