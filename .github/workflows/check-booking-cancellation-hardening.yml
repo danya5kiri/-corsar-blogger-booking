@@ -1,0 +1,52 @@
+name: Проверить устойчивость удаления брони
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - tools/harden_booking_cancellation.py
+      - .github/workflows/check-booking-cancellation-hardening.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить проверочную ветку
+        uses: actions/checkout@v4
+        with:
+          ref: add-booking-cancellation
+
+      - name: Настроить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Усилить отмену брони
+        run: python tools/harden_booking_cancellation.py
+
+      - name: Проверить JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
+          if not scripts:
+              raise SystemExit('Встроенный JavaScript не найден')
+          Path('/tmp/corsar-site.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/corsar-site.js
+
+      - name: Сохранить проверенный index.html
+        run: |
+          git config user.name "corsar-booking-check"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Усилить распознавание отмены брони"
+          git push origin HEAD:add-booking-cancellation
