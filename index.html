@@ -761,6 +761,18 @@ body.cb-lock-scroll #corsar-blogger-booking {
   color: var(--cb-ink);
 }
 
+.cb-leaders-track .cb-content-leader-card {
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,.72), transparent 34%),
+    linear-gradient(135deg, #f2dcff 0%, #d5c8ff 36%, #f4b7d4 68%, #bcecf6 100%);
+}
+
+.cb-leaders-track .cb-unique-leader-card {
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,.72), transparent 34%),
+    linear-gradient(135deg, #dff6ec 0%, #bcebd8 34%, #9edfec 67%, #d9ceff 100%);
+}
+
 .cb-leaders-carousel {
   min-width: 0;
 }
@@ -3326,6 +3338,12 @@ body.cb-lock-scroll #corsar-blogger-booking {
               <div id="cb-content-leader-count" class="cb-leader-visits">Загружаем публикации...</div>
               <span id="cb-content-leader-action" class="cb-leader-action" hidden>Смотреть работы <span aria-hidden="true">↓</span></span>
             </button>
+            <button type="button" id="cb-unique-leader-card" class="cb-stat-card cb-leader-card cb-unique-leader-card" aria-disabled="true" aria-label="Лидер по количеству уникальных туров">
+              <div class="cb-stat-label">Лидер по количеству уникальных туров</div>
+              <div id="cb-unique-leader-name" class="cb-leader-name">—</div>
+              <div id="cb-unique-leader-count" class="cb-leader-visits">Считаем уникальные туры...</div>
+              <span id="cb-unique-leader-action" class="cb-leader-action" hidden>Смотреть расписание <span aria-hidden="true">↓</span></span>
+            </button>
           </div>
           <div class="cb-leaders-controls" aria-label="Переключение лидеров">
             <button type="button" id="cb-leaders-prev" class="cb-leaders-nav" aria-label="Предыдущий лидер">‹</button>
@@ -4595,7 +4613,7 @@ var KNOWN_BOOKING_CANCELLATIONS = [{
   telegram: "@evgivl",
   tour: "Барбекю на островах"
 }];
-var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту"];
+var LEADER_CARD_LABELS = ["По количеству туров", "По опубликованному контенту", "По уникальным турам"];
 var TOTAL_UNIQUE_TOURS = 5;
 
 var months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -4752,6 +4770,13 @@ function setupLeadersCarousel(){
   }, {passive: true});
 
   scrollLeadersToPosition(false);
+}
+
+function focusTourSchedule(){
+  var calendar = $("calendar");
+  if(!calendar) return;
+  calendar.scrollIntoView({behavior: "smooth", block: "start"});
+  try { history.replaceState(null, "", "#calendar"); } catch(e) {}
 }
 
 function escapeHtml(v){
@@ -6690,6 +6715,35 @@ function renderTourVarietyStars(uniqueTours){
   return stars;
 }
 
+function renderUniqueTourLeader(ranking){
+  var leaderName = $("cb-unique-leader-name");
+  var leaderCount = $("cb-unique-leader-count");
+  var leaderCard = $("cb-unique-leader-card");
+  var leaderAction = $("cb-unique-leader-action");
+  if(!leaderName || !leaderCount || !leaderCard) return;
+
+  var uniqueRanking = (ranking || []).slice().sort(function(a, b){
+    return b.uniqueTours - a.uniqueTours || b.visits - a.visits || a.name.localeCompare(b.name, "ru");
+  });
+  var leader = uniqueRanking[0];
+
+  if(leader && leader.uniqueTours > 0){
+    leaderName.textContent = leader.name;
+    leaderCount.textContent = leader.uniqueTours + " " + pluralCount(leader.uniqueTours, "уникальный тур", "уникальных тура", "уникальных туров") + " из " + TOTAL_UNIQUE_TOURS + " · первое место";
+    leaderCard.setAttribute("aria-disabled", "false");
+    leaderCard.setAttribute("aria-label", "Перейти к расписанию. Лидер по уникальным турам " + leader.name);
+    leaderCard.onclick = focusTourSchedule;
+    if(leaderAction) leaderAction.hidden = false;
+  } else {
+    leaderName.textContent = "Пока нет";
+    leaderCount.textContent = "Первая уникальная программа определит лидера";
+    leaderCard.setAttribute("aria-disabled", "true");
+    leaderCard.setAttribute("aria-label", "Лидер по уникальным турам пока не определён");
+    leaderCard.onclick = null;
+    if(leaderAction) leaderAction.hidden = true;
+  }
+}
+
 function renderAnalytics(){
   var el = $("cb-analytics");
   if(!el) return;
@@ -6711,6 +6765,8 @@ function renderAnalytics(){
   }).sort(function(a, b){
     return b.visits - a.visits || a.name.localeCompare(b.name, "ru");
   });
+
+  renderUniqueTourLeader(ranking);
 
   var leaderName = $("cb-leader-name");
   var leaderVisits = $("cb-leader-visits");
