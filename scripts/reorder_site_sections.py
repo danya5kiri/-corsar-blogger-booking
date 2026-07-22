@@ -8,23 +8,21 @@ original = text
 
 section_ids = ["booking", "content", "calendar", "ranking", "results"]
 blocks = {}
+matches = {}
 for section_id in section_ids:
     pattern = re.compile(
-        rf'^  <section id="{re.escape(section_id)}"\b.*?^  </section>\n?',
+        rf'^  <section id="{re.escape(section_id)}"(?:\s|>).*?^  </section>\n?',
         re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(text)
     if not match:
         raise RuntimeError(f"Не найден раздел: {section_id}")
+    matches[section_id] = match
     blocks[section_id] = match.group(0).rstrip() + "\n\n"
 
 # Сохраняем стили и JavaScript побайтно: меняется только порядок HTML-секций и подписи.
 style_before = text[text.index("<style>"):text.index("</style>") + len("</style>")]
 script_before = text[text.index("<script>"):text.rindex("</script>") + len("</script>")]
-
-# Удаляем исходные пять секций из их текущих мест.
-for section_id in section_ids:
-    text = text.replace(blocks[section_id].rstrip() + "\n", "", 1)
 
 # Нумерация учитывает главную как первый экран: календарь становится вторым разделом.
 kickers = {
@@ -51,11 +49,15 @@ for section_id, value in kickers.items():
 
 footer_marker = '  <footer id="creacloud" class="cb-footer">'
 footer_index = text.index(footer_marker)
+region_start = min(match.start() for match in matches.values())
+if max(match.end() for match in matches.values()) > footer_index:
+    raise RuntimeError("Разделы пересекаются с подвалом")
+
 ordered_sections = "".join(
     blocks[section_id]
     for section_id in ["calendar", "booking", "content", "ranking", "results"]
 )
-text = text[:footer_index] + ordered_sections + text[footer_index:]
+text = text[:region_start] + ordered_sections + text[footer_index:]
 
 nav_pattern = re.compile(
     r'    <div class="cb-nav-links">\n.*?^    </div>',
