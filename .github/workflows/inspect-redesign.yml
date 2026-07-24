@@ -46,14 +46,13 @@ jobs:
       - name: Run product and design tests
         run: |
           set +e
-          {
-            node tests/site_health_test.js
-            first=$?
-            node tests/design_modes_test.js
-            second=$?
-            exit $(( first != 0 || second != 0 ))
-          } > /tmp/redesign-test-output.txt 2>&1
-          status=$?
+          : > /tmp/redesign-test-output.txt
+          node tests/site_health_test.js >> /tmp/redesign-test-output.txt 2>&1
+          first=$?
+          node tests/design_modes_test.js >> /tmp/redesign-test-output.txt 2>&1
+          second=$?
+          status=0
+          if [ $first -ne 0 ] || [ $second -ne 0 ]; then status=1; fi
           cat /tmp/redesign-test-output.txt
           if [ $status -ne 0 ]; then
             cp /tmp/redesign-test-output.txt redesign-test-error.txt
