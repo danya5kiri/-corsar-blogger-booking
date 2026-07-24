@@ -3,12 +3,15 @@ name: Apply screenshot corrections
 on:
   push:
     branches: [fix-card-calendar-weather-call]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   patch-test-and-commit:
+    if: github.event_name == 'push' || github.head_ref == 'fix-card-calendar-weather-call'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
