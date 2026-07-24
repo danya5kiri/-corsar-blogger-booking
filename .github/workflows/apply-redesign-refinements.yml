@@ -35,10 +35,15 @@ jobs:
           fi
       - name: Run product and design tests
         run: |
-          node --check creacloud-design.js
-          node tests/site_health_test.js
-          node tests/design_modes_test.js
-          python - <<'PY'
+          set +e
+          : > /tmp/refinement-test-output.txt
+          node --check creacloud-design.js >> /tmp/refinement-test-output.txt 2>&1
+          first=$?
+          node tests/site_health_test.js >> /tmp/refinement-test-output.txt 2>&1
+          second=$?
+          node tests/design_modes_test.js >> /tmp/refinement-test-output.txt 2>&1
+          third=$?
+          python - <<'PY' >> /tmp/refinement-test-output.txt 2>&1
           from pathlib import Path
           html = Path('index.html').read_text(encoding='utf-8')
           css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
@@ -49,12 +54,25 @@ jobs:
           assert 'window.CREACLOUD_DESIGN_MODE = "redesign"' in Path('creacloud-design.js').read_text(encoding='utf-8')
           print('Refinement structure is valid')
           PY
+          fourth=$?
+          status=0
+          if [ $first -ne 0 ] || [ $second -ne 0 ] || [ $third -ne 0 ] || [ $fourth -ne 0 ]; then status=1; fi
+          cat /tmp/refinement-test-output.txt
+          if [ $status -ne 0 ]; then
+            cp /tmp/refinement-test-output.txt refinement-test-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add refinement-test-error.txt
+            git commit -m "Зафиксировать ошибку тестов доработок" || true
+            git push origin HEAD:${{ github.head_ref }} || true
+            exit $status
+          fi
       - name: Commit refined files
         run: |
-          rm -f refinement-patch-error.txt
+          rm -f refinement-patch-error.txt refinement-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html creacloud-redesign.css tests/design_modes_test.js tools/apply_redesign_refinements.py refinement-patch-error.txt
+          git add index.html creacloud-redesign.css tests/design_modes_test.js tools/apply_redesign_refinements.py refinement-patch-error.txt refinement-test-error.txt
           if git diff --cached --quiet; then
             echo "No refinement changes to commit"
             exit 0
