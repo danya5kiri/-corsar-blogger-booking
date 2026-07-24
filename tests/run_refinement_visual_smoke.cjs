@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
+// Wrapper keeps the precise visual-smoke failure inside the downloadable artifact.
 process.on("unhandledRejection", error => {
   const outputDir = path.resolve("artifacts/refinement-smoke");
   fs.mkdirSync(outputDir, { recursive: true });
