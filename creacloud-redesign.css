@@ -1406,3 +1406,9 @@ html[data-design="redesign"] #corsar-blogger-booking button.cb-day {
   }
 }
 
+/* Remove gray frame behind leader controls */
+html[data-design="redesign"] #corsar-blogger-booking .cb-leaders-controls {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
