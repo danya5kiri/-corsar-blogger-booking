@@ -1,0 +1,13 @@
+{
+  "leaderRadius": "16px",
+  "recentBeforeDisplay": "none",
+  "recentBeforeContent": "none",
+  "dayRadius": "0px",
+  "dayWeatherRight": "563px",
+  "dayWeatherLeft": "599px",
+  "heroWeatherDisplay": "flex",
+  "heroWeatherWidth": 140.1875,
+  "heroIconLeft": 228.1875,
+  "heroNumberRight": 218.1875,
+  "heroGap": 10
+}

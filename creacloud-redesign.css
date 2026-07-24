@@ -1358,3 +1358,51 @@ html[data-design="redesign"] #corsar-blogger-booking button.cb-story-add-card,
 html[data-design="redesign"] #corsar-blogger-booking .cb-story-card {
   border-radius: 14px !important;
 }
+
+/* ===== CREACLOUD screenshot corrections v3 ===== */
+/* Match the leader-card silhouette to the compact season dashboard. */
+html[data-design="redesign"] #corsar-blogger-booking .cb-leaders-track .cb-leader-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+/* The activity control should not have a decorative stripe attached to its left edge. */
+html[data-design="redesign"] #corsar-blogger-booking .cb-recent-events::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Restore the original rectangular calendar-day geometry. */
+html[data-design="redesign"] #corsar-blogger-booking button.cb-day {
+  border-radius: 0 !important;
+}
+
+@media (min-width: 901px) {
+  /* Keep the main weather icon directly beside the temperature. */
+  html[data-design="redesign"] #corsar-blogger-booking .cb-weather-temp {
+    display: flex !important;
+    width: max-content !important;
+    max-width: 100%;
+    align-self: flex-start;
+    justify-content: flex-start !important;
+  }
+
+  html[data-design="redesign"] #corsar-blogger-booking .cb-weather-temp > .cb-weather-icon {
+    position: static !important;
+    margin: 0 0 0 2px !important;
+    transform: none !important;
+  }
+
+  /* On wide calendar cells, place the forecast beside the day number, not at the far edge. */
+  html[data-design="redesign"] #corsar-blogger-booking .cb-day-weather {
+    top: 5px;
+    right: auto !important;
+    left: calc(50% + 10px);
+  }
+
+  html[data-design="redesign"] #corsar-blogger-booking .cb-day-weather .cb-weather-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
