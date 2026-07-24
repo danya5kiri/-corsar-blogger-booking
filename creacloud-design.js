@@ -30,6 +30,7 @@ window.CREACLOUD_DESIGN_MODE = "redesign";
   var phraseIndex = 0;
   var phraseTimer = null;
   var phraseSwapTimer = null;
+  var profileNoticeTimer = null;
 
   function getPhraseElement(){
     return document.getElementById("cb-loader-phrase");
@@ -112,15 +113,71 @@ window.CREACLOUD_DESIGN_MODE = "redesign";
     }
   }
 
-  function initProfileEntryPosition(){
+  function normalizeProfileNick(value){
+    return String(value || "").trim().toLowerCase().replace(/^@+/, "");
+  }
+
+  function showProfileBookingRequired(){
+    var text = "ЛК открывается после первого бронирования.";
+    var state = document.getElementById("cb-profile-entry-state");
+    if(state){
+      state.textContent = text;
+      state.classList.remove("is-ready");
+      state.classList.add("is-error");
+    }
+
+    var message = document.getElementById("cb-message");
+    if(message){
+      if(profileNoticeTimer) clearTimeout(profileNoticeTimer);
+      message.textContent = text;
+      message.classList.remove("error");
+      message.classList.add("is-visible");
+      profileNoticeTimer = setTimeout(function(){
+        message.classList.remove("is-visible");
+        profileNoticeTimer = null;
+      }, 3200);
+    }
+  }
+
+  function blockUnknownProfileOpen(event){
+    var input = document.getElementById("cb-profile-entry-input");
+    var list = document.getElementById("cb-profile-creators");
+    if(!input || !list) return;
+
+    var requestedNick = normalizeProfileNick(input.value);
+    if(!requestedNick) return;
+
+    var options = Array.prototype.slice.call(list.querySelectorAll("option"));
+    if(!options.length) return;
+
+    var exists = options.some(function(option){
+      return normalizeProfileNick(option.value) === requestedNick;
+    });
+    if(exists) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showProfileBookingRequired();
+  }
+
+  function initProfileEntry(){
     syncMobileProfileEntry();
     var media = window.matchMedia("(max-width: 900px)");
     if(media.addEventListener) media.addEventListener("change", syncMobileProfileEntry);
     else if(media.addListener) media.addListener(syncMobileProfileEntry);
+
+    var button = document.getElementById("cb-profile-entry-submit");
+    var input = document.getElementById("cb-profile-entry-input");
+    if(button) button.addEventListener("click", blockUnknownProfileOpen, true);
+    if(input){
+      input.addEventListener("keydown", function(event){
+        if(event.key === "Enter") blockUnknownProfileOpen(event);
+      }, true);
+    }
   }
 
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", initProfileEntryPosition, {once: true});
-  else initProfileEntryPosition();
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", initProfileEntry, {once: true});
+  else initProfileEntry();
 
   window.CREACLOUD_THEME = Object.freeze({
     mode: mode,
