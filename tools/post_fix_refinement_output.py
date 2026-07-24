@@ -2,8 +2,10 @@
 from pathlib import Path
 
 index_path = Path("index.html")
+css_path = Path("creacloud-redesign.css")
 tests_path = Path("tests/design_modes_test.js")
 index = index_path.read_text(encoding="utf-8")
+css = css_path.read_text(encoding="utf-8")
 tests = tests_path.read_text(encoding="utf-8")
 
 old_signature = '''function submitBooking(contactMode){
@@ -46,6 +48,17 @@ if correct_busy not in index:
         raise SystemExit("generated booking busy helper not found")
     index = index.replace(recursive_busy, correct_busy, 1)
 
+story_radius_fix = r'''
+
+/* Refined publication-card radius must override the global pill-button rule. */
+html[data-design="redesign"] #corsar-blogger-booking button.cb-story-add-card,
+html[data-design="redesign"] #corsar-blogger-booking .cb-story-card {
+  border-radius: 14px !important;
+}
+'''
+if 'Refined publication-card radius must override' not in css:
+    css += story_radius_fix
+
 tests = tests.replace(
     '  assert.match(html, /submitBooking\\("call"\\)/);',
     '  assert.match(html, /bookingContactMode = "call"; submitBooking\\(\\)/);',
@@ -67,6 +80,19 @@ test("booking busy helper never calls itself", () => {
         raise SystemExit("design tests footer not found")
     tests = tests.replace(footer, guard + "\n" + footer, 1)
 
+if 'publication add card overrides the global pill-button radius' not in tests:
+    footer = 'console.log(`\\n${passed} design mode tests passed.`);'
+    guard = r'''
+
+test("publication add card overrides the global pill-button radius", () => {
+  assert.match(themeCss, /button\.cb-story-add-card,[\s\S]*border-radius:\s*14px !important/);
+});
+'''
+    if tests.count(footer) != 1:
+        raise SystemExit("design tests footer not found for story guard")
+    tests = tests.replace(footer, guard + "\n" + footer, 1)
+
 index_path.write_text(index, encoding="utf-8")
+css_path.write_text(css, encoding="utf-8")
 tests_path.write_text(tests, encoding="utf-8")
-print("refinement output keeps booking contracts and a non-recursive busy helper")
+print("refinement output keeps booking contracts and correct compact card radii")
