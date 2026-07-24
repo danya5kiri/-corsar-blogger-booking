@@ -1,8 +1,6 @@
 name: Apply screenshot corrections
 
 on:
-  push:
-    branches: [fix-card-calendar-weather-call]
   pull_request:
     branches: [main]
 
@@ -11,7 +9,7 @@ permissions:
 
 jobs:
   patch-test-and-commit:
-    if: github.event_name == 'push' || github.head_ref == 'fix-card-calendar-weather-call'
+    if: github.head_ref == 'fix-card-calendar-weather-call'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,10 +22,15 @@ jobs:
 
       - name: Run permanent tests
         run: |
-          node --check creacloud-design.js
-          node tests/site_health_test.js
-          node tests/design_modes_test.js
-          python - <<'PY'
+          set +e
+          : > /tmp/correction-tests.txt
+          node --check creacloud-design.js >> /tmp/correction-tests.txt 2>&1
+          first=$?
+          node tests/site_health_test.js >> /tmp/correction-tests.txt 2>&1
+          second=$?
+          node tests/design_modes_test.js >> /tmp/correction-tests.txt 2>&1
+          third=$?
+          python - <<'PY' >> /tmp/correction-tests.txt 2>&1
           from pathlib import Path
           html = Path('index.html').read_text(encoding='utf-8')
           css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
@@ -37,6 +40,17 @@ jobs:
           assert 'CALL_PHONE_NUMBER: "79149753285"' in html
           print('Static correction checks passed')
           PY
+          fourth=$?
+          cat /tmp/correction-tests.txt
+          if [ $first -ne 0 ] || [ $second -ne 0 ] || [ $third -ne 0 ] || [ $fourth -ne 0 ]; then
+            cp /tmp/correction-tests.txt screenshot-corrections-test-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add screenshot-corrections-test-error.txt
+            git commit -m "Зафиксировать ошибку проверки точечных исправлений" || true
+            git push origin HEAD:fix-card-calendar-weather-call || true
+            exit 1
+          fi
 
       - name: Install Chromium
         run: |
@@ -113,9 +127,10 @@ jobs:
 
       - name: Commit working files
         run: |
+          rm -f screenshot-corrections-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html creacloud-redesign.css tests/design_modes_test.js
+          git add index.html creacloud-redesign.css tests/design_modes_test.js screenshot-corrections-test-error.txt
           if git diff --cached --quiet; then
             echo "No correction changes to commit"
             exit 0
