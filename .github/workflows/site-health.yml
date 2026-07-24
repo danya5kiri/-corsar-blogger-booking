@@ -14,5 +14,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Запустить тесты погоды и бронирования
-        run: node tests/site_health_test.js
+      - name: Запустить тесты продукта и режимов дизайна
+        run: node tests/site_health_test.js && node tests/design_modes_test.js
