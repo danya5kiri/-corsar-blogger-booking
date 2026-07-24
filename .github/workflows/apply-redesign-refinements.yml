@@ -16,36 +16,22 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: Fix refinement patcher
-        run: python tools/fix_refinement_patcher.py
-      - name: Apply refinement patch
+      - name: Apply refinement patch when needed
         run: |
-          set +e
-          python tools/apply_redesign_refinements.py > /tmp/refinement-patch-output.txt 2>&1
-          status=$?
-          cat /tmp/refinement-patch-output.txt
-          if [ $status -ne 0 ]; then
-            cp /tmp/refinement-patch-output.txt refinement-patch-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add refinement-patch-error.txt
-            git commit -m "Зафиксировать ошибку патча доработок" || true
-            git push origin HEAD:${{ github.head_ref }} || true
-            exit $status
+          if grep -q 'id="cb-call-submit"' index.html; then
+            echo "Refinement markup is already present"
+          else
+            python tools/fix_refinement_patcher.py
+            python tools/apply_redesign_refinements.py
           fi
       - name: Preserve booking function contract
         run: python tools/post_fix_refinement_output.py
       - name: Run product and design tests
         run: |
-          set +e
-          : > /tmp/refinement-test-output.txt
-          node --check creacloud-design.js >> /tmp/refinement-test-output.txt 2>&1
-          first=$?
-          node tests/site_health_test.js >> /tmp/refinement-test-output.txt 2>&1
-          second=$?
-          node tests/design_modes_test.js >> /tmp/refinement-test-output.txt 2>&1
-          third=$?
-          python - <<'PY' >> /tmp/refinement-test-output.txt 2>&1
+          node --check creacloud-design.js
+          node tests/site_health_test.js
+          node tests/design_modes_test.js
+          python - <<'PY'
           from pathlib import Path
           html = Path('index.html').read_text(encoding='utf-8')
           css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
@@ -53,32 +39,20 @@ jobs:
           assert 'id="cb-call-submit"' in html
           assert 'function setupRedesignNavigationBehavior()' in html
           assert 'function submitBooking()' in html
+          assert 'function setBookingSubmitBusy(busy, busyText){\n  setSubmitBusy("cb-submit", busy, busyText);' in html
           assert 'CREACLOUD refinements v2' in css
           assert 'window.CREACLOUD_DESIGN_MODE = "redesign"' in Path('creacloud-design.js').read_text(encoding='utf-8')
           print('Refinement structure is valid')
           PY
-          fourth=$?
-          status=0
-          if [ $first -ne 0 ] || [ $second -ne 0 ] || [ $third -ne 0 ] || [ $fourth -ne 0 ]; then status=1; fi
-          cat /tmp/refinement-test-output.txt
-          if [ $status -ne 0 ]; then
-            cp /tmp/refinement-test-output.txt refinement-test-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add refinement-test-error.txt
-            git commit -m "Зафиксировать ошибку тестов доработок" || true
-            git push origin HEAD:${{ github.head_ref }} || true
-            exit $status
-          fi
       - name: Commit refined files
         run: |
           rm -f refinement-patch-error.txt refinement-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html creacloud-redesign.css tests/design_modes_test.js tools/apply_redesign_refinements.py refinement-patch-error.txt refinement-test-error.txt
+          git add index.html creacloud-redesign.css tests/design_modes_test.js refinement-patch-error.txt refinement-test-error.txt
           if git diff --cached --quiet; then
             echo "No refinement changes to commit"
             exit 0
           fi
-          git commit -m "Доработать интерфейс CREACLOUD по итогам просмотра"
+          git commit -m "Исправить работу кнопок бронирования"
           git push origin HEAD:${{ github.head_ref }}
