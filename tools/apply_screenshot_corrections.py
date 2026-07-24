@@ -51,7 +51,7 @@ html[data-design="redesign"] #corsar-blogger-booking button.cb-day {
 @media (min-width: 901px) {
   /* Keep the main weather icon directly beside the temperature. */
   html[data-design="redesign"] #corsar-blogger-booking .cb-weather-temp {
-    display: inline-flex !important;
+    display: flex !important;
     width: max-content !important;
     max-width: 100%;
     align-self: flex-start;
