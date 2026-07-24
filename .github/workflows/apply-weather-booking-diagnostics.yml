@@ -16,8 +16,13 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: Уточнить патч отмены брони
+
+      - name: Применить патч при необходимости
         run: |
+          if grep -q 'SITE_BUILD_ID = "2026-07-24.weather-booking-health"' index.html; then
+            echo "index.html уже обновлён"
+            exit 0
+          fi
           python - <<'PY'
           from pathlib import Path
           path = Path('tools/apply_weather_booking_diagnostics.py')
@@ -36,21 +41,8 @@ jobs:
               raise SystemExit('cancellation patch source block not found')
           path.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
-      - name: Применить патч
-        run: |
-          set +e
-          python tools/apply_weather_booking_diagnostics.py > /tmp/patch-output.txt 2>&1
-          status=$?
-          cat /tmp/patch-output.txt
-          if [ $status -ne 0 ]; then
-            cp /tmp/patch-output.txt patch-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add patch-error.txt
-            git commit -m "Зафиксировать ошибку применения патча" || true
-            git push origin HEAD:${{ github.head_ref }} || true
-            exit $status
-          fi
+          python tools/apply_weather_booking_diagnostics.py
+
       - name: Проверить JavaScript
         run: |
           python - <<'PY'
@@ -64,6 +56,7 @@ jobs:
           Path('/tmp/corsar-site.js').write_text(inline[-1], encoding='utf-8')
           PY
           node --check /tmp/corsar-site.js
+
       - name: Проверить ключевые условия
         run: |
           python - <<'PY'
@@ -85,11 +78,15 @@ jobs:
               assert item not in text, item
           print('critical checks passed')
           PY
-      - name: Зафиксировать index.html
+
+      - name: Прогнать тестовую жизнь продукта
+        run: node tests/site_health_test.js
+
+      - name: Зафиксировать index.html при первом применении
         run: |
           rm -f patch-error.txt
           if git diff --quiet -- index.html; then
-            echo "index.html already patched"
+            echo "Новых изменений index.html нет"
             exit 0
           fi
           git config user.name "github-actions[bot]"
