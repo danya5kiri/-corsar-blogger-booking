@@ -1,0 +1,36 @@
+name: Remove leader controls frame
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Remove gray leader frame
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('creacloud-redesign.css')
+          css = path.read_text(encoding='utf-8')
+          marker = '/* Remove gray frame behind leader controls */'
+          if marker not in css:
+              css = css.rstrip() + '''\n\n/* Remove gray frame behind leader controls */\nhtml[data-design="redesign"] #corsar-blogger-booking .cb-leaders-controls {\n  border: 0 !important;\n  background: transparent !important;\n  box-shadow: none !important;\n}\n'''
+              path.write_text(css, encoding='utf-8')
+          PY
+          rm -f .github/workflows/remove-leader-controls-frame.yml
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add creacloud-redesign.css .github/workflows/remove-leader-controls-frame.yml
+          git commit -m "Убрать серый фрейм под лидерами"
+          git push origin HEAD:main
