@@ -1,0 +1,46 @@
+name: Apply CREACLOUD refinement package
+
+on:
+  push:
+    branches: [refine-creacloud-redesign-ui]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refine-creacloud-redesign-ui
+          fetch-depth: 0
+      - name: Apply refinement patch
+        run: python tools/apply_redesign_refinements.py
+      - name: Run product and design tests
+        run: |
+          node --check creacloud-design.js
+          node tests/site_health_test.js
+          node tests/design_modes_test.js
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'unbalanced CSS'
+          assert 'id="cb-call-submit"' in html
+          assert 'function setupRedesignNavigationBehavior()' in html
+          assert 'CREACLOUD refinements v2' in css
+          assert 'window.CREACLOUD_DESIGN_MODE = "redesign"' in Path('creacloud-design.js').read_text(encoding='utf-8')
+          print('Refinement structure is valid')
+          PY
+      - name: Commit refined files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html creacloud-redesign.css tests/design_modes_test.js
+          if git diff --cached --quiet; then
+            echo "No refinement changes to commit"
+            exit 0
+          fi
+          git commit -m "Доработать интерфейс CREACLOUD по итогам просмотра"
+          git push origin HEAD:refine-creacloud-redesign-ui
