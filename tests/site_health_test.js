@@ -154,7 +154,8 @@ test("JavaScript parses", () => {
 });
 
 test("HTML ids are unique", () => {
-  const ids = Array.from(html.matchAll(/\sid="([^"]+)"/g), (match) => match[1]);
+  const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, "");
+  const ids = Array.from(staticMarkup.matchAll(/\sid="([^"]+)"/g), (match) => match[1]);
   const seen = new Set();
   const duplicates = [];
   ids.forEach((id) => {
