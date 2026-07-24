@@ -17,7 +17,20 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Применить патч
-        run: python tools/apply_weather_booking_diagnostics.py
+        run: |
+          set +e
+          python tools/apply_weather_booking_diagnostics.py > /tmp/patch-output.txt 2>&1
+          status=$?
+          cat /tmp/patch-output.txt
+          if [ $status -ne 0 ]; then
+            cp /tmp/patch-output.txt patch-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add patch-error.txt
+            git commit -m "Зафиксировать ошибку применения патча" || true
+            git push origin HEAD:${{ github.head_ref }} || true
+            exit $status
+          fi
       - name: Проверить JavaScript
         run: |
           python - <<'PY'
@@ -54,6 +67,7 @@ jobs:
           PY
       - name: Зафиксировать index.html
         run: |
+          rm -f patch-error.txt
           if git diff --quiet -- index.html; then
             echo "index.html already patched"
             exit 0
