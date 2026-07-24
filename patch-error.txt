@@ -1,1 +1,1 @@
-remember pending cancellation: expected 1 occurrence, got 2
+weather state: expected 1 occurrence, got 0
