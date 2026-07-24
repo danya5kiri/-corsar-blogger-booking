@@ -17,7 +17,9 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Применить патч
-        run: python tools/apply_creator_profile_stories_buttons.py
+        run: |
+          python tools/apply_creator_profile_stories_buttons.py
+          python tools/fix_creator_achievement_priority.py
       - name: Проверить JavaScript и продуктовые сценарии
         run: |
           set +e
