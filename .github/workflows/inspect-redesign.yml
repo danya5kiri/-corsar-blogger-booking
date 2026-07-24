@@ -1,4 +1,4 @@
-name: Inspect redesign anchors
+name: Apply and test CREACLOUD redesign
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  inspect:
+  apply-and-test:
     if: github.head_ref == 'creacloud-visual-redesign'
     runs-on: ubuntu-latest
     steps:
@@ -16,21 +16,61 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: Save loader and structure anchors
+
+      - name: Apply redesign integration
         run: |
-          {
-            echo '--- loader functions ---'
-            grep -nE 'setLoader|finishLoader|hideSplash|loaderReady|cb-loader|splash' index.html | tail -120
-            echo '--- script end / init ---'
-            grep -nE 'DOMContentLoaded|setupDiagnostics|loadData|loadWeather|Promise\.all|window\.addEventListener\("load"' index.html | tail -150
-            echo '--- key visual classes ---'
-            grep -nE '^\.cb-section|^\.cb-form-card|^\.cb-calendar-shell|^\.cb-ranking-section|^\.cb-results-section|^\.cb-footer' index.html | head -160
-          } > redesign-inspection.txt
-          cat redesign-inspection.txt
-      - name: Commit inspection
+          python tools/apply_creacloud_redesign.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/site-health.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '      - name: Запустить тесты погоды и бронирования\n        run: node tests/site_health_test.js\n'
+          new = '      - name: Запустить тесты продукта и режимов дизайна\n        run: node tests/site_health_test.js && node tests/design_modes_test.js\n'
+          if text.count(old) != 1:
+              raise SystemExit('site-health workflow anchor not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Check JavaScript and CSS structure
         run: |
+          node --check creacloud-design.js
+          python - <<'PY'
+          from pathlib import Path
+          css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'unbalanced CSS braces'
+          assert 'html[data-design="redesign"]' in css
+          assert '@media (prefers-reduced-motion: reduce)' in css
+          print('CSS structure is valid')
+          PY
+
+      - name: Run product and design tests
+        run: |
+          node tests/site_health_test.js
+          node tests/design_modes_test.js
+
+      - name: Verify unchanged product anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          required = [
+              'id="home"', 'id="calendar"', 'id="booking"', 'id="content"',
+              'id="ranking"', 'id="results"', 'id="creator-profile"',
+              'function submitBooking()', 'function submitReport()',
+              'function renderAnalytics()', 'function renderResults()',
+              'TOTAL_UNIQUE_TOURS = 8', 'models=best_match'
+          ]
+          for marker in required:
+              assert marker in text, marker
+          assert text.index('id="home"') < text.index('id="calendar"') < text.index('id="booking"') < text.index('id="content"') < text.index('id="ranking"') < text.index('id="results"')
+          print('Product structure is preserved')
+          PY
+
+      - name: Commit working files
+        run: |
+          rm -f redesign-inspection.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add redesign-inspection.txt
-          git commit -m "Зафиксировать точки интеграции редизайна" || true
+          git add index.html .github/workflows/site-health.yml redesign-inspection.txt
+          git commit -m "Интегрировать визуальный редизайн CREACLOUD"
           git push origin HEAD:${{ github.head_ref }}
