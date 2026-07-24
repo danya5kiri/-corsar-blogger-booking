@@ -80,6 +80,12 @@ html[data-design="redesign"] #corsar-blogger-booking button.cb-day {
 if marker not in css:
     css = css.rstrip() + css_patch + "\n"
 
+# The permanent phone-flow test must follow the explicit call-only config key.
+old_phone_assertion = r'  assert.match(html, /tel:\+" \+ CONFIG\.WHATSAPP_NUMBER/);'
+new_phone_assertion = r'  assert.match(html, /tel:\+" \+ CONFIG\.CALL_PHONE_NUMBER/);'
+if old_phone_assertion in tests:
+    tests = tests.replace(old_phone_assertion, new_phone_assertion, 1)
+
 if 'screenshot corrections keep requested desktop geometry' not in tests:
     footer = 'console.log(`\\n${passed} design mode tests passed.`);'
     if tests.count(footer) != 1:
