@@ -1018,3 +1018,343 @@ html[data-design="redesign"] .cb-leader-change-notice button:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* ===== CREACLOUD refinements v2 ===== */
+html[data-design="redesign"] .cb-sticky-nav {
+  border-color: rgba(21, 23, 20, .10);
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 14px 36px rgba(31, 35, 28, .11);
+  transition: transform .26s cubic-bezier(.22, 1, .36, 1), opacity .2s ease, background .2s ease;
+}
+
+html[data-design="redesign"] .cb-sticky-nav.is-scroll-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - max(18px, env(safe-area-inset-top))));
+}
+
+html[data-design="redesign"] .cb-nav-brand,
+html[data-design="redesign"] .cb-nav-links a {
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-nav-links a:hover,
+html[data-design="redesign"] .cb-nav-links a.is-active {
+  background: var(--cc-lime);
+  color: #11130f;
+}
+
+html[data-design="redesign"] .cb-hero {
+  border-color: rgba(21, 23, 20, .08);
+  background:
+    radial-gradient(circle at 76% 2%, rgba(118, 87, 246, .14), transparent 28rem),
+    radial-gradient(circle at 96% 82%, rgba(255, 122, 36, .12), transparent 24rem),
+    radial-gradient(circle at 8% 96%, rgba(217, 255, 82, .18), transparent 26rem),
+    linear-gradient(145deg, #ffffff 0%, #ffffff 64%, #f7f8f3 100%) !important;
+  box-shadow: 0 24px 72px rgba(31, 35, 28, .10);
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-hero-inner::before {
+  background: rgba(118, 87, 246, .12);
+}
+
+html[data-design="redesign"] .cb-hero-inner::after {
+  background: rgba(217, 255, 82, .18);
+}
+
+html[data-design="redesign"] .cb-hero-title,
+html[data-design="redesign"] .cb-hero-title strong {
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-hero-text {
+  color: #5f645c;
+}
+
+html[data-design="redesign"] .cb-route-line {
+  opacity: .94;
+  filter: drop-shadow(0 5px 11px rgba(77, 64, 150, .24));
+}
+
+html[data-design="redesign"] .cb-route-line > path {
+  stroke-width: 5.4px;
+}
+
+html[data-design="redesign"] #cb-route-gradient stop:nth-child(1) {
+  stop-color: #7657f6;
+}
+
+html[data-design="redesign"] #cb-route-gradient stop:nth-child(2) {
+  stop-color: #ff7a24;
+}
+
+html[data-design="redesign"] #cb-route-gradient stop:nth-child(3) {
+  stop-color: #5d9b6f;
+}
+
+html[data-design="redesign"] #cb-route-gradient stop:nth-child(4) {
+  stop-color: #292d28;
+}
+
+html[data-design="redesign"] .cb-route-stop {
+  fill: #fff;
+  filter: drop-shadow(0 3px 5px rgba(21, 23, 20, .20));
+}
+
+html[data-design="redesign"] .cb-route-ship {
+  filter: drop-shadow(0 8px 13px rgba(65, 48, 126, .30));
+}
+
+html[data-design="redesign"] .cb-profile-entry-card,
+html[data-design="redesign"] .cb-hero-stats > .cb-stat-card:first-child,
+html[data-design="redesign"] .cb-hero-stats > .cb-stat-card:nth-child(2) {
+  border-radius: 16px;
+}
+
+html[data-design="redesign"] .cb-profile-entry-card,
+html[data-design="redesign"] .cb-profile-entry-card .cb-stat-label,
+html[data-design="redesign"] .cb-profile-entry-copy,
+html[data-design="redesign"] .cb-profile-entry-copy strong,
+html[data-design="redesign"] .cb-profile-entry-copy span,
+html[data-design="redesign"] .cb-profile-entry-state {
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-recent-events {
+  border-color: rgba(21, 23, 20, .10);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .76);
+  color: #151714;
+  box-shadow: 0 10px 26px rgba(31, 35, 28, .07);
+}
+
+html[data-design="redesign"] .cb-recent-events[open] {
+  border-radius: 18px;
+}
+
+html[data-design="redesign"] .cb-recent-events .cb-activity-head,
+html[data-design="redesign"] .cb-recent-events-desktop .cb-activity-head,
+html[data-design="redesign"] .cb-recent-events-mobile .cb-activity-head {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .74);
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-recent-events .cb-activity-panel,
+html[data-design="redesign"] .cb-recent-events-mobile .cb-activity-panel {
+  border-color: rgba(21, 23, 20, .09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .97);
+  color: #151714;
+  box-shadow: 0 -14px 34px rgba(31, 35, 28, .11);
+}
+
+html[data-design="redesign"] .cb-activity-copy,
+html[data-design="redesign"] .cb-activity-time,
+html[data-design="redesign"] .cb-activity-empty,
+html[data-design="redesign"] .cb-activity-live {
+  color: #676c64;
+}
+
+html[data-design="redesign"] .cb-activity-copy strong {
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-hero-stats > .cb-stat-card:first-child {
+  background:
+    radial-gradient(circle at 84% 10%, rgba(255, 255, 255, .88), transparent 35%),
+    linear-gradient(145deg, #f4ffd1 0%, #e9f6cf 48%, #ffffff 100%);
+  color: #151714;
+  box-shadow: 0 16px 36px rgba(79, 96, 49, .13);
+}
+
+html[data-design="redesign"] .cb-weather-temp {
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+html[data-design="redesign"] .cb-weather-number {
+  flex: 0 0 auto;
+}
+
+html[data-design="redesign"] .cb-weather-temp .cb-weather-icon {
+  width: 42px;
+  height: 42px;
+  margin: 0;
+}
+
+html[data-design="redesign"] .cb-leaders-controls {
+  background: rgba(21, 23, 20, .06);
+  color: #151714;
+}
+
+html[data-design="redesign"] .cb-leaders-current span,
+html[data-design="redesign"] .cb-leaders-current strong {
+  color: #62675f;
+}
+
+html[data-design="redesign"] .cb-leaders-track .cb-leader-card {
+  border-radius: 14px;
+}
+
+html[data-design="redesign"] .cb-story-card,
+html[data-design="redesign"] .cb-story-add-card {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+html[data-design="redesign"] .cb-story-add-copy {
+  min-width: 0;
+  padding-right: 8px;
+}
+
+html[data-design="redesign"] .cb-calendar-controls,
+html[data-design="redesign"] .cb-calendar-card,
+html[data-design="redesign"] .cb-details-card {
+  border-radius: 14px;
+}
+
+html[data-design="redesign"] .cb-day {
+  border-radius: 7px;
+}
+
+html[data-design="redesign"] .cb-ranking-section {
+  background:
+    radial-gradient(circle at 8% 6%, rgba(217, 255, 82, .22), transparent 24rem),
+    radial-gradient(circle at 92% 10%, rgba(178, 151, 255, .42), transparent 26rem),
+    radial-gradient(circle at 86% 88%, rgba(255, 157, 94, .34), transparent 24rem),
+    linear-gradient(135deg, #6657b8 0%, #47526c 50%, #a75935 100%);
+  color: #fff;
+  box-shadow: 0 26px 76px rgba(62, 52, 92, .22);
+}
+
+html[data-design="redesign"] .cb-ranking-section .cb-section-title,
+html[data-design="redesign"] .cb-ranking-section .cb-section-note {
+  color: #fff;
+}
+
+html[data-design="redesign"] .cb-ranking-section .cb-section-note {
+  color: rgba(255, 255, 255, .82);
+}
+
+html[data-design="redesign"] .cb-booking-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .42fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+html[data-design="redesign"] .cb-booking-actions .cb-submit,
+html[data-design="redesign"] .cb-booking-call {
+  grid-column: auto;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 780;
+}
+
+html[data-design="redesign"] .cb-booking-call {
+  background: #151714;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(21, 23, 20, .17);
+}
+
+html[data-design="redesign"] .cb-booking-call:hover,
+html[data-design="redesign"] .cb-booking-call:focus-visible {
+  background: #292d28;
+  transform: translateY(-2px);
+}
+
+html[data-design="redesign"] .cb-booking-call:disabled {
+  cursor: wait;
+  filter: grayscale(.45);
+  opacity: .46;
+  transform: none;
+}
+
+html[data-design="redesign"] .cb-splash {
+  display: grid;
+  place-items: center;
+}
+
+html[data-design="redesign"] .cb-splash-redesign {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+  place-content: center;
+  overflow: hidden;
+}
+
+html[data-design="redesign"] .cb-splash-logo {
+  width: 100%;
+  max-width: calc(100vw - 36px);
+}
+
+@media (max-width: 600px) {
+  html[data-design="redesign"] .cb-splash {
+    inset: 0;
+    min-height: 100dvh;
+    padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom));
+  }
+
+  html[data-design="redesign"] .cb-splash-redesign {
+    min-height: 0;
+    height: calc(100dvh - max(18px, env(safe-area-inset-top)) - max(22px, env(safe-area-inset-bottom)));
+  }
+
+  html[data-design="redesign"] .cb-splash-logo {
+    max-width: calc(100vw - 36px);
+    font-size: clamp(38px, 15.4vw, 62px);
+    letter-spacing: -.07em;
+  }
+
+  html[data-design="redesign"] .cb-splash-subtitle {
+    max-width: min(280px, calc(100vw - 44px));
+    margin-top: clamp(20px, 4vh, 30px);
+    font-size: 15px;
+  }
+
+  html[data-design="redesign"] .cb-splash-pulse {
+    margin-top: clamp(52px, 8vh, 70px);
+  }
+
+  html[data-design="redesign"] .cb-splash-phrase-frame {
+    min-height: 34px;
+    margin-top: 36px;
+  }
+
+  html[data-design="redesign"] .cb-leaders-track .cb-leader-card,
+  html[data-design="redesign"] .cb-calendar-card,
+  html[data-design="redesign"] .cb-details-card {
+    border-radius: 14px;
+  }
+
+  html[data-design="redesign"] .cb-day {
+    border-radius: 7px;
+  }
+
+  html[data-design="redesign"] .cb-booking-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Refined publication-card radius must override the global pill-button rule. */
+html[data-design="redesign"] #corsar-blogger-booking button.cb-story-add-card,
+html[data-design="redesign"] #corsar-blogger-booking .cb-story-card {
+  border-radius: 14px !important;
+}

@@ -5185,7 +5185,10 @@ body.cb-lock-scroll #corsar-blogger-booking {
         <div id="cb-transfer-source-hint" class="cb-field-hint">Выберите прежнюю дату, а выше укажите новую дату и программу.</div>
       </div>
       <div class="cb-inline-note">На каждый тур в конкретную дату записывается только один креатор. Перенос или удаление брони освобождает место и исключает прежнюю запись из рейтинга и статистики.</div>
-      <button type="button" id="cb-submit" class="cb-submit">Сформировать заявку в WhatsApp</button>
+      <div class="cb-booking-actions">
+        <button type="button" id="cb-submit" class="cb-submit">Сформировать заявку WhatsApp</button>
+        <button type="button" id="cb-call-submit" class="cb-booking-call" aria-label="Позвонить Ольге для записи">Позвонить для записи</button>
+      </div>
     </div>
   </section>
 
@@ -5252,7 +5255,7 @@ body.cb-lock-scroll #corsar-blogger-booking {
     <div class="cb-section-head">
       <div>
         <div class="cb-section-kicker">Персональный профиль</div>
-        <h2 class="cb-section-title">Мини-ЛК <strong>креатора</strong></h2>
+        <h2 class="cb-section-title">ЛК <strong>креатора</strong></h2>
       </div>
       <p class="cb-section-note">Профиль формируется из действующих записей и опубликованных материалов. Отдельной регистрации или нового учёта нет.</p>
     </div>
@@ -7423,6 +7426,11 @@ function setSubmitBusy(buttonId, busy, busyText){
   if(!button.getAttribute("data-idle-text")) button.setAttribute("data-idle-text", button.textContent);
   button.disabled = !!busy;
   button.textContent = busy ? busyText : button.getAttribute("data-idle-text");
+}
+
+function setBookingSubmitBusy(busy, busyText){
+  setSubmitBusy("cb-submit", busy, busyText);
+  setSubmitBusy("cb-call-submit", busy, busyText);
 }
 
 var messageTimer = null;
@@ -10280,7 +10288,8 @@ function loadData(){
     });
 }
 
-function submitBookingCancellation(tg, sourceFingerprint){
+function submitBookingCancellation(tg, sourceFingerprint, contactMode){
+  contactMode = contactMode === "call" ? "call" : "whatsapp";
   if(!tg){
     setMessage("Введите Telegram.", true);
     return;
@@ -10318,7 +10327,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
   }
 
   bookingSubmitting = true;
-  setSubmitBusy("cb-submit", true, "Проверяем бронь...");
+  setBookingSubmitBusy( true, "Проверяем бронь...");
   setMessage("Проверяем актуальную бронь...", false);
 
   refreshRemoteDataForCheck()
@@ -10329,7 +10338,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
       source = findBookingByFingerprint(sourceFingerprint);
       if(!source || normalizeTelegram(source.telegram) !== tg || !isTransferableBookingForCreator(source, tg)){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         renderDataViews();
         setMessage("Эта бронь уже изменена или не принадлежит указанному нику.", true);
         return;
@@ -10337,7 +10346,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
 
       if(wasRecentlySubmitted(BOOKING_STORAGE_KEY, submissionFingerprint)){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         setMessage("Удаление этой брони уже отправлено.", true);
         return;
       }
@@ -10354,6 +10363,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
         participants: 1,
         status: "Отмена",
         operation: "cancel",
+        contactChannel: contactMode === "call" ? "phone" : "whatsapp",
         cancelBookingKey: sourceFingerprint,
         previousDate: sourceDate,
         previousTour: sourceTour,
@@ -10363,7 +10373,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
         requestId: "cancel-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
       };
 
-      setSubmitBusy("cb-submit", true, "Удаляем бронь...");
+      setBookingSubmitBusy( true, "Удаляем бронь...");
       setMessage("Удаляем бронь...", false);
 
       fetch(CONFIG.API_URL, {
@@ -10380,7 +10390,7 @@ function submitBookingCancellation(tg, sourceFingerprint){
         if($("cb-transfer-source")) $("cb-transfer-source").value = "";
         bookingSubmitting = false;
         renderDataViews();
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         renderTransferOptions();
 
         var text = [
@@ -10393,26 +10403,31 @@ function submitBookingCancellation(tg, sourceFingerprint){
           "Прошу учесть отмену бронирования."
         ].join("\n");
         var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
+        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.WHATSAPP_NUMBER : whatsappUrl;
 
-        setMessage("Бронь удалена. Место освобождено; открываем WhatsApp.", false);
-        setTimeout(function(){ window.location.href = whatsappUrl; }, 650);
+        setMessage(contactMode === "call" ? "Бронь удалена. Место освобождено; звоним Ольге." : "Бронь удалена. Место освобождено; открываем WhatsApp.", false);
+        setTimeout(function(){ window.location.href = contactUrl; }, 650);
       })
       .catch(function(error){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         recordDiagnostic("booking", "cancel_write_failed", error && error.message ? error.message : "Сетевой сбой удаления", "error");
         setMessage("Не удалось удалить бронь. Повторите попытку.", true);
       });
     })
     .catch(function(error){
       bookingSubmitting = false;
-      setSubmitBusy("cb-submit", false, "");
+      setBookingSubmitBusy( false, "");
       recordDiagnostic("booking", "cancel_preflight_failed", error && error.message ? error.message : "Не выполнена проверка базы", "error");
       setMessage("Не удалось проверить актуальную бронь. Обновите страницу и попробуйте ещё раз.", true);
     });
 }
 
+var bookingContactMode = "whatsapp";
+
 function submitBooking(){
+  var contactMode = bookingContactMode === "call" ? "call" : "whatsapp";
+  bookingContactMode = "whatsapp";
   var date = getFormDate();
   var tg = normalizeTelegram($("cb-telegram").value);
   var tour = $("cb-tour") ? String($("cb-tour").value || "").trim() : "";
@@ -10427,7 +10442,7 @@ function submitBooking(){
   }
 
   if(mode === "cancel"){
-    submitBookingCancellation(tg, sourceFingerprint);
+    submitBookingCancellation(tg, sourceFingerprint, contactMode);
     return;
   }
 
@@ -10524,7 +10539,7 @@ function submitBooking(){
   }
 
   bookingSubmitting = true;
-  setSubmitBusy("cb-submit", true, "Проверяем запись...");
+  setBookingSubmitBusy( true, "Проверяем запись...");
   setMessage("Проверяем актуальные записи...", false);
 
   refreshRemoteDataForCheck()
@@ -10537,7 +10552,7 @@ function submitBooking(){
         transferSource = findBookingByFingerprint(sourceFingerprint);
         if(!transferSource || normalizeTelegram(transferSource.telegram) !== tg || !isTransferableBookingForCreator(transferSource, tg)){
           bookingSubmitting = false;
-          setSubmitBusy("cb-submit", false, "");
+          setBookingSubmitBusy( false, "");
           renderDataViews();
           setMessage("Исходная запись уже была изменена. Выберите её заново.", true);
           return;
@@ -10545,7 +10560,7 @@ function submitBooking(){
 
         if(sourceFingerprint === fingerprint){
           bookingSubmitting = false;
-          setSubmitBusy("cb-submit", false, "");
+          setBookingSubmitBusy( false, "");
           setMessage("Для переноса выберите другую дату или другую программу.", true);
           return;
         }
@@ -10553,7 +10568,7 @@ function submitBooking(){
 
       if(!isBookableDate(date) || !isTourScheduledOnDate(date, tour)){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         renderDataViews();
         recordDiagnostic("booking", "schedule_changed_during_check", "Дата или программа перестала быть доступна во время контрольной проверки", "warning");
         setMessage("Расписание изменилось во время проверки. Выберите дату и тур заново.", true);
@@ -10566,7 +10581,7 @@ function submitBooking(){
 
       if(hasBookingSlotConflict(date, tour)){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         renderDataViews();
         setMessage("Этот тур уже занял другой креатор. Выберите свободный тур или другую дату.", true);
         return;
@@ -10574,7 +10589,7 @@ function submitBooking(){
 
       if(wasRecentlySubmitted(BOOKING_STORAGE_KEY, submissionFingerprint)){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         setMessage(mode === "transfer" ? "Такой перенос уже отправлен." : "Такая заявка уже отправлена.", true);
         return;
       }
@@ -10588,6 +10603,7 @@ function submitBooking(){
         count: 1,
         participants: 1,
         status: mode === "transfer" ? "Перенос" : "Новая заявка",
+        contactChannel: contactMode === "call" ? "phone" : "whatsapp",
         slotKey: bookingSlotFingerprint(date, tour),
         slotCapacity: 1,
         comment: mode === "transfer"
@@ -10605,7 +10621,7 @@ function submitBooking(){
         payload.previousTelegram = normalizeTelegram(transferSource.telegram);
       }
 
-      setSubmitBusy("cb-submit", true, mode === "transfer" ? "Сохраняем перенос..." : "Сохраняем заявку...");
+      setBookingSubmitBusy( true, mode === "transfer" ? "Сохраняем перенос..." : "Сохраняем заявку...");
       setMessage(mode === "transfer" ? "Сохраняем перенос..." : "Сохраняем заявку...", false);
 
       fetch(CONFIG.API_URL, {
@@ -10622,7 +10638,7 @@ function submitBooking(){
         if($("cb-transfer-source")) $("cb-transfer-source").value = "";
         bookingSubmitting = false;
         renderDataViews();
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         renderTransferOptions();
 
         var text = mode === "transfer" ? [
@@ -10644,20 +10660,24 @@ function submitBooking(){
           "Прошу согласовать участие."
         ].join("\n");
         var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
+        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.WHATSAPP_NUMBER : whatsappUrl;
+        var successMessage = contactMode === "call"
+          ? (mode === "transfer" ? "Запись перенесена. Звоним Ольге для согласования." : "Заявка записана. Звоним Ольге для согласования.")
+          : (mode === "transfer" ? "Запись перенесена. Открываем WhatsApp для согласования." : "Заявка записана. Открываем WhatsApp для согласования.");
 
-        setMessage(mode === "transfer" ? "Запись перенесена. Открываем WhatsApp для согласования." : "Заявка записана. Открываем WhatsApp для согласования.", false);
-        setTimeout(function(){ window.location.href = whatsappUrl; }, 650);
+        setMessage(successMessage, false);
+        setTimeout(function(){ window.location.href = contactUrl; }, 650);
       })
       .catch(function(error){
         bookingSubmitting = false;
-        setSubmitBusy("cb-submit", false, "");
+        setBookingSubmitBusy( false, "");
         recordDiagnostic("booking", "write_request_failed", error && error.message ? error.message : "Сетевой сбой отправки", "error");
         setMessage("Не удалось отправить заявку. Повторите попытку.", true);
       });
     })
     .catch(function(error){
       bookingSubmitting = false;
-      setSubmitBusy("cb-submit", false, "");
+      setBookingSubmitBusy( false, "");
       recordDiagnostic("booking", "preflight_failed", error && error.message ? error.message : "Не выполнена повторная проверка базы", "error");
       setMessage("Не удалось проверить актуальные записи. Обновите страницу и попробуйте ещё раз.", true);
     });
@@ -10837,6 +10857,41 @@ function submitReport(){
     });
 }
 
+function setupRedesignNavigationBehavior(){
+  if(document.documentElement.getAttribute("data-design") !== "redesign") return;
+  var nav = document.querySelector(".cb-sticky-nav");
+  if(!nav) return;
+
+  var lastY = Math.max(0, window.scrollY || 0);
+  var ticking = false;
+
+  function showNavigation(){
+    nav.classList.remove("is-scroll-hidden");
+  }
+
+  window.addEventListener("scroll", function(){
+    if(ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function(){
+      var currentY = Math.max(0, window.scrollY || 0);
+      var delta = currentY - lastY;
+      if(currentY < 96 || delta < -4){
+        showNavigation();
+      } else if(currentY > 150 && delta > 4){
+        nav.classList.add("is-scroll-hidden");
+      }
+      lastY = currentY;
+      ticking = false;
+    });
+  }, {passive: true});
+
+  nav.addEventListener("focusin", showNavigation);
+  nav.addEventListener("pointerenter", showNavigation);
+  Array.prototype.forEach.call(nav.querySelectorAll("a"), function(link){
+    link.addEventListener("click", showNavigation);
+  });
+}
+
 function init(){
   if(!$("corsar-blogger-booking")) return;
 
@@ -10845,6 +10900,7 @@ function init(){
   setInterval(updateSeasonCounter, 3600000);
   setupWeatherRefresh();
   setupStickyNav();
+  setupRedesignNavigationBehavior();
   setupCreatorProfilePlacement();
   setupDesktopRecentEventsWidth();
   setupLeadersCarousel();
@@ -10857,10 +10913,12 @@ function init(){
   setupCompactNotice();
 
   var submit = $("cb-submit");
+  var callSubmit = $("cb-call-submit");
   var dateInput = $("cb-date");
   var reportSubmit = $("cb-report-submit");
 
-  if(submit) submit.onclick = submitBooking;
+  if(submit) submit.onclick = function(){ bookingContactMode = "whatsapp"; submitBooking(); };
+  if(callSubmit) callSubmit.onclick = function(){ bookingContactMode = "call"; submitBooking(); };
   if(reportSubmit) reportSubmit.onclick = submitReport;
 
   if(dateInput){
