@@ -11,10 +11,11 @@ tests = TESTS.read_text(encoding="utf-8")
 
 # Keep the WhatsApp contact unchanged, but make the phone destination explicit.
 if 'CALL_PHONE_NUMBER: "79149753285"' not in index:
-    anchor = 'WHATSAPP_NUMBER: "79149753285",'
+    anchor = 'WHATSAPP_NUMBER: "79149753285"'
     if index.count(anchor) != 1:
         raise SystemExit(f"WhatsApp config anchor: expected 1, found {index.count(anchor)}")
-    index = index.replace(anchor, anchor + '\n  CALL_PHONE_NUMBER: "79149753285",', 1)
+    replacement = 'WHATSAPP_NUMBER: "79149753285",\n  CALL_PHONE_NUMBER: "79149753285"'
+    index = index.replace(anchor, replacement, 1)
 
 old_call = 'contactMode === "call" ? "tel:+" + CONFIG.WHATSAPP_NUMBER : whatsappUrl'
 new_call = 'contactMode === "call" ? "tel:+" + CONFIG.CALL_PHONE_NUMBER : whatsappUrl'
