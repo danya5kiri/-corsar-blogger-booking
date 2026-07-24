@@ -49,7 +49,7 @@ jobs:
           rm -f refinement-patch-error.txt refinement-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html creacloud-redesign.css tests/design_modes_test.js refinement-patch-error.txt refinement-test-error.txt
+          git add -A
           if git diff --cached --quiet; then
             echo "No refinement changes to commit"
             exit 0
