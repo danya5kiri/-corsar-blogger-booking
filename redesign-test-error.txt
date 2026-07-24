@@ -1,0 +1,1030 @@
+✓ JavaScript parses
+✓ HTML ids are unique
+✓ weather uses explicit Best Match for 16 days
+✓ calendar displays every received forecast regardless of month
+✓ mobile regression guards remain intact
+✓ diagnostics container and privacy copy exist
+✓ season retains eight unique categories
+✓ all static schedule dates are inside the season
+✓ forecast map keeps dates across July and August
+✓ transfer removes the source and keeps the target
+✓ cancellation removes an existing booking
+✓ a new booking after an older cancellation survives
+✓ slot conflict recognises canonical aliases
+✓ past bookings cannot be transferred or cancelled
+✓ tour must belong to the selected date
+✓ unique recommendation appears only for a free unvisited category
+✓ pending opaque POST is confirmed from reloaded data
+✓ diagnostic details remove user identifiers
+✓ creator cabinet has close control, achievements and no duplicate metric cards
+✓ creator achievement level follows actual progress
+✓ materials show today's index and leading add-content card
+✓ diagnostics are rendered below CREACLOUD
+✓ active controls use rounded edges while card buttons keep a compact radius
+
+23 site health tests passed.
+✓ default design is controlled by one explicit feature flag
+✓ legacy and redesign can both be selected without changing HTML
+✓ redesign stylesheet is isolated from legacy styles
+✓ both loading screens remain available
+✓ loader phrases and reduced motion are implemented
+✓ loader lifecycle uses the theme without artificial redesign delay
+✓ main information architecture and navigation remain unchanged
+✗ business logic and data sources remain present
+/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:17
+    throw error;
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /TOTAL_UNIQUE_TOURS\s*=\s*8/. Input:
+
+'<!doctype html>\n' +
+  '<html lang="ru">\n' +
+  '<head>\n' +
+  '<meta charset="utf-8">\n' +
+  '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+  '<meta name="theme-color" content="#171719">\n' +
+  '<title>Творческая мастерская «Корсар»</title>\n' +
+  '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+  '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">\n' +
+  '<script src="creacloud-design.js"></script>\n' +
+  '<link rel="stylesheet" href="creacloud-redesign.css">\n' +
+  '<style>\n' +
+  '/* ===== Corsar creative workshop ===== */\n' +
+  ':root {\n' +
+  '  --cb-ink: #171719;\n' +
+  '  --cb-muted: #737887;\n' +
+  '  --cb-paper: #ffffff;\n' +
+  '  --cb-canvas: #edf1f8;\n' +
+  '  --cb-lilac: #ded4ff;\n' +
+  '  --cb-lilac-strong: #7f67f8;\n' +
+  '  --cb-cyan: #4ecbed;\n' +
+  '  --cb-coral: #ff8f76;\n' +
+  '  --cb-blue: #2558c8;\n' +
+  '  --cb-rose: #ea5aa7;\n' +
+  '  --cb-yellow: #ffd66b;\n' +
+  '  --cb-mint: #dff6ec;\n' +
+  '  --cb-line: #e3e5eb;\n' +
+  '}\n' +
+  '\n' +
+  'html {\n' +
+  '  min-height: 100%;\n' +
+  '  scroll-behavior: smooth;\n' +
+  '  background: var(--cb-canvas);\n' +
+  '}\n' +
+  '\n' +
+  'body {\n' +
+  '  margin: 0;\n' +
+  '  min-width: 320px;\n' +
+  '  min-height: 100%;\n' +
+  '  font-family: "Montserrat", Arial, sans-serif;\n' +
+  '  background:\n' +
+  '    radial-gradient(circle at 8% 2%, rgba(127, 103, 248, .22), transparent 26rem),\n' +
+  '    radial-gradient(circle at 98% 18%, rgba(78, 203, 237, .20), transparent 25rem),\n' +
+  '    radial-gradient(circle at 12% 72%, rgba(255, 143, 118, .13), transparent 24rem),\n' +
+  '    radial-gradient(circle at 92% 88%, rgba(234, 90, 167, .11), transparent 22rem),\n' +
+  '    var(--cb-canvas);\n' +
+  '}\n' +
+  '\n' +
+  'body.cb-lock-scroll {\n' +
+  '  overflow: hidden;\n' +
+  '  min-height: 100%;\n' +
+  '  overscroll-behavior: none;\n' +
+  '  touch-action: none;\n' +
+  '  background: #f7f7fb !important;\n' +
+  '}\n' +
+  '\n' +
+  'body.cb-lock-scroll::before {\n' +
+  '  content: "";\n' +
+  '  position: fixed;\n' +
+  '  z-index: 2147483645;\n' +
+  '  inset: -8px;\n' +
+  '  pointer-events: none;\n' +
+  '  background: #f7f7fb;\n' +
+  '}\n' +
+  '\n' +
+  'body.cb-lock-scroll #corsar-blogger-booking {\n' +
+  '  visibility: hidden;\n' +
+  '}\n' +
+  '\n' +
+  '#corsar-blogger-booking {\n' +
+  '  width: min(1180px, calc(100% - 32px));\n' +
+  '  max-width: none;\n' +
+  '  margin: 0 auto;\n' +
+  '  padding: 22px 0 72px;\n' +
+  '  color: var(--cb-ink);\n' +
+  '  font-family: "Montserrat", Arial, sans-serif;\n' +
+  '  letter-spacing: -.015em;\n' +
+  '}\n' +
+  '\n' +
+  '#corsar-blogger-booking *,\n' +
+  '.cb-splash,\n' +
+  '.cb-splash * {\n' +
+  '  font-family: "Montserrat", Arial, sans-serif !important;\n' +
+  '}\n' +
+  '\n' +
+  '#corsar-blogger-booking * {\n' +
+  '  box-sizing: border-box;\n' +
+  '}\n' +
+  '\n' +
+  '#corsar-blogger-booking section[id] {\n' +
+  '  scroll-margin-top: 104px;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash {\n' +
+  '  position: fixed;\n' +
+  '  z-index: 2147483647;\n' +
+  '  inset: -8px;\n' +
+  '  display: grid;\n' +
+  '  place-items: center;\n' +
+  '  overflow: hidden;\n' +
+  '  box-sizing: border-box;\n' +
+  '  padding: calc(max(24px, env(safe-area-inset-top)) + 8px) 32px calc(max(24px, env(safe-area-inset-bottom)) + 8px);\n' +
+  '  background: #f7f7fb;\n' +
+  '  isolation: isolate;\n' +
+  '  overscroll-behavior: none;\n' +
+  '  touch-action: none;\n' +
+  '  transition: opacity .55s ease, visibility .55s ease;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash::before,\n' +
+  '.cb-splash::after {\n' +
+  '  content: "";\n' +
+  '  position: absolute;\n' +
+  '  border-radius: 999px;\n' +
+  '  filter: blur(2px);\n' +
+  '  opacity: .75;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash::before {\n' +
+  '  width: 42vw;\n' +
+  '  height: 42vw;\n' +
+  '  max-width: 440px;\n' +
+  '  max-height: 440px;\n' +
+  '  top: -18vw;\n' +
+  '  right: -12vw;\n' +
+  '  background: rgba(222, 212, 255, .72);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash::after {\n' +
+  '  width: 32vw;\n' +
+  '  height: 32vw;\n' +
+  '  max-width: 340px;\n' +
+  '  max-height: 340px;\n' +
+  '  left: -13vw;\n' +
+  '  bottom: -10vw;\n' +
+  '  background: rgba(78, 203, 237, .28);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash.is-hidden {\n' +
+  '  opacity: 0;\n' +
+  '  visibility: hidden;\n' +
+  '  pointer-events: none;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-inner {\n' +
+  '  position: relative;\n' +
+  '  z-index: 1;\n' +
+  '  display: flex;\n' +
+  '  width: min(680px, calc(100vw - 48px));\n' +
+  '  flex-direction: column;\n' +
+  '  align-items: center;\n' +
+  '  text-align: center;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-mark {\n' +
+  '  --progress: 0;\n' +
+  '  position: relative;\n' +
+  '  display: grid;\n' +
+  '  place-items: center;\n' +
+  '  width: 132px;\n' +
+  '  height: 132px;\n' +
+  '  margin-bottom: 28px;\n' +
+  '  border-radius: 50%;\n' +
+  '  background: conic-gradient(var(--cb-lilac-strong) calc(var(--progress) * 1%), #e8e8ef 0);\n' +
+  '  box-shadow: 0 22px 60px rgba(82, 67, 151, .16);\n' +
+  '  transition: background .18s linear;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-mark::before {\n' +
+  '  content: "";\n' +
+  '  position: absolute;\n' +
+  '  inset: 10px;\n' +
+  '  border-radius: inherit;\n' +
+  '  background: #f7f7fb;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-percent {\n' +
+  '  position: relative;\n' +
+  '  z-index: 1;\n' +
+  '  font-size: 25px;\n' +
+  '  font-weight: 750;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-title {\n' +
+  '  max-width: 520px;\n' +
+  '  font-size: clamp(27px, 6vw, 45px);\n' +
+  '  font-weight: 350;\n' +
+  '  line-height: 1.02;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-title strong {\n' +
+  '  display: block;\n' +
+  '  font-weight: 780;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-splash-copy {\n' +
+  '  margin-top: 13px;\n' +
+  '  color: var(--cb-muted);\n' +
+  '  font-size: 14px;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-topbar {\n' +
+  '  display: flex;\n' +
+  '  align-items: center;\n' +
+  '  justify-content: space-between;\n' +
+  '  gap: 18px;\n' +
+  '  margin-bottom: 18px;\n' +
+  '  padding: 0 4px;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-sticky-nav {\n' +
+  '  position: sticky;\n' +
+  '  z-index: 1200;\n' +
+  '  top: max(8px, env(safe-area-inset-top));\n' +
+  '  display: flex;\n' +
+  '  align-items: center;\n' +
+  '  gap: 16px;\n' +
+  '  min-height: 62px;\n' +
+  '  margin: 0 0 18px;\n' +
+  '  padding: 8px 10px 8px 16px;\n' +
+  '  overflow: hidden;\n' +
+  '  border: 1px solid rgba(23, 23, 25, .08);\n' +
+  '  border-radius: 18px;\n' +
+  '  background: rgba(255, 255, 255, .88);\n' +
+  '  box-shadow: 0 14px 38px rgba(42, 45, 59, .10);\n' +
+  '  backdrop-filter: blur(18px) saturate(150%);\n' +
+  '  -webkit-backdrop-filter: blur(18px) saturate(150%);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-brand {\n' +
+  '  display: inline-flex;\n' +
+  '  flex: 0 0 auto;\n' +
+  '  align-items: center;\n' +
+  '  gap: 9px;\n' +
+  '  color: var(--cb-ink);\n' +
+  '  text-decoration: none;\n' +
+  '  font-size: 12px;\n' +
+  '  font-weight: 820;\n' +
+  '  letter-spacing: .03em;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-brand::before {\n' +
+  '  content: "";\n' +
+  '  width: 11px;\n' +
+  '  height: 11px;\n' +
+  '  border-radius: 50%;\n' +
+  '  background: linear-gradient(135deg, var(--cb-blue), var(--cb-cyan) 45%, var(--cb-rose));\n' +
+  '  box-shadow: 0 0 0 5px rgba(127, 103, 248, .12);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-links {\n' +
+  '  display: flex;\n' +
+  '  flex: 1 1 auto;\n' +
+  '  align-items: center;\n' +
+  '  justify-content: flex-end;\n' +
+  '  gap: 4px;\n' +
+  '  min-width: 0;\n' +
+  '  overflow-x: auto;\n' +
+  '  overscroll-behavior-inline: contain;\n' +
+  '  scrollbar-width: none;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-links::-webkit-scrollbar {\n' +
+  '  display: none;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-links a {\n' +
+  '  display: inline-flex;\n' +
+  '  flex: 0 0 auto;\n' +
+  '  align-items: center;\n' +
+  '  justify-content: center;\n' +
+  '  min-height: 42px;\n' +
+  '  padding: 0 13px;\n' +
+  '  border-radius: 12px;\n' +
+  '  color: #696e7c;\n' +
+  '  text-decoration: none;\n' +
+  '  font-size: 11px;\n' +
+  '  font-weight: 760;\n' +
+  '  transition: color .2s ease, background .2s ease, transform .2s ease;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-nav-links a:hover,\n' +
+  '.cb-nav-links a.is-active {\n' +
+  '  background: var(--cb-ink);\n' +
+  '  color: #fff;\n' +
+  '  transform: translateY(-1px);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-wordmark {\n' +
+  '  font-size: 18px;\n' +
+  '  font-weight: 800;\n' +
+  '  letter-spacing: -.04em;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-developer-brand {\n' +
+  '  display: inline-flex;\n' +
+  '  align-items: center;\n' +
+  '  color: var(--cb-ink);\n' +
+  '  text-decoration: none;\n' +
+  '  font-size: 17px;\n' +
+  '  line-height: 1;\n' +
+  '  letter-spacing: -.055em;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-brand-crea {\n' +
+  '  font-weight: 850;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-brand-cloud {\n' +
+  '  font-weight: 300;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero {\n' +
+  '  min-height: 0;\n' +
+  '  margin: 0 0 22px;\n' +
+  '  padding: 0;\n' +
+  '  overflow: hidden;\n' +
+  '  border: 0;\n' +
+  '  border-radius: 32px;\n' +
+  '  background: linear-gradient(135deg, #fff 0%, #fff 52%, #f3efff 100%) !important;\n' +
+  '  box-shadow: 0 20px 70px rgba(28, 31, 41, .08);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-inner {\n' +
+  '  position: relative;\n' +
+  '  display: grid;\n' +
+  '  grid-template-columns: minmax(0, 1.24fr) minmax(300px, .76fr);\n' +
+  '  gap: 24px;\n' +
+  '  min-height: 520px;\n' +
+  '  padding: clamp(28px, 5vw, 62px);\n' +
+  '  align-items: stretch;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-inner::before,\n' +
+  '.cb-hero-inner::after {\n' +
+  '  content: "";\n' +
+  '  position: absolute;\n' +
+  '  pointer-events: none;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-route-line {\n' +
+  '  position: absolute;\n' +
+  '  z-index: 0;\n' +
+  '  left: -2%;\n' +
+  '  bottom: -8px;\n' +
+  '  width: 72%;\n' +
+  '  height: 210px;\n' +
+  '  pointer-events: none;\n' +
+  '  opacity: .96;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-route-line path {\n' +
+  '  vector-effect: non-scaling-stroke;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-route-stop {\n' +
+  '  fill: #fff;\n' +
+  '  stroke-width: 7;\n' +
+  '  vector-effect: non-scaling-stroke;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-route-ship {\n' +
+  '  filter: drop-shadow(0 8px 12px rgba(27, 64, 139, .22));\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-inner::before {\n' +
+  '  width: 340px;\n' +
+  '  height: 180px;\n' +
+  '  right: 25%;\n' +
+  '  top: -68px;\n' +
+  '  border: 3px solid var(--cb-lilac-strong);\n' +
+  '  border-color: var(--cb-lilac-strong) transparent transparent transparent;\n' +
+  '  border-radius: 50%;\n' +
+  '  transform: rotate(12deg);\n' +
+  '  opacity: .72;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-inner::after {\n' +
+  '  width: 250px;\n' +
+  '  height: 150px;\n' +
+  '  left: -72px;\n' +
+  '  bottom: -88px;\n' +
+  '  border: 3px solid var(--cb-cyan);\n' +
+  '  border-color: var(--cb-cyan) transparent transparent transparent;\n' +
+  '  border-radius: 50%;\n' +
+  '  transform: rotate(-28deg);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-copy {\n' +
+  '  position: relative;\n' +
+  '  z-index: 1;\n' +
+  '  display: flex;\n' +
+  '  flex-direction: column;\n' +
+  '  justify-content: space-between;\n' +
+  '  min-width: 0;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-eyebrow,\n' +
+  '.cb-section-kicker {\n' +
+  '  display: inline-flex;\n' +
+  '  width: fit-content;\n' +
+  '  padding: 7px 10px;\n' +
+  '  background: var(--cb-mint);\n' +
+  '  color: #24473d;\n' +
+  '  font-size: 11px;\n' +
+  '  font-weight: 800;\n' +
+  '  letter-spacing: .08em;\n' +
+  '  text-transform: uppercase;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-title {\n' +
+  '  max-width: 720px;\n' +
+  '  margin: 34px 0 18px;\n' +
+  '  font-size: clamp(46px, 7.3vw, 92px);\n' +
+  '  font-weight: 320;\n' +
+  '  line-height: .89;\n' +
+  '  letter-spacing: -.075em;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-title strong {\n' +
+  '  display: block;\n' +
+  '  font-weight: 820;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-text {\n' +
+  '  max-width: 620px;\n' +
+  '  margin: 0;\n' +
+  '  color: var(--cb-muted);\n' +
+  '  font-size: clamp(16px, 2vw, 20px);\n' +
+  '  line-height: 1.55;\n' +
+  '  text-shadow: none;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-hero-actions {\n' +
+  '  display: flex;\n' +
+  '  flex-wrap: wrap;\n' +
+  '  gap: 10px;\n' +
+  '  margin-top: 34px;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-recent-events {\n' +
+  '  position: relative;\n' +
+  '  overflow: hidden;\n' +
+  '  border: 1px solid rgba(23, 23, 25, .07);\n' +
+  '  background: linear-gradient(112deg, rgba(250, 250, 252, .72), rgba(221, 225, 232, .46) 58%, rgba(255, 255, 255, .56));\n' +
+  '  color: var(--cb-ink);\n' +
+  '  box-shadow: 0 10px 26px rgba(68, 78, 102, .045);\n' +
+  '  backdrop-filter: blur(12px) saturate(108%);\n' +
+  '  -webkit-backdrop-filter: blur(12px) saturate(108%);\n' +
+  '}\n' +
+  '\n' +
+  '.cb-recent-events::before {\n' +
+  '  content: "";\n' +
+  '  position: absolute;\n' +
+  '  inset: 0 auto 0 0;\n' +
+  '  width: 2px;\n' +
+  '  background: linear-gradient(180deg, var(--cb-mint), var(--cb-cyan), var(--cb-lilac-strong));\n' +
+  '  opacity: .48;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-recent-events-desktop {\n' +
+  '  z-index: 12;\n' +
+  '  width: var(--cb-events-desktop-width, 100%);\n' +
+  '  max-width: 100%;\n' +
+  '  margin: auto 0 0;\n' +
+  '  overflow: visible;\n' +
+  '}\n' +
+  '\n' +
+  '.cb-recent-events-mobile {\n' +
+  '  display: none;\n' +
+  '}\n' +
+  '\n' +
+  '@media (min-width: 901px) {\n' +
+  '  .cb-route-line {\n' +
+  '    bottom: clamp(170px, 18vw, 220px);\n' +
+  '  }\n' +
+  '\n' +
+  '  .cb-hero-actions {\n' +
+  '    margin-top: 10px;\n' +
+  '  }\n' +
+  '\n' +
+  '  .cb-recent-events-desktop .cb-activity-head {\n' +
+  '    position: relative;\n' +
+  '    z-index: 2;\n' +
+  '    background: li'... 319747 more characters
+
+    at /home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:133:10
+    at test (/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:12:5)
+    at Object.<anonymous> (/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:122:1)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '<!doctype html>\n' +
+    '<html lang="ru">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+    '<meta name="theme-color" content="#171719">\n' +
+    '<title>Творческая мастерская «Корсар»</title>\n' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">\n' +
+    '<script src="creacloud-design.js"></script>\n' +
+    '<link rel="stylesheet" href="creacloud-redesign.css">\n' +
+    '<style>\n' +
+    '/* ===== Corsar creative workshop ===== */\n' +
+    ':root {\n' +
+    '  --cb-ink: #171719;\n' +
+    '  --cb-muted: #737887;\n' +
+    '  --cb-paper: #ffffff;\n' +
+    '  --cb-canvas: #edf1f8;\n' +
+    '  --cb-lilac: #ded4ff;\n' +
+    '  --cb-lilac-strong: #7f67f8;\n' +
+    '  --cb-cyan: #4ecbed;\n' +
+    '  --cb-coral: #ff8f76;\n' +
+    '  --cb-blue: #2558c8;\n' +
+    '  --cb-rose: #ea5aa7;\n' +
+    '  --cb-yellow: #ffd66b;\n' +
+    '  --cb-mint: #dff6ec;\n' +
+    '  --cb-line: #e3e5eb;\n' +
+    '}\n' +
+    '\n' +
+    'html {\n' +
+    '  min-height: 100%;\n' +
+    '  scroll-behavior: smooth;\n' +
+    '  background: var(--cb-canvas);\n' +
+    '}\n' +
+    '\n' +
+    'body {\n' +
+    '  margin: 0;\n' +
+    '  min-width: 320px;\n' +
+    '  min-height: 100%;\n' +
+    '  font-family: "Montserrat", Arial, sans-serif;\n' +
+    '  background:\n' +
+    '    radial-gradient(circle at 8% 2%, rgba(127, 103, 248, .22), transparent 26rem),\n' +
+    '    radial-gradient(circle at 98% 18%, rgba(78, 203, 237, .20), transparent 25rem),\n' +
+    '    radial-gradient(circle at 12% 72%, rgba(255, 143, 118, .13), transparent 24rem),\n' +
+    '    radial-gradient(circle at 92% 88%, rgba(234, 90, 167, .11), transparent 22rem),\n' +
+    '    var(--cb-canvas);\n' +
+    '}\n' +
+    '\n' +
+    'body.cb-lock-scroll {\n' +
+    '  overflow: hidden;\n' +
+    '  min-height: 100%;\n' +
+    '  overscroll-behavior: none;\n' +
+    '  touch-action: none;\n' +
+    '  background: #f7f7fb !important;\n' +
+    '}\n' +
+    '\n' +
+    'body.cb-lock-scroll::before {\n' +
+    '  content: "";\n' +
+    '  position: fixed;\n' +
+    '  z-index: 2147483645;\n' +
+    '  inset: -8px;\n' +
+    '  pointer-events: none;\n' +
+    '  background: #f7f7fb;\n' +
+    '}\n' +
+    '\n' +
+    'body.cb-lock-scroll #corsar-blogger-booking {\n' +
+    '  visibility: hidden;\n' +
+    '}\n' +
+    '\n' +
+    '#corsar-blogger-booking {\n' +
+    '  width: min(1180px, calc(100% - 32px));\n' +
+    '  max-width: none;\n' +
+    '  margin: 0 auto;\n' +
+    '  padding: 22px 0 72px;\n' +
+    '  color: var(--cb-ink);\n' +
+    '  font-family: "Montserrat", Arial, sans-serif;\n' +
+    '  letter-spacing: -.015em;\n' +
+    '}\n' +
+    '\n' +
+    '#corsar-blogger-booking *,\n' +
+    '.cb-splash,\n' +
+    '.cb-splash * {\n' +
+    '  font-family: "Montserrat", Arial, sans-serif !important;\n' +
+    '}\n' +
+    '\n' +
+    '#corsar-blogger-booking * {\n' +
+    '  box-sizing: border-box;\n' +
+    '}\n' +
+    '\n' +
+    '#corsar-blogger-booking section[id] {\n' +
+    '  scroll-margin-top: 104px;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash {\n' +
+    '  position: fixed;\n' +
+    '  z-index: 2147483647;\n' +
+    '  inset: -8px;\n' +
+    '  display: grid;\n' +
+    '  place-items: center;\n' +
+    '  overflow: hidden;\n' +
+    '  box-sizing: border-box;\n' +
+    '  padding: calc(max(24px, env(safe-area-inset-top)) + 8px) 32px calc(max(24px, env(safe-area-inset-bottom)) + 8px);\n' +
+    '  background: #f7f7fb;\n' +
+    '  isolation: isolate;\n' +
+    '  overscroll-behavior: none;\n' +
+    '  touch-action: none;\n' +
+    '  transition: opacity .55s ease, visibility .55s ease;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash::before,\n' +
+    '.cb-splash::after {\n' +
+    '  content: "";\n' +
+    '  position: absolute;\n' +
+    '  border-radius: 999px;\n' +
+    '  filter: blur(2px);\n' +
+    '  opacity: .75;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash::before {\n' +
+    '  width: 42vw;\n' +
+    '  height: 42vw;\n' +
+    '  max-width: 440px;\n' +
+    '  max-height: 440px;\n' +
+    '  top: -18vw;\n' +
+    '  right: -12vw;\n' +
+    '  background: rgba(222, 212, 255, .72);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash::after {\n' +
+    '  width: 32vw;\n' +
+    '  height: 32vw;\n' +
+    '  max-width: 340px;\n' +
+    '  max-height: 340px;\n' +
+    '  left: -13vw;\n' +
+    '  bottom: -10vw;\n' +
+    '  background: rgba(78, 203, 237, .28);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash.is-hidden {\n' +
+    '  opacity: 0;\n' +
+    '  visibility: hidden;\n' +
+    '  pointer-events: none;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-inner {\n' +
+    '  position: relative;\n' +
+    '  z-index: 1;\n' +
+    '  display: flex;\n' +
+    '  width: min(680px, calc(100vw - 48px));\n' +
+    '  flex-direction: column;\n' +
+    '  align-items: center;\n' +
+    '  text-align: center;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-mark {\n' +
+    '  --progress: 0;\n' +
+    '  position: relative;\n' +
+    '  display: grid;\n' +
+    '  place-items: center;\n' +
+    '  width: 132px;\n' +
+    '  height: 132px;\n' +
+    '  margin-bottom: 28px;\n' +
+    '  border-radius: 50%;\n' +
+    '  background: conic-gradient(var(--cb-lilac-strong) calc(var(--progress) * 1%), #e8e8ef 0);\n' +
+    '  box-shadow: 0 22px 60px rgba(82, 67, 151, .16);\n' +
+    '  transition: background .18s linear;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-mark::before {\n' +
+    '  content: "";\n' +
+    '  position: absolute;\n' +
+    '  inset: 10px;\n' +
+    '  border-radius: inherit;\n' +
+    '  background: #f7f7fb;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-percent {\n' +
+    '  position: relative;\n' +
+    '  z-index: 1;\n' +
+    '  font-size: 25px;\n' +
+    '  font-weight: 750;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-title {\n' +
+    '  max-width: 520px;\n' +
+    '  font-size: clamp(27px, 6vw, 45px);\n' +
+    '  font-weight: 350;\n' +
+    '  line-height: 1.02;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-title strong {\n' +
+    '  display: block;\n' +
+    '  font-weight: 780;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-splash-copy {\n' +
+    '  margin-top: 13px;\n' +
+    '  color: var(--cb-muted);\n' +
+    '  font-size: 14px;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-topbar {\n' +
+    '  display: flex;\n' +
+    '  align-items: center;\n' +
+    '  justify-content: space-between;\n' +
+    '  gap: 18px;\n' +
+    '  margin-bottom: 18px;\n' +
+    '  padding: 0 4px;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-sticky-nav {\n' +
+    '  position: sticky;\n' +
+    '  z-index: 1200;\n' +
+    '  top: max(8px, env(safe-area-inset-top));\n' +
+    '  display: flex;\n' +
+    '  align-items: center;\n' +
+    '  gap: 16px;\n' +
+    '  min-height: 62px;\n' +
+    '  margin: 0 0 18px;\n' +
+    '  padding: 8px 10px 8px 16px;\n' +
+    '  overflow: hidden;\n' +
+    '  border: 1px solid rgba(23, 23, 25, .08);\n' +
+    '  border-radius: 18px;\n' +
+    '  background: rgba(255, 255, 255, .88);\n' +
+    '  box-shadow: 0 14px 38px rgba(42, 45, 59, .10);\n' +
+    '  backdrop-filter: blur(18px) saturate(150%);\n' +
+    '  -webkit-backdrop-filter: blur(18px) saturate(150%);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-brand {\n' +
+    '  display: inline-flex;\n' +
+    '  flex: 0 0 auto;\n' +
+    '  align-items: center;\n' +
+    '  gap: 9px;\n' +
+    '  color: var(--cb-ink);\n' +
+    '  text-decoration: none;\n' +
+    '  font-size: 12px;\n' +
+    '  font-weight: 820;\n' +
+    '  letter-spacing: .03em;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-brand::before {\n' +
+    '  content: "";\n' +
+    '  width: 11px;\n' +
+    '  height: 11px;\n' +
+    '  border-radius: 50%;\n' +
+    '  background: linear-gradient(135deg, var(--cb-blue), var(--cb-cyan) 45%, var(--cb-rose));\n' +
+    '  box-shadow: 0 0 0 5px rgba(127, 103, 248, .12);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-links {\n' +
+    '  display: flex;\n' +
+    '  flex: 1 1 auto;\n' +
+    '  align-items: center;\n' +
+    '  justify-content: flex-end;\n' +
+    '  gap: 4px;\n' +
+    '  min-width: 0;\n' +
+    '  overflow-x: auto;\n' +
+    '  overscroll-behavior-inline: contain;\n' +
+    '  scrollbar-width: none;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-links::-webkit-scrollbar {\n' +
+    '  display: none;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-links a {\n' +
+    '  display: inline-flex;\n' +
+    '  flex: 0 0 auto;\n' +
+    '  align-items: center;\n' +
+    '  justify-content: center;\n' +
+    '  min-height: 42px;\n' +
+    '  padding: 0 13px;\n' +
+    '  border-radius: 12px;\n' +
+    '  color: #696e7c;\n' +
+    '  text-decoration: none;\n' +
+    '  font-size: 11px;\n' +
+    '  font-weight: 760;\n' +
+    '  transition: color .2s ease, background .2s ease, transform .2s ease;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-nav-links a:hover,\n' +
+    '.cb-nav-links a.is-active {\n' +
+    '  background: var(--cb-ink);\n' +
+    '  color: #fff;\n' +
+    '  transform: translateY(-1px);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-wordmark {\n' +
+    '  font-size: 18px;\n' +
+    '  font-weight: 800;\n' +
+    '  letter-spacing: -.04em;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-developer-brand {\n' +
+    '  display: inline-flex;\n' +
+    '  align-items: center;\n' +
+    '  color: var(--cb-ink);\n' +
+    '  text-decoration: none;\n' +
+    '  font-size: 17px;\n' +
+    '  line-height: 1;\n' +
+    '  letter-spacing: -.055em;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-brand-crea {\n' +
+    '  font-weight: 850;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-brand-cloud {\n' +
+    '  font-weight: 300;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero {\n' +
+    '  min-height: 0;\n' +
+    '  margin: 0 0 22px;\n' +
+    '  padding: 0;\n' +
+    '  overflow: hidden;\n' +
+    '  border: 0;\n' +
+    '  border-radius: 32px;\n' +
+    '  background: linear-gradient(135deg, #fff 0%, #fff 52%, #f3efff 100%) !important;\n' +
+    '  box-shadow: 0 20px 70px rgba(28, 31, 41, .08);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-inner {\n' +
+    '  position: relative;\n' +
+    '  display: grid;\n' +
+    '  grid-template-columns: minmax(0, 1.24fr) minmax(300px, .76fr);\n' +
+    '  gap: 24px;\n' +
+    '  min-height: 520px;\n' +
+    '  padding: clamp(28px, 5vw, 62px);\n' +
+    '  align-items: stretch;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-inner::before,\n' +
+    '.cb-hero-inner::after {\n' +
+    '  content: "";\n' +
+    '  position: absolute;\n' +
+    '  pointer-events: none;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-route-line {\n' +
+    '  position: absolute;\n' +
+    '  z-index: 0;\n' +
+    '  left: -2%;\n' +
+    '  bottom: -8px;\n' +
+    '  width: 72%;\n' +
+    '  height: 210px;\n' +
+    '  pointer-events: none;\n' +
+    '  opacity: .96;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-route-line path {\n' +
+    '  vector-effect: non-scaling-stroke;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-route-stop {\n' +
+    '  fill: #fff;\n' +
+    '  stroke-width: 7;\n' +
+    '  vector-effect: non-scaling-stroke;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-route-ship {\n' +
+    '  filter: drop-shadow(0 8px 12px rgba(27, 64, 139, .22));\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-inner::before {\n' +
+    '  width: 340px;\n' +
+    '  height: 180px;\n' +
+    '  right: 25%;\n' +
+    '  top: -68px;\n' +
+    '  border: 3px solid var(--cb-lilac-strong);\n' +
+    '  border-color: var(--cb-lilac-strong) transparent transparent transparent;\n' +
+    '  border-radius: 50%;\n' +
+    '  transform: rotate(12deg);\n' +
+    '  opacity: .72;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-inner::after {\n' +
+    '  width: 250px;\n' +
+    '  height: 150px;\n' +
+    '  left: -72px;\n' +
+    '  bottom: -88px;\n' +
+    '  border: 3px solid var(--cb-cyan);\n' +
+    '  border-color: var(--cb-cyan) transparent transparent transparent;\n' +
+    '  border-radius: 50%;\n' +
+    '  transform: rotate(-28deg);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-copy {\n' +
+    '  position: relative;\n' +
+    '  z-index: 1;\n' +
+    '  display: flex;\n' +
+    '  flex-direction: column;\n' +
+    '  justify-content: space-between;\n' +
+    '  min-width: 0;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-eyebrow,\n' +
+    '.cb-section-kicker {\n' +
+    '  display: inline-flex;\n' +
+    '  width: fit-content;\n' +
+    '  padding: 7px 10px;\n' +
+    '  background: var(--cb-mint);\n' +
+    '  color: #24473d;\n' +
+    '  font-size: 11px;\n' +
+    '  font-weight: 800;\n' +
+    '  letter-spacing: .08em;\n' +
+    '  text-transform: uppercase;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-title {\n' +
+    '  max-width: 720px;\n' +
+    '  margin: 34px 0 18px;\n' +
+    '  font-size: clamp(46px, 7.3vw, 92px);\n' +
+    '  font-weight: 320;\n' +
+    '  line-height: .89;\n' +
+    '  letter-spacing: -.075em;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-title strong {\n' +
+    '  display: block;\n' +
+    '  font-weight: 820;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-text {\n' +
+    '  max-width: 620px;\n' +
+    '  margin: 0;\n' +
+    '  color: var(--cb-muted);\n' +
+    '  font-size: clamp(16px, 2vw, 20px);\n' +
+    '  line-height: 1.55;\n' +
+    '  text-shadow: none;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-hero-actions {\n' +
+    '  display: flex;\n' +
+    '  flex-wrap: wrap;\n' +
+    '  gap: 10px;\n' +
+    '  margin-top: 34px;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-recent-events {\n' +
+    '  position: relative;\n' +
+    '  overflow: hidden;\n' +
+    '  border: 1px solid rgba(23, 23, 25, .07);\n' +
+    '  background: linear-gradient(112deg, rgba(250, 250, 252, .72), rgba(221, 225, 232, .46) 58%, rgba(255, 255, 255, .56));\n' +
+    '  color: var(--cb-ink);\n' +
+    '  box-shadow: 0 10px 26px rgba(68, 78, 102, .045);\n' +
+    '  backdrop-filter: blur(12px) saturate(108%);\n' +
+    '  -webkit-backdrop-filter: blur(12px) saturate(108%);\n' +
+    '}\n' +
+    '\n' +
+    '.cb-recent-events::before {\n' +
+    '  content: "";\n' +
+    '  position: absolute;\n' +
+    '  inset: 0 auto 0 0;\n' +
+    '  width: 2px;\n' +
+    '  background: linear-gradient(180deg, var(--cb-mint), var(--cb-cyan), var(--cb-lilac-strong));\n' +
+    '  opacity: .48;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-recent-events-desktop {\n' +
+    '  z-index: 12;\n' +
+    '  width: var(--cb-events-desktop-width, 100%);\n' +
+    '  max-width: 100%;\n' +
+    '  margin: auto 0 0;\n' +
+    '  overflow: visible;\n' +
+    '}\n' +
+    '\n' +
+    '.cb-recent-events-mobile {\n' +
+    '  display: none;\n' +
+    '}\n' +
+    '\n' +
+    '@media (min-width: 901px) {\n' +
+    '  .cb-route-line {\n' +
+    '    bottom: clamp(170px, 18vw, 220px);\n' +
+    '  }\n' +
+    '\n' +
+    '  .cb-hero-actions {\n' +
+    '    margin-top: 10px;\n' +
+    '  }\n' +
+    '\n' +
+    '  .cb-recent-events-desktop .cb-activity-head {\n' +
+    '    position: relative;\n' +
+    '    z-index: 2;\n' +
+    '    background: li'... 319747 more characters,
+  expected: /TOTAL_UNIQUE_TOURS\s*=\s*8/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v22.23.1
