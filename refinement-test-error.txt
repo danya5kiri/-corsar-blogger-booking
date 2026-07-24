@@ -1,0 +1,58 @@
+✓ JavaScript parses
+✓ HTML ids are unique
+✓ weather uses explicit Best Match for 16 days
+✓ calendar displays every received forecast regardless of month
+✓ mobile regression guards remain intact
+✓ diagnostics container and privacy copy exist
+✓ season retains eight unique categories
+✓ all static schedule dates are inside the season
+✓ forecast map keeps dates across July and August
+✓ transfer removes the source and keeps the target
+✓ cancellation removes an existing booking
+✓ a new booking after an older cancellation survives
+✓ slot conflict recognises canonical aliases
+✓ past bookings cannot be transferred or cancelled
+✓ tour must belong to the selected date
+✓ unique recommendation appears only for a free unvisited category
+✓ pending opaque POST is confirmed from reloaded data
+✓ diagnostic details remove user identifiers
+✓ creator cabinet has close control, achievements and no duplicate metric cards
+✓ creator achievement level follows actual progress
+✓ materials show today's index and leading add-content card
+✓ diagnostics are rendered below CREACLOUD
+✓ active controls use rounded edges while card buttons keep a compact radius
+
+23 site health tests passed.
+✓ default design is controlled by one explicit feature flag
+✓ legacy and redesign can both be selected without changing HTML
+✓ redesign stylesheet is isolated from legacy styles
+✓ both loading screens remain available
+✓ loader phrases and reduced motion are implemented
+✓ loader lifecycle uses the theme without artificial redesign delay
+✓ main information architecture and navigation remain unchanged
+✗ business logic and data sources remain present
+/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:17
+    throw error;
+    ^
+
+AssertionError [ERR_ASSERTION]: function submitBooking()
+    at /home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:133:32
+    at Array.forEach (<anonymous>)
+    at /home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:133:5
+    at test (/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:12:5)
+    at Object.<anonymous> (/home/runner/work/-corsar-blogger-booking/-corsar-blogger-booking/tests/design_modes_test.js:122:1)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v22.23.1
+Refinement structure is valid
