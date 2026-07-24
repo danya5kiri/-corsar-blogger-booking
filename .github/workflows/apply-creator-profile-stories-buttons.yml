@@ -19,7 +19,20 @@ jobs:
       - name: Применить патч
         run: python tools/apply_creator_profile_stories_buttons.py
       - name: Проверить JavaScript и продуктовые сценарии
-        run: node tests/site_health_test.js
+        run: |
+          set +e
+          node tests/site_health_test.js > /tmp/feature-test-output.txt 2>&1
+          status=$?
+          cat /tmp/feature-test-output.txt
+          if [ $status -ne 0 ]; then
+            cp /tmp/feature-test-output.txt feature-test-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add feature-test-error.txt
+            git commit -m "Зафиксировать ошибку теста ЛК" || true
+            git push origin HEAD:${{ github.head_ref }} || true
+            exit $status
+          fi
       - name: Проверить ключевые изменения
         run: |
           python - <<'PY'
@@ -42,8 +55,9 @@ jobs:
           PY
       - name: Зафиксировать рабочие файлы
         run: |
+          rm -f feature-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html tests/site_health_test.js
+          git add index.html tests/site_health_test.js feature-test-error.txt
           git commit -m "Обновить ЛК, материалы и активные кнопки"
           git push origin HEAD:${{ github.head_ref }}
