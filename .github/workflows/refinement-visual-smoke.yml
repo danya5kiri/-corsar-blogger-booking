@@ -1,0 +1,36 @@
+name: Проверить доработки CREACLOUD в браузере
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  visual-smoke:
+    if: github.head_ref == 'refine-creacloud-redesign-ui'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Установить Chromium
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+      - name: Запустить локальный сайт
+        run: |
+          python3 -m http.server 4173 > /tmp/corsar-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/corsar-http.log
+          exit 1
+      - name: Проверить мобильный и десктопный режимы
+        run: node tests/refinement_visual_smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: creacloud-refinement-screenshots
+          path: artifacts/refinement-smoke/*.png
+          if-no-files-found: warn
+          retention-days: 7
