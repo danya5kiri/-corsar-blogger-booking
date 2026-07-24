@@ -193,4 +193,14 @@ test("mobile splash is constrained to the safe viewport", () => {
   assert.match(themeCss, /height:\s*calc\(100dvh - max\(18px, env\(safe-area-inset-top\)\) - max\(22px, env\(safe-area-inset-bottom\)\)\)/);
 });
 
+
+
+test("booking busy helper never calls itself", () => {
+  const match = html.match(/function setBookingSubmitBusy\(busy, busyText\)\{([\s\S]*?)\n\}/);
+  assert.ok(match, "setBookingSubmitBusy helper");
+  assert.doesNotMatch(match[1], /setBookingSubmitBusy\s*\(/);
+  assert.match(match[1], /setSubmitBusy\("cb-submit", busy, busyText\)/);
+  assert.match(match[1], /setSubmitBusy\("cb-call-submit", busy, busyText\)/);
+});
+
 console.log(`\n${passed} design mode tests passed.`);
