@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="creacloud-design.js"></script>
+<link rel="stylesheet" href="creacloud-redesign.css">
 <style>
 /* ===== Corsar creative workshop ===== */
 :root {
@@ -4936,10 +4938,19 @@ body.cb-lock-scroll #corsar-blogger-booking {
 </head>
 <body class="cb-lock-scroll">
 <div id="cb-splash" class="cb-splash" role="status" aria-live="polite">
-  <div class="cb-splash-inner">
+  <div class="cb-splash-inner cb-splash-legacy">
     <div id="cb-loader-ring" class="cb-splash-mark"><span id="cb-loader-status" class="cb-splash-percent">0%</span></div>
     <div class="cb-splash-title">Творческая мастерская <strong>«Корсар»</strong></div>
     <div id="cb-loader-text" class="cb-splash-copy">Загружаем расписание...</div>
+  </div>
+  <div class="cb-splash-redesign">
+    <div class="cb-splash-logo" aria-label="CREACLOUD">
+      <strong class="cb-splash-logo-crea" aria-hidden="true">CREA</strong><span class="cb-splash-logo-cloud" aria-hidden="true">CLOUD</span>
+    </div>
+    <div class="cb-splash-subtitle">креаторская студия «Корсар»</div>
+    <div class="cb-splash-pulse" aria-hidden="true"></div>
+    <div class="cb-splash-phrase-frame"><span id="cb-loader-phrase" class="cb-splash-phrase">собираем креаторов</span></div>
+    <span id="cb-loader-redesign-status" class="cb-visually-hidden">Загрузка сайта, 0%</span>
   </div>
 </div>
 
@@ -7676,7 +7687,15 @@ function reconcilePendingWrites(){
 
 var loaderTimer = null;
 
+function getDesignTheme(){
+  return window.CREACLOUD_THEME || null;
+}
+
 function setLoader(percent, text, state){
+  var p = Math.max(0, Math.min(100, percent || 0));
+  var theme = getDesignTheme();
+  if(theme && typeof theme.updateSplash === "function") theme.updateSplash(p, text, state);
+
   var card = $("cb-splash");
   var ring = $("cb-loader-ring");
   var status = $("cb-loader-status");
@@ -7684,7 +7703,6 @@ function setLoader(percent, text, state){
 
   if(!card || !ring || !status || !label) return;
 
-  var p = Math.max(0, Math.min(100, percent || 0));
   ring.style.setProperty("--progress", p);
   label.textContent = text || "Загружаем расписание...";
   status.textContent = p + "%";
@@ -7698,6 +7716,8 @@ function setLoader(percent, text, state){
 
 function startLoader(){
   if(loaderTimer) clearInterval(loaderTimer);
+  var theme = getDesignTheme();
+  if(theme && typeof theme.startSplash === "function") theme.startSplash();
 
   var p = 0;
   setLoader(0, "Загружаем расписание...", "");
@@ -7712,21 +7732,27 @@ function startLoader(){
 function finishLoader(text){
   if(loaderTimer) clearInterval(loaderTimer);
   setLoader(100, text || "Всё готово", "success");
+  var theme = getDesignTheme();
+  if(theme && typeof theme.finishSplash === "function") theme.finishSplash(true);
+  var delay = theme && typeof theme.getHideDelay === "function" ? theme.getHideDelay(true) : 520;
   setTimeout(function(){
     var splash = $("cb-splash");
     if(splash) splash.classList.add("is-hidden");
     document.body.classList.remove("cb-lock-scroll");
-  }, 520);
+  }, delay);
 }
 
 function failLoader(text){
   if(loaderTimer) clearInterval(loaderTimer);
   setLoader(100, text || "Расписание временно недоступно", "error");
+  var theme = getDesignTheme();
+  if(theme && typeof theme.finishSplash === "function") theme.finishSplash(false);
+  var delay = theme && typeof theme.getHideDelay === "function" ? theme.getHideDelay(false) : 1100;
   setTimeout(function(){
     var splash = $("cb-splash");
     if(splash) splash.classList.add("is-hidden");
     document.body.classList.remove("cb-lock-scroll");
-  }, 1100);
+  }, delay);
 }
 
 function seasonSunsetIcon(progress, ended){
