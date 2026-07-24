@@ -1,0 +1,19 @@
+name: Inspect redesign anchors
+
+on:
+  push:
+    branches: [creacloud-visual-redesign]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect loader and structure anchors
+        run: |
+          echo '--- loader functions ---'
+          grep -nE 'setLoader|finishLoader|hideSplash|loaderReady|cb-loader|splash' index.html | tail -80
+          echo '--- script end / init ---'
+          grep -nE 'DOMContentLoaded|setupDiagnostics|loadData|loadWeather|Promise\.all|window\.addEventListener\("load"' index.html | tail -100
+          echo '--- key visual classes ---'
+          grep -nE '^\.cb-section|^\.cb-form-card|^\.cb-calendar-shell|^\.cb-ranking-section|^\.cb-results-section|^\.cb-footer' index.html | head -100
