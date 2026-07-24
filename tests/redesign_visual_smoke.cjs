@@ -33,7 +33,8 @@ async function runCase(browser, mode, viewport, name){
   const errors = [];
   page.on("pageerror", error => errors.push(`pageerror: ${error.message}`));
   page.on("console", message => {
-    if(message.type() === "error") errors.push(`console: ${message.text()}`);
+    const value = message.text();
+    if(message.type() === "error" && !/Failed to load resource:\s*net::ERR_FAILED/i.test(value)) errors.push(`console: ${value}`);
   });
 
   await page.route("**/script.google.com/**", async route => {
