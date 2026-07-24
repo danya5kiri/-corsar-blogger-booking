@@ -27,11 +27,17 @@ jobs:
           cat /tmp/corsar-http.log
           exit 1
       - name: Проверить legacy и redesign на мобильном и десктопе
-        run: node tests/redesign_visual_smoke.cjs
+        run: |
+          mkdir -p artifacts/redesign-smoke
+          set +e
+          node tests/redesign_visual_smoke.cjs > artifacts/redesign-smoke/smoke.log 2>&1
+          status=$?
+          cat artifacts/redesign-smoke/smoke.log
+          exit $status
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: creacloud-redesign-screenshots
-          path: artifacts/redesign-smoke/*.png
+          path: artifacts/redesign-smoke/*
           if-no-files-found: warn
           retention-days: 7
