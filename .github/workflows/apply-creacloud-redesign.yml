@@ -47,6 +47,6 @@ jobs:
           rm -f redesign-inspection.txt redesign-test-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .github/workflows/site-health.yml redesign-inspection.txt redesign-test-error.txt
+          git add -A
           git commit -m "Интегрировать визуальный редизайн CREACLOUD"
           git push origin HEAD:${{ github.head_ref }}
