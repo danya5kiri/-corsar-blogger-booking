@@ -1351,3 +1351,10 @@ html[data-design="redesign"] .cb-splash-logo {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Refined publication-card radius must override the global pill-button rule. */
+html[data-design="redesign"] #corsar-blogger-booking button.cb-story-add-card,
+html[data-design="redesign"] #corsar-blogger-booking .cb-story-card {
+  border-radius: 14px !important;
+}

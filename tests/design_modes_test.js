@@ -203,4 +203,10 @@ test("booking busy helper never calls itself", () => {
   assert.match(match[1], /setSubmitBusy\("cb-call-submit", busy, busyText\)/);
 });
 
+
+
+test("publication add card overrides the global pill-button radius", () => {
+  assert.match(themeCss, /button\.cb-story-add-card,[\s\S]*border-radius:\s*14px !important/);
+});
+
 console.log(`\n${passed} design mode tests passed.`);
