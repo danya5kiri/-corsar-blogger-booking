@@ -1,19 +1,20 @@
 name: Apply CREACLOUD refinement package
 
 on:
-  push:
-    branches: [refine-creacloud-redesign-ui]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   apply-and-test:
+    if: github.head_ref == 'refine-creacloud-redesign-ui'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: refine-creacloud-redesign-ui
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Apply refinement patch
         run: python tools/apply_redesign_refinements.py
@@ -43,4 +44,4 @@ jobs:
             exit 0
           fi
           git commit -m "Доработать интерфейс CREACLOUD по итогам просмотра"
-          git push origin HEAD:refine-creacloud-redesign-ui
+          git push origin HEAD:${{ github.head_ref }}
