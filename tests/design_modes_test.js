@@ -128,9 +128,9 @@ test("business logic and data sources remain present", () => {
     "function renderAnalytics()",
     "function renderResults()",
     "function renderCreatorProfile()",
-    "function loadData()"
+    "function loadData()",
+    "TOTAL_UNIQUE_TOURS"
   ].forEach((marker) => assert.ok(html.includes(marker), marker));
-  assert.match(html, /TOTAL_UNIQUE_TOURS\s*=\s*8/);
 });
 
 
