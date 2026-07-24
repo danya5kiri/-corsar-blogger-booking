@@ -26,11 +26,11 @@ jobs:
           cat /tmp/corsar-http.log
           exit 1
       - name: Проверить мобильный и десктопный режимы
-        run: node tests/refinement_visual_smoke.cjs
+        run: node tests/run_refinement_visual_smoke.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: creacloud-refinement-screenshots
-          path: artifacts/refinement-smoke/*.png
+          path: artifacts/refinement-smoke/*
           if-no-files-found: warn
           retention-days: 7
