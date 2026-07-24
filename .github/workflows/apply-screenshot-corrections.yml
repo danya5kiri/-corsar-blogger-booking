@@ -123,7 +123,7 @@ jobs:
             process.exit(1);
           });
           NODE
-          node /tmp/screenshot-corrections-smoke.cjs
+          NODE_PATH="$PWD/node_modules" node /tmp/screenshot-corrections-smoke.cjs
 
       - name: Commit working files
         run: |
