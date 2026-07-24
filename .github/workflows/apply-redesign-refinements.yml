@@ -17,7 +17,20 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Apply refinement patch
-        run: python tools/apply_redesign_refinements.py
+        run: |
+          set +e
+          python tools/apply_redesign_refinements.py > /tmp/refinement-patch-output.txt 2>&1
+          status=$?
+          cat /tmp/refinement-patch-output.txt
+          if [ $status -ne 0 ]; then
+            cp /tmp/refinement-patch-output.txt refinement-patch-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add refinement-patch-error.txt
+            git commit -m "Зафиксировать ошибку патча доработок" || true
+            git push origin HEAD:${{ github.head_ref }} || true
+            exit $status
+          fi
       - name: Run product and design tests
         run: |
           node --check creacloud-design.js
@@ -36,9 +49,10 @@ jobs:
           PY
       - name: Commit refined files
         run: |
+          rm -f refinement-patch-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html creacloud-redesign.css tests/design_modes_test.js
+          git add index.html creacloud-redesign.css tests/design_modes_test.js refinement-patch-error.txt
           if git diff --cached --quiet; then
             echo "No refinement changes to commit"
             exit 0
