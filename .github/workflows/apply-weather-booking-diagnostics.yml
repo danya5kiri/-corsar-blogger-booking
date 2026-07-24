@@ -1,0 +1,65 @@
+name: Применить погоду, проверки бронирования и диагностику
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-check:
+    if: github.head_ref == 'weather-booking-health-diagnostics'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Применить патч
+        run: python tools/apply_weather_booking_diagnostics.py
+      - name: Проверить JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', text, flags=re.I)
+          inline = [s for s in scripts if s.strip()]
+          if not inline:
+              raise SystemExit('inline script not found')
+          Path('/tmp/corsar-site.js').write_text(inline[-1], encoding='utf-8')
+          PY
+          node --check /tmp/corsar-site.js
+      - name: Проверить ключевые условия
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8')
+          required = [
+            'models=best_match',
+            'forecast_days=16',
+            'var forecast = active ? getWeatherForecast(date) : null;',
+            'function isTourScheduledOnDate(date, tour)',
+            'function isTransferableBookingForCreator(booking, telegram)',
+            'id="cb-diagnostics"',
+            'function reconcilePendingWrites()',
+          ]
+          for item in required:
+              assert item in text, item
+          forbidden = ['isWeatherDateInActiveMonth', 'weatherActiveMonthKey', 'window.visualViewport', 'document.body.style.position = "fixed"']
+          for item in forbidden:
+              assert item not in text, item
+          print('critical checks passed')
+          PY
+      - name: Зафиксировать index.html
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "index.html already patched"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Уточнить погоду, защиту бронирований и диагностику"
+          git push origin HEAD:${{ github.head_ref }}
