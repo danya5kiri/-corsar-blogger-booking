@@ -175,7 +175,7 @@ test("booking supports WhatsApp and phone confirmation through the same write fl
   assert.match(html, /Позвонить для записи/);
   assert.match(html, /bookingContactMode = "call"; submitBooking\(\)/);
   assert.match(html, /contactChannel:\s*contactMode === "call" \? "phone" : "whatsapp"/);
-  assert.match(html, /tel:\+" \+ CONFIG\.WHATSAPP_NUMBER/);
+  assert.match(html, /tel:\+" \+ CONFIG\.CALL_PHONE_NUMBER/);
 });
 
 
@@ -207,6 +207,23 @@ test("booking busy helper never calls itself", () => {
 
 test("publication add card overrides the global pill-button radius", () => {
   assert.match(themeCss, /button\.cb-story-add-card,[\s\S]*border-radius:\s*14px !important/);
+});
+
+
+
+test("screenshot corrections keep requested desktop geometry", () => {
+  assert.match(themeCss, /CREACLOUD screenshot corrections v3/);
+  assert.match(themeCss, /\.cb-leaders-track \.cb-leader-card[\s\S]*border-radius:\s*16px !important/);
+  assert.match(themeCss, /\.cb-recent-events::before[\s\S]*display:\s*none !important/);
+  assert.match(themeCss, /button\.cb-day[\s\S]*border-radius:\s*0 !important/);
+  assert.match(themeCss, /@media \(min-width: 901px\)[\s\S]*\.cb-day-weather[\s\S]*left:\s*calc\(50% \+ 10px\)/);
+});
+
+
+test("phone confirmation uses Olga's explicit call number", () => {
+  assert.match(html, /CALL_PHONE_NUMBER:\s*"79149753285"/);
+  const calls = html.match(/contactMode === "call" \? "tel:\+" \+ CONFIG\.CALL_PHONE_NUMBER : whatsappUrl/g) || [];
+  assert.equal(calls.length, 2);
 });
 
 console.log(`\n${passed} design mode tests passed.`);

@@ -5360,7 +5360,8 @@ var CONFIG = {
   SEASON_START: "2026-04-01",
   BOOKING_START: "2026-07-22",
   SEASON_END: "2026-10-20",
-  WHATSAPP_NUMBER: "79149753285"
+  WHATSAPP_NUMBER: "79149753285",
+  CALL_PHONE_NUMBER: "79149753285"
 };
 
 var CANONICAL_TOURS = [
@@ -10403,7 +10404,7 @@ function submitBookingCancellation(tg, sourceFingerprint, contactMode){
           "Прошу учесть отмену бронирования."
         ].join("\n");
         var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
-        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.WHATSAPP_NUMBER : whatsappUrl;
+        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.CALL_PHONE_NUMBER : whatsappUrl;
 
         setMessage(contactMode === "call" ? "Бронь удалена. Место освобождено; звоним Ольге." : "Бронь удалена. Место освобождено; открываем WhatsApp.", false);
         setTimeout(function(){ window.location.href = contactUrl; }, 650);
@@ -10660,7 +10661,7 @@ function submitBooking(){
           "Прошу согласовать участие."
         ].join("\n");
         var whatsappUrl = "https://wa.me/" + CONFIG.WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
-        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.WHATSAPP_NUMBER : whatsappUrl;
+        var contactUrl = contactMode === "call" ? "tel:+" + CONFIG.CALL_PHONE_NUMBER : whatsappUrl;
         var successMessage = contactMode === "call"
           ? (mode === "transfer" ? "Запись перенесена. Звоним Ольге для согласования." : "Заявка записана. Звоним Ольге для согласования.")
           : (mode === "transfer" ? "Запись перенесена. Открываем WhatsApp для согласования." : "Заявка записана. Открываем WhatsApp для согласования.");
