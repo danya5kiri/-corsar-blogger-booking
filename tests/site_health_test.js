@@ -132,6 +132,8 @@ function buildSandbox(script) {
     getWeatherForecastTitle: getWeatherForecastTitle,
     sanitizeDiagnosticDetail: sanitizeDiagnosticDetail,
     isPendingWriteConfirmed: isPendingWriteConfirmed,
+    getTodayPublishedContentCount: getTodayPublishedContentCount,
+    getCreatorProfileAchievements: getCreatorProfileAchievements,
     setBookings: function(value){ bookings = Array.isArray(value) ? value : []; creatorDirectoryReady = true; },
     setReports: function(value){ reports = Array.isArray(value) ? value : []; },
     setTours: function(date, tours){ TOURS_BY_DATE[date] = tours.slice(); }
@@ -316,6 +318,46 @@ test("diagnostic details remove user identifiers", () => {
   assert.doesNotMatch(value, /private_user/);
   assert.doesNotMatch(value, /999/);
   assert.doesNotMatch(value, /example\.com/);
+});
+
+
+test("creator cabinet has close control, achievements and no duplicate metric cards", () => {
+  assert.match(html, /id="cb-profile-entry-title">Открыть ЛК</);
+  assert.match(html, /id="cb-profile-close"/);
+  assert.match(script, /function closeCreatorProfile\(\)/);
+  assert.match(script, /function getCreatorProfileAchievements\(data\)/);
+  assert.doesNotMatch(script, /<div class="cb-profile-metrics is-compact">/);
+  assert.match(html, /\.cb-profile-overview-copy h3[\s\S]*?white-space:\s*normal/);
+});
+
+test("creator achievement level follows actual progress", () => {
+  const novice = api.getCreatorProfileAchievements({bookings: [{}], reports: [], uniqueCount: 1, visitRank: 3, uniqueRank: 3, contentRank: 0});
+  assert.equal(novice[0].label, "Новичок");
+  const advanced = api.getCreatorProfileAchievements({bookings: [{}, {}], reports: [{}], uniqueCount: 2, visitRank: 2, uniqueRank: 2, contentRank: 2});
+  assert.equal(advanced[0].label, "Продвинутый");
+  const guru = api.getCreatorProfileAchievements({bookings: Array(10).fill({}), reports: Array(5).fill({}), uniqueCount: api.TOTAL_UNIQUE_TOURS, visitRank: 1, uniqueRank: 1, contentRank: 1});
+  assert.equal(guru[0].label, "Гуру");
+  assert.ok(guru.some((item) => item.label === "Все маршруты"));
+});
+
+test("materials show today's index and leading add-content card", () => {
+  assert.match(script, /cb-stories-today-index/);
+  assert.match(script, /id="cb-story-add-card"/);
+  assert.match(script, /buildCreatorStoryAddCard\(\) \+ creatorStoryItems/);
+  const count = api.getTodayPublishedContentCount([
+    {createdAt: "2026-07-24T03:00:00+10:00"},
+    {createdAt: "2026-07-23T03:00:00+10:00"},
+  ]);
+  assert.equal(count, 1);
+});
+
+test("diagnostics are rendered below CREACLOUD", () => {
+  assert.ok(html.indexOf('<footer id="creacloud"') < html.indexOf('id="cb-diagnostics"'));
+});
+
+test("active controls use rounded edges while card buttons keep a compact radius", () => {
+  assert.match(html, /button:not\(:disabled\):not\(\[aria-disabled="true"\]\)/);
+  assert.match(html, /\.cb-story-card[\s\S]*?border-radius:\s*22px/);
 });
 
 console.log(`\n${passed} site health tests passed.`);
