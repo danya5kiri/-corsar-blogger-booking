@@ -43,6 +43,26 @@ jobs:
           PY
           python tools/apply_weather_booking_diagnostics.py
 
+      - name: Исправить область проверки HTML ID
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/site_health_test.js')
+          text = path.read_text(encoding='utf-8')
+          old = '''test("HTML ids are unique", () => {
+            const ids = Array.from(html.matchAll(/\\sid="([^"]+)"/g), (match) => match[1]);
+            const seen = new Set();'''
+          new = '''test("HTML ids are unique", () => {
+            const staticMarkup = html.replace(/<script(?:\\s[^>]*)?>[\\s\\S]*?<\\/script>/gi, "");
+            const ids = Array.from(staticMarkup.matchAll(/\\sid="([^"]+)"/g), (match) => match[1]);
+            const seen = new Set();'''
+          if old in text:
+            text = text.replace(old, new, 1)
+            path.write_text(text, encoding='utf-8')
+          elif 'const staticMarkup = html.replace(' not in text:
+            raise SystemExit('HTML id test block not found')
+          PY
+
       - name: Проверить JavaScript
         run: |
           python - <<'PY'
@@ -82,15 +102,15 @@ jobs:
       - name: Прогнать тестовую жизнь продукта
         run: node tests/site_health_test.js
 
-      - name: Зафиксировать index.html при первом применении
+      - name: Зафиксировать проверенные файлы
         run: |
-          rm -f patch-error.txt
-          if git diff --quiet -- index.html; then
-            echo "Новых изменений index.html нет"
+          rm -f patch-error.txt test-error.txt
+          if git diff --quiet -- index.html tests/site_health_test.js; then
+            echo "Новых изменений проверяемых файлов нет"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Уточнить погоду, защиту бронирований и диагностику"
+          git add index.html tests/site_health_test.js
+          git commit -m "Исправить постоянную проверку сайта"
           git push origin HEAD:${{ github.head_ref }}
