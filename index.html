@@ -3987,6 +3987,155 @@ body.cb-lock-scroll #corsar-blogger-booking {
 }
 
 
+/* ===== Уточнение мини-ЛК, историй и рекомендации при записи ===== */
+.cb-stories-summary-title {
+  font-weight: 300;
+}
+
+.cb-stories-summary-title strong {
+  font-weight: 820;
+}
+
+.cb-profile-metrics.is-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cb-booking-unique-hint[hidden] {
+  display: none;
+}
+
+.cb-booking-unique-hint {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  border: 1px solid rgba(23, 23, 25, .09);
+  background: linear-gradient(110deg, rgba(229, 251, 243, .82), rgba(232, 248, 253, .84) 45%, rgba(238, 232, 255, .82));
+}
+
+.cb-booking-unique-hint summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 13px;
+  color: #52606a;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .065em;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.cb-booking-unique-hint summary::-webkit-details-marker {
+  display: none;
+}
+
+.cb-booking-unique-toggle {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(23, 23, 25, .10);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .72);
+  color: var(--cb-ink);
+  font-size: 17px;
+  font-weight: 420;
+  transition: transform .2s ease;
+}
+
+.cb-booking-unique-hint[open] .cb-booking-unique-toggle {
+  transform: rotate(45deg);
+}
+
+.cb-booking-unique-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 13px 14px;
+  border-top: 1px solid rgba(23, 23, 25, .07);
+}
+
+.cb-booking-unique-copy {
+  color: #626b76;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.cb-booking-unique-copy strong {
+  color: var(--cb-ink);
+  font-weight: 810;
+}
+
+#cb-booking-unique-action {
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid rgba(23, 23, 25, .10);
+  background: rgba(255, 255, 255, .82);
+  color: var(--cb-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 830;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+#cb-booking-unique-action:hover,
+#cb-booking-unique-action:focus-visible {
+  transform: translateY(-1px);
+  outline: 0;
+  box-shadow: 0 10px 22px rgba(77, 111, 122, .13);
+}
+
+@media (min-width: 901px) {
+  .cb-profile-entry-card.is-desktop-placement {
+    display: grid;
+    grid-template-columns: minmax(160px, .85fr) minmax(0, 1.15fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 8px 18px;
+    width: var(--cb-events-desktop-width, 100%);
+    max-width: 100%;
+    min-height: 154px;
+    margin: auto 0 10px;
+    padding: 18px;
+  }
+
+  .cb-profile-entry-card.is-desktop-placement .cb-profile-entry-copy {
+    grid-row: 1 / span 2;
+  }
+
+  .cb-profile-entry-card.is-desktop-placement .cb-profile-entry-form {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  .cb-profile-entry-card.is-desktop-placement .cb-profile-entry-state {
+    grid-column: 2;
+    margin-top: -2px;
+  }
+
+  .cb-profile-entry-card.is-desktop-placement + .cb-recent-events-desktop {
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .cb-profile-metrics.is-compact,
+  .cb-booking-unique-body {
+    grid-template-columns: 1fr;
+  }
+
+  #cb-booking-unique-action {
+    width: 100%;
+  }
+}
+
+
 @media (max-width: 900px) {
   #corsar-blogger-booking {
     width: min(100% - 22px, 680px);
@@ -4383,6 +4532,19 @@ body.cb-lock-scroll #corsar-blogger-booking {
           <h1 class="cb-hero-title">Привет, <strong>креатор!</strong></h1>
           <p class="cb-hero-text">Выбирайте морское путешествие, создавайте живой контент о Владивостоке и возвращайтесь сюда, чтобы поделиться готовой публикацией.</p>
         </div>
+        <article class="cb-profile-entry-card" aria-labelledby="cb-profile-entry-title">
+          <div class="cb-profile-entry-copy">
+            <span class="cb-stat-label">Профиль креатора</span>
+            <strong id="cb-profile-entry-title">Откройте мини-ЛК</strong>
+            <span>Уникальные туры, ближайшая бронь, публикации и персональная рекомендация.</span>
+          </div>
+          <div class="cb-profile-entry-form">
+            <input id="cb-profile-entry-input" list="cb-profile-creators" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Введите @username" aria-label="Ник креатора для открытия профиля">
+            <datalist id="cb-profile-creators"></datalist>
+            <button type="button" id="cb-profile-entry-submit">Открыть профиль</button>
+          </div>
+          <div id="cb-profile-entry-state" class="cb-profile-entry-state" aria-live="polite">Данные будут найдены в действующей базе сайта.</div>
+        </article>
         <details id="cb-recent-events-desktop" class="cb-recent-events cb-recent-events-desktop">
           <summary class="cb-activity-head"><span class="cb-activity-title">Последние события</span><span class="cb-activity-live">активность</span><span class="cb-activity-toggle" aria-hidden="true">+</span></summary>
           <div class="cb-activity-panel" aria-live="polite"><div class="cb-activity-empty">Загружаем последние события...</div></div>
@@ -4451,19 +4613,6 @@ body.cb-lock-scroll #corsar-blogger-booking {
           </div>
         </div>
 
-        <article class="cb-profile-entry-card" aria-labelledby="cb-profile-entry-title">
-          <div class="cb-profile-entry-copy">
-            <span class="cb-stat-label">Профиль креатора</span>
-            <strong id="cb-profile-entry-title">Откройте мини-ЛК</strong>
-            <span>Поездки, уникальные программы, публикации, места в рейтингах и персональная рекомендация.</span>
-          </div>
-          <div class="cb-profile-entry-form">
-            <input id="cb-profile-entry-input" list="cb-profile-creators" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Введите @username" aria-label="Ник креатора для открытия профиля">
-            <datalist id="cb-profile-creators"></datalist>
-            <button type="button" id="cb-profile-entry-submit">Открыть профиль</button>
-          </div>
-          <div id="cb-profile-entry-state" class="cb-profile-entry-state" aria-live="polite">Данные будут найдены в действующей базе сайта.</div>
-        </article>
       </div>
 
       <svg class="cb-route-line" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
@@ -4492,7 +4641,7 @@ body.cb-lock-scroll #corsar-blogger-booking {
     <summary class="cb-stories-summary">
       <span class="cb-stories-summary-copy">
         <span class="cb-stories-kicker">Материалы мастерской</span>
-        <strong id="cb-stories-summary-title" class="cb-stories-summary-title">Загружаем истории креаторов...</strong>
+        <span id="cb-stories-summary-title" class="cb-stories-summary-title"><strong>Загружаем</strong> публикации...</span>
       </span>
       <span id="cb-stories-summary-meta" class="cb-stories-summary-meta">Свежие публикации появятся после загрузки данных.</span>
       <span class="cb-stories-toggle" aria-hidden="true">+</span>
@@ -4566,6 +4715,13 @@ body.cb-lock-scroll #corsar-blogger-booking {
         <select id="cb-tour"><option value="">Сначала выберите дату</option></select>
         <div class="cb-field-hint">Показаны только программы из актуального расписания на выбранную дату.</div>
       </div>
+      <details id="cb-booking-unique-hint" class="cb-booking-unique-hint" hidden>
+        <summary><span>Новая категория на эту дату</span><span class="cb-booking-unique-toggle" aria-hidden="true">+</span></summary>
+        <div class="cb-booking-unique-body">
+          <div id="cb-booking-unique-copy" class="cb-booking-unique-copy"></div>
+          <button type="button" id="cb-booking-unique-action">Выбрать рекомендованный тур</button>
+        </div>
+      </details>
       <div class="cb-field cb-booking-mode-field">
         <label for="cb-booking-mode">Действие с записью</label>
         <select id="cb-booking-mode">
@@ -4626,17 +4782,6 @@ body.cb-lock-scroll #corsar-blogger-booking {
     <div id="cb-analytics" class="cb-analytics-card"></div>
   </section>
 
-  <section id="creator-profile" class="cb-section cb-profile-section" hidden>
-    <div class="cb-section-head">
-      <div>
-        <div class="cb-section-kicker">Персональный профиль</div>
-        <h2 class="cb-section-title">Мини-ЛК <strong>креатора</strong></h2>
-      </div>
-      <p class="cb-section-note">Профиль формируется из действующих записей и опубликованных материалов. Отдельной регистрации или нового учёта нет.</p>
-    </div>
-    <div id="cb-profile-dashboard" class="cb-profile-dashboard" aria-live="polite"></div>
-  </section>
-
   <section id="results" class="cb-section cb-results-section">
     <div class="cb-section-head">
       <div>
@@ -4653,6 +4798,17 @@ body.cb-lock-scroll #corsar-blogger-booking {
       <div id="cb-results-summary" class="cb-results-summary">Загружаем опубликованные материалы...</div>
     </div>
     <div id="cb-results" class="cb-results-grid" aria-live="polite"></div>
+  </section>
+
+  <section id="creator-profile" class="cb-section cb-profile-section" hidden>
+    <div class="cb-section-head">
+      <div>
+        <div class="cb-section-kicker">Персональный профиль</div>
+        <h2 class="cb-section-title">Мини-ЛК <strong>креатора</strong></h2>
+      </div>
+      <p class="cb-section-note">Профиль формируется из действующих записей и опубликованных материалов. Отдельной регистрации или нового учёта нет.</p>
+    </div>
+    <div id="cb-profile-dashboard" class="cb-profile-dashboard" aria-live="polite"></div>
   </section>
 
   <footer id="creacloud" class="cb-footer">
@@ -5738,6 +5894,9 @@ var WEATHER_REFRESH_INTERVAL = 3 * 60 * 60 * 1000;
 var COMPACT_NOTICE_STORAGE_KEY = "corsar_daily_notice_seen_v1";
 var CREATOR_STORY_STORAGE_KEY = "corsar_creator_stories_seen_v1";
 var PORTAL_UPDATES = [{
+  date: "2026-07-24",
+  text: "Уточнены мини-ЛК, пять свежих публикаций и персональная рекомендация при бронировании."
+}, {
   date: "2026-07-22",
   text: "Обновлены мобильный календарь, блок обратной связи CREACLOUD и ежедневная сводка портала."
 }];
@@ -5864,12 +6023,14 @@ function setupStickyNav(){
 
 function syncDesktopRecentEventsWidth(){
   var events = $("cb-recent-events-desktop");
+  var profile = document.querySelector(".cb-profile-entry-card");
   var actions = document.querySelector(".cb-hero-actions");
   if(!events || !actions) return;
 
   var desktop = !window.matchMedia || window.matchMedia("(min-width: 901px)").matches;
   if(!desktop){
     events.style.removeProperty("--cb-events-desktop-width");
+    if(profile) profile.style.removeProperty("--cb-events-desktop-width");
     return;
   }
 
@@ -5886,7 +6047,9 @@ function syncDesktopRecentEventsWidth(){
 
   var width = Math.ceil(right - left);
   if(width > 0){
-    events.style.setProperty("--cb-events-desktop-width", Math.min(width, actions.clientWidth) + "px");
+    var value = Math.min(width, actions.clientWidth) + "px";
+    events.style.setProperty("--cb-events-desktop-width", value);
+    if(profile) profile.style.setProperty("--cb-events-desktop-width", value);
   }
 }
 
@@ -5899,6 +6062,36 @@ function setupDesktopRecentEventsWidth(){
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(syncDesktopRecentEventsWidth).catch(function(){});
   }
+}
+
+function placeCreatorProfileEntry(){
+  var card = document.querySelector(".cb-profile-entry-card");
+  var heroCopy = document.querySelector(".cb-hero-copy");
+  var heroStats = document.querySelector(".cb-hero-stats");
+  var desktopEvents = $("cb-recent-events-desktop");
+  var leaders = document.querySelector(".cb-leaders-carousel");
+  if(!card || !heroCopy || !heroStats || !desktopEvents || !leaders) return;
+
+  var desktop = !window.matchMedia || window.matchMedia("(min-width: 901px)").matches;
+  if(desktop){
+    if(card.parentNode !== heroCopy || card.nextElementSibling !== desktopEvents){
+      heroCopy.insertBefore(card, desktopEvents);
+    }
+    card.classList.add("is-desktop-placement");
+  } else {
+    if(card.parentNode !== heroStats || card.previousElementSibling !== leaders){
+      heroStats.insertBefore(card, leaders.nextSibling);
+    }
+    card.classList.remove("is-desktop-placement");
+  }
+  syncDesktopRecentEventsWidth();
+}
+
+function setupCreatorProfilePlacement(){
+  placeCreatorProfileEntry();
+  window.addEventListener("resize", function(){
+    window.requestAnimationFrame(placeCreatorProfileEntry);
+  }, {passive: true});
 }
 
 function shouldAutoPlayLeaders(){
@@ -6332,10 +6525,12 @@ function renderCreatorOptions(){
   setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", bookingDirectory, "booking");
   setCreatorIdentityState("cb-report-telegram", "cb-report-creator-state", reportDirectory, "report");
   renderTransferOptions();
+  updateBookingUniqueHint();
 }
 
 function setupCreatorIdentityInputs(){
   var bookingInput = $("cb-telegram");
+  var bookingTour = $("cb-tour");
   var reportInput = $("cb-report-telegram");
   var reportTour = $("cb-report-tour");
 
@@ -6343,6 +6538,7 @@ function setupCreatorIdentityInputs(){
     var directory = getKnownCreatorDirectory();
     setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", directory, "booking");
     renderTransferOptions();
+    updateBookingUniqueHint();
   }
 
   function updateReportIdentity(){
@@ -6358,8 +6554,11 @@ function setupCreatorIdentityInputs(){
       var entry = setCreatorIdentityState("cb-telegram", "cb-booking-creator-state", getKnownCreatorDirectory(), "booking");
       if(entry) bookingInput.value = entry.name;
       renderTransferOptions();
+      updateBookingUniqueHint();
     });
   }
+
+  if(bookingTour) bookingTour.addEventListener("change", updateBookingUniqueHint);
 
   if(reportInput){
     reportInput.addEventListener("input", updateReportIdentity);
@@ -6372,7 +6571,12 @@ function setupCreatorIdentityInputs(){
 
   if(reportTour) reportTour.addEventListener("change", updateReportIdentity);
   var bookingMode = $("cb-booking-mode");
-  if(bookingMode) bookingMode.addEventListener("change", renderTransferOptions);
+  if(bookingMode) bookingMode.addEventListener("change", function(){
+    renderTransferOptions();
+    updateBookingUniqueHint();
+  });
+  var bookingHintAction = $("cb-booking-unique-action");
+  if(bookingHintAction) bookingHintAction.addEventListener("click", selectBookingUniqueSuggestion);
   renderCreatorOptions();
 }
 
@@ -6385,6 +6589,93 @@ function getUniqueTourKey(v){
   if(!canonical) return "";
   if(canonical === CANONICAL_TOURS[1] || canonical === CANONICAL_TOURS[8]) return "вечерняя программа";
   return normalizeTour(canonical);
+}
+
+var bookingUniqueSuggestion = null;
+
+function hideBookingUniqueHint(){
+  var hint = $("cb-booking-unique-hint");
+  bookingUniqueSuggestion = null;
+  if(!hint) return;
+  hint.hidden = true;
+  hint.open = false;
+}
+
+function findBookingUniqueAlternative(creator, date, selectedTour){
+  var entry = findCreatorEntry(creator, getKnownCreatorDirectory());
+  if(!entry || !date || !selectedTour || !isBookableDate(date)) return null;
+
+  var selectedKey = getUniqueTourKey(selectedTour);
+  if(!selectedKey) return null;
+  var visited = getCreatorProfileUniqueSet(entry.name);
+  if(!visited[selectedKey]) return null;
+
+  var tours = getToursByDate(date);
+  for(var i = 0; i < tours.length; i++){
+    var tour = tours[i];
+    var key = getUniqueTourKey(tour);
+    if(!key || visited[key] || normalizeTour(tour) === normalizeTour(selectedTour) || hasBookingSlotConflict(date, tour)) continue;
+    return {creator: entry.name, date: date, tour: canonicalTourName(tour), key: key};
+  }
+  return null;
+}
+
+function updateBookingUniqueHint(){
+  var hint = $("cb-booking-unique-hint");
+  var copy = $("cb-booking-unique-copy");
+  var action = $("cb-booking-unique-action");
+  var input = $("cb-telegram");
+  var select = $("cb-tour");
+  var mode = $("cb-booking-mode");
+  if(!hint || !copy || !action || !input || !select){
+    bookingUniqueSuggestion = null;
+    return;
+  }
+
+  if(mode && mode.value !== "new"){
+    hideBookingUniqueHint();
+    return;
+  }
+
+  var suggestion = findBookingUniqueAlternative(input.value, getFormDate(), select.value);
+  if(!suggestion){
+    hideBookingUniqueHint();
+    return;
+  }
+
+  bookingUniqueSuggestion = suggestion;
+  copy.innerHTML = 'Вы уже выбирали <strong>' + escapeHtml(canonicalTourName(select.value)) + '</strong>. На эту же дату свободна новая для вас программа: <strong>' + escapeHtml(suggestion.tour) + '</strong>.';
+  action.textContent = "Выбрать рекомендованный тур";
+  hint.hidden = false;
+  hint.open = true;
+}
+
+function selectBookingUniqueSuggestion(){
+  var suggestion = bookingUniqueSuggestion;
+  var select = $("cb-tour");
+  if(!suggestion || !select || normalizeDate(suggestion.date) !== getFormDate()){
+    updateBookingUniqueHint();
+    return;
+  }
+
+  var selected = false;
+  Array.prototype.some.call(select.options, function(option){
+    if(!option.disabled && normalizeTour(option.value) === normalizeTour(suggestion.tour)){
+      select.value = option.value;
+      selected = true;
+      return true;
+    }
+    return false;
+  });
+
+  if(!selected){
+    updateBookingUniqueHint();
+    setMessage("Рекомендованный тур уже недоступен. Выберите другое свободное окно.", true);
+    return;
+  }
+
+  hideBookingUniqueHint();
+  setMessage("Выбран новый для вашего профиля тур: <b>" + escapeHtml(suggestion.tour) + "</b>.", false);
 }
 
 function normalizeContentLink(v){
@@ -7163,6 +7454,7 @@ function renderTours(date){
   }
 
   appendGroup("Туры по календарю", scheduledTours);
+  updateBookingUniqueHint();
 }
 
 function getBookingsByDate(date){
@@ -7369,6 +7661,7 @@ function renderDetails(date, animate){
       renderCalendar();
       renderDetails(date);
       renderTransferOptions();
+      updateBookingUniqueHint();
       setMessage("Выбраны <b>" + formatDateRu(date) + "</b> и тур <b>" + escapeHtml(canonicalTourName(chosenTour)) + "</b>. Укажите ник креатора.", false);
 
       var bookingSection = $("booking");
@@ -8339,35 +8632,22 @@ function renderCreatorProfile(){
 
   activeCreatorProfile = entry.name;
   var data = getCreatorProfileData(activeCreatorProfile);
+  var remainingUnique = Math.max(0, TOTAL_UNIQUE_TOURS - data.uniqueCount);
   currentCreatorProfileRecommendation = data.recommendation;
   section.hidden = false;
 
-  dashboard.innerHTML = '<div class="cb-profile-overview"><div class="cb-profile-overview-copy"><small>Профиль сезона</small><h3>' + escapeHtml(data.creator) + '</h3><p>Данные собраны из действующих записей и опубликованных работ без отдельной регистрации.</p></div><div class="cb-profile-overview-score"><strong>' + data.uniqueCount + '</strong><small>/ ' + TOTAL_UNIQUE_TOURS + '</small></div></div>' +
-    '<div class="cb-profile-metrics"><div class="cb-profile-metric"><strong>' + data.bookings.length + '</strong><span>' + pluralCount(data.bookings.length, "поездка в учёте", "поездки в учёте", "поездок в учёте") + '</span></div><div class="cb-profile-metric"><strong>' + data.uniqueCount + '/' + TOTAL_UNIQUE_TOURS + '</strong><span>Уникальные программы</span></div><div class="cb-profile-metric"><strong>' + data.reports.length + '</strong><span>' + pluralCount(data.reports.length, "опубликованная работа", "опубликованные работы", "опубликованных работ") + '</span></div></div>' +
-    '<div class="cb-profile-ranks"><div class="cb-profile-rank"><small>По количеству туров</small><strong>' + formatCreatorProfileRank(data.visitRank) + '</strong></div><div class="cb-profile-rank"><small>По уникальным турам</small><strong>' + formatCreatorProfileRank(data.uniqueRank) + '</strong></div><div class="cb-profile-rank"><small>По контенту</small><strong>' + formatCreatorProfileRank(data.contentRank) + '</strong></div></div>' +
+  dashboard.innerHTML = '<div class="cb-profile-overview"><div class="cb-profile-overview-copy"><small>Профиль сезона</small><h3>' + escapeHtml(data.creator) + '</h3><p>' + data.bookings.length + ' ' + pluralCount(data.bookings.length, "поездка", "поездки", "поездок") + ' в учёте · ' + data.reports.length + ' ' + pluralCount(data.reports.length, "публикация", "публикации", "публикаций") + '.</p></div><div class="cb-profile-overview-score"><strong>' + data.uniqueCount + '</strong><small>/ ' + TOTAL_UNIQUE_TOURS + '</small></div></div>' +
+    '<div class="cb-profile-metrics is-compact"><div class="cb-profile-metric"><strong>' + data.uniqueCount + '/' + TOTAL_UNIQUE_TOURS + '</strong><span>Уникальных туров посещено</span></div><div class="cb-profile-metric"><strong>' + remainingUnique + '</strong><span>Уникальных туров ещё не посещено</span></div></div>' +
     '<div class="cb-profile-progress"><div class="cb-profile-progress-copy"><small class="cb-profile-block-label">Охват программ</small><strong>' + data.uniqueCount + ' ' + pluralCount(data.uniqueCount, "уникальный тур", "уникальных тура", "уникальных туров") + ' из ' + TOTAL_UNIQUE_TOURS + '</strong><span>Две вечерние программы учитываются как одна категория; двухдневные туры в уникальность не входят.</span></div><div class="cb-profile-progress-stars" aria-label="Пройдено ' + data.uniqueCount + ' из ' + TOTAL_UNIQUE_TOURS + ' уникальных туров">' + renderTourVarietyStars(data.uniqueCount) + '</div></div>' +
-    '<div class="cb-profile-tour-columns"><article class="cb-profile-tour-block is-complete"><small class="cb-profile-block-label">Уже учтено</small>' + renderCreatorProfileTourChips(data.completedTours) + '</article><article class="cb-profile-tour-block is-missing"><small class="cb-profile-block-label">Ещё не посещено</small>' + renderCreatorProfileTourChips(data.missingTours) + '</article></div>' +
     buildCreatorProfileRecommendation(data) + buildCreatorProfileActivity(data) +
-    '<div class="cb-profile-actions">' + (data.upcomingBookings.length ? '<button type="button" id="cb-profile-manage" class="cb-profile-action">Управлять бронями</button>' : '') + (data.bookings.length ? '<button type="button" id="cb-profile-add-content" class="cb-profile-action">Добавить контент</button>' : '') + (data.reports.length ? '<button type="button" id="cb-profile-view-works" class="cb-profile-action">Смотреть мои работы</button>' : '') + '<button type="button" id="cb-profile-change" class="cb-profile-action">Сменить профиль</button></div>';
+    '<div class="cb-profile-actions">' + (data.upcomingBookings.length ? '<button type="button" id="cb-profile-manage" class="cb-profile-action">Управлять бронированием</button>' : '') + (data.bookings.length ? '<button type="button" id="cb-profile-add-content" class="cb-profile-action">Добавить контент</button>' : '') + '</div>';
 
   var bookNext = $("cb-profile-book-next");
   var manage = $("cb-profile-manage");
   var addContent = $("cb-profile-add-content");
-  var viewWorks = $("cb-profile-view-works");
-  var change = $("cb-profile-change");
   if(bookNext) bookNext.onclick = prefillCreatorProfileRecommendation;
   if(manage) manage.onclick = openCreatorProfileBookingManagement;
   if(addContent) addContent.onclick = openCreatorProfileContentForm;
-  if(viewWorks) viewWorks.onclick = function(){ focusCreatorResults(activeCreatorProfile); };
-  if(change) change.onclick = function(){
-    var input = $("cb-profile-entry-input");
-    if(input){
-      input.focus();
-      input.select();
-      var home = $("home");
-      if(home) home.scrollIntoView({behavior: "smooth", block: "start"});
-    }
-  };
 }
 
 function selectCreatorProfileTourOption(tour){
@@ -8780,18 +9060,20 @@ function renderCreatorStories(){
   var next = $("cb-stories-next");
   if(!track || !summaryTitle || !summaryMeta) return;
 
-  creatorStoryItems = getPublishedContentItems().slice(0, 10);
+  creatorStoryItems = getPublishedContentItems().slice(0, 5);
   if(!creatorStoryItems.length){
-    summaryTitle.textContent = "Истории креаторов";
+    summaryTitle.innerHTML = "<strong>Свежих публикаций</strong> пока нет";
     summaryMeta.textContent = "Пока нет опубликованных материалов";
-    track.innerHTML = '<div class="cb-stories-empty">Истории появятся после добавления первой готовой публикации.</div>';
+    track.innerHTML = '<div class="cb-stories-empty">Публикации появятся после добавления первой готовой работы.</div>';
     if(prev) prev.disabled = true;
     if(next) next.disabled = true;
     return;
   }
 
   var latest = creatorStoryItems[0];
-  summaryTitle.textContent = creatorStoryItems.length + " " + pluralCount(creatorStoryItems.length, "свежая история", "свежие истории", "свежих историй");
+  var count = creatorStoryItems.length;
+  var freshness = count === 1 ? "свежая" : (count >= 2 && count <= 4 ? "свежие" : "свежих");
+  summaryTitle.innerHTML = "<strong>" + count + " " + freshness + "</strong> " + pluralCount(count, "публикация", "публикации", "публикаций");
   summaryMeta.textContent = "Последняя: " + (getReportCreator(latest) || "креатор") + " · " + getContentPlatform(getReportLink(latest));
 
   var seen = readCreatorStorySeen();
@@ -8802,7 +9084,7 @@ function renderCreatorStories(){
     var identity = getCreatorStoryIdentity(report);
     var seenClass = seen[identity] ? " is-seen" : "";
     var recent = isCreatorStoryRecent(report);
-    return '<button type="button" class="cb-story-card is-tone-' + getCreatorStoryTone(index) + seenClass + '" data-story-index="' + index + '" aria-label="Открыть историю ' + escapeHtml(creator) + ': ' + escapeHtml(tour) + '">' +
+    return '<button type="button" class="cb-story-card is-tone-' + getCreatorStoryTone(index) + seenClass + '" data-story-index="' + index + '" aria-label="Открыть публикацию ' + escapeHtml(creator) + ': ' + escapeHtml(tour) + '">' +
       '<span class="cb-story-card-top"><span class="cb-story-index">' + String(index + 1).padStart(2, "0") + ' / ' + String(creatorStoryItems.length).padStart(2, "0") + '</span><span class="cb-story-platform">' + escapeHtml(platform) + '</span></span>' +
       '<span class="cb-story-card-main"><strong class="cb-story-creator">' + escapeHtml(creator) + '</strong><span class="cb-story-tour">' + escapeHtml(tour) + '</span></span>' +
       '<span class="cb-story-card-bottom"><span class="cb-story-date">' + escapeHtml(formatCreatorStoryDate(report)) + '</span>' + (recent ? '<span class="cb-story-new">Новое</span>' : '') + '</span>' +
@@ -9695,6 +9977,7 @@ function init(){
   setInterval(updateSeasonCounter, 3600000);
   setupWeatherRefresh();
   setupStickyNav();
+  setupCreatorProfilePlacement();
   setupDesktopRecentEventsWidth();
   setupLeadersCarousel();
   setupCalendarCarousel();
@@ -9720,6 +10003,7 @@ function init(){
       renderTours(this.value);
       renderCalendar();
       renderDetails(this.value);
+      updateBookingUniqueHint();
       if(this.value) setMessage("Выбрано: <b>" + formatDateRu(this.value) + "</b>. Теперь выберите тур.", false);
     };
   }
