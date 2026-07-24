@@ -95,6 +95,33 @@ window.CREACLOUD_DESIGN_MODE = "redesign";
     return success ? 520 : 1100;
   }
 
+  function syncMobileProfileEntry(){
+    if(mode !== "redesign") return;
+    var profile = document.querySelector(".cb-profile-entry-card");
+    var stats = document.querySelector(".cb-hero-stats");
+    var copy = document.querySelector(".cb-hero-copy");
+    var events = document.getElementById("cb-recent-events-desktop");
+    if(!profile || !stats || !copy) return;
+
+    if(window.matchMedia("(max-width: 900px)").matches){
+      if(profile.parentNode !== stats || profile !== stats.firstElementChild){
+        stats.insertBefore(profile, stats.firstElementChild);
+      }
+    } else if(events && (profile.parentNode !== copy || profile.nextElementSibling !== events)){
+      copy.insertBefore(profile, events);
+    }
+  }
+
+  function initProfileEntryPosition(){
+    syncMobileProfileEntry();
+    var media = window.matchMedia("(max-width: 900px)");
+    if(media.addEventListener) media.addEventListener("change", syncMobileProfileEntry);
+    else if(media.addListener) media.addListener(syncMobileProfileEntry);
+  }
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", initProfileEntryPosition, {once: true});
+  else initProfileEntryPosition();
+
   window.CREACLOUD_THEME = Object.freeze({
     mode: mode,
     phrases: phrases.slice(),
