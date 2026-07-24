@@ -556,7 +556,7 @@ test("mobile splash is constrained to the safe viewport", () => {
 '''
 
 if 'refinements keep the hero light and improve compact card radii' not in tests:
-    marker = 'console.log(`\n${passed} design mode tests passed.`);'
+    marker = r'console.log(`\n${passed} design mode tests passed.`);'
     if tests.count(marker) != 1:
         raise SystemExit("design test footer not found")
     tests = tests.replace(marker, extra_tests + '\n' + marker, 1)

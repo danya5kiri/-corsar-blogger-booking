@@ -158,4 +158,39 @@ test("redesign keeps white content surfaces and a limited dark contrast section"
   assert.match(themeCss, /\.cb-ranking-section[\s\S]*linear-gradient\(145deg, #242721/);
 });
 
+
+
+test("refinements keep the hero light and improve compact card radii", () => {
+  assert.match(themeCss, /CREACLOUD refinements v2/);
+  assert.match(themeCss, /\.cb-hero\s*\{[\s\S]*linear-gradient\(145deg, #ffffff/);
+  assert.match(themeCss, /\.cb-leaders-track \.cb-leader-card\s*\{\s*border-radius:\s*14px/);
+  assert.match(themeCss, /\.cb-day\s*\{\s*border-radius:\s*7px/);
+  assert.match(themeCss, /\.cb-recent-events \.cb-activity-head[\s\S]*border-radius:\s*999px/);
+});
+
+
+test("booking supports WhatsApp and phone confirmation through the same write flow", () => {
+  assert.match(html, /id="cb-call-submit"/);
+  assert.match(html, /Сформировать заявку WhatsApp/);
+  assert.match(html, /Позвонить для записи/);
+  assert.match(html, /bookingContactMode = "call"; submitBooking\(\)/);
+  assert.match(html, /contactChannel:\s*contactMode === "call" \? "phone" : "whatsapp"/);
+  assert.match(html, /tel:\+" \+ CONFIG\.WHATSAPP_NUMBER/);
+});
+
+
+test("creator cabinet title and scrolling navigation match the refinement brief", () => {
+  assert.match(html, /<h2 class="cb-section-title">ЛК <strong>креатора<\/strong><\/h2>/);
+  assert.match(html, /function setupRedesignNavigationBehavior\(\)/);
+  assert.match(themeCss, /\.cb-sticky-nav\.is-scroll-hidden/);
+  assert.match(themeCss, /background:\s*rgba\(255, 255, 255, \.82\)/);
+});
+
+
+test("mobile splash is constrained to the safe viewport", () => {
+  assert.match(themeCss, /max-width:\s*calc\(100vw - 36px\)/);
+  assert.match(themeCss, /font-size:\s*clamp\(38px, 15\.4vw, 62px\)/);
+  assert.match(themeCss, /height:\s*calc\(100dvh - max\(18px, env\(safe-area-inset-top\)\) - max\(22px, env\(safe-area-inset-bottom\)\)\)/);
+});
+
 console.log(`\n${passed} design mode tests passed.`);
