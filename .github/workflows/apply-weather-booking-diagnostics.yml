@@ -16,6 +16,26 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+      - name: Уточнить патч отмены брони
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tools/apply_weather_booking_diagnostics.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''replace_once(
+              '      .then(function(){\\n        bookings = resolveEffectiveBookings(bookings.concat([payload]));\\n        rememberSubmission(BOOKING_STORAGE_KEY, submissionFingerprint);',
+              '      .then(function(){\\n        rememberPendingWrite({kind: "cancel", sourceKey: sourceFingerprint});\\n        bookings = resolveEffectiveBookings(bookings.concat([payload]));\\n        rememberSubmission(BOOKING_STORAGE_KEY, submissionFingerprint);',
+              "remember pending cancellation",
+          )'''
+          new = '''replace_once(
+              '      setMessage("Удаляем бронь...", false);\\n\\n      fetch(CONFIG.API_URL, {\\n        method: "POST",\\n        mode: "no-cors",\\n        body: JSON.stringify(payload)\\n      })\\n      .then(function(){\\n        bookings = resolveEffectiveBookings(bookings.concat([payload]));\\n        rememberSubmission(BOOKING_STORAGE_KEY, submissionFingerprint);',
+              '      setMessage("Удаляем бронь...", false);\\n\\n      fetch(CONFIG.API_URL, {\\n        method: "POST",\\n        mode: "no-cors",\\n        body: JSON.stringify(payload)\\n      })\\n      .then(function(){\\n        rememberPendingWrite({kind: "cancel", sourceKey: sourceFingerprint});\\n        bookings = resolveEffectiveBookings(bookings.concat([payload]));\\n        rememberSubmission(BOOKING_STORAGE_KEY, submissionFingerprint);',
+              "remember pending cancellation",
+          )'''
+          if old not in text:
+              raise SystemExit('cancellation patch source block not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Применить патч
         run: |
           set +e
