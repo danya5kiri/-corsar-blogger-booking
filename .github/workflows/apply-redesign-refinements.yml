@@ -33,6 +33,8 @@ jobs:
             git push origin HEAD:${{ github.head_ref }} || true
             exit $status
           fi
+      - name: Preserve booking function contract
+        run: python tools/post_fix_refinement_output.py
       - name: Run product and design tests
         run: |
           set +e
@@ -50,6 +52,7 @@ jobs:
           assert css.count('{') == css.count('}'), 'unbalanced CSS'
           assert 'id="cb-call-submit"' in html
           assert 'function setupRedesignNavigationBehavior()' in html
+          assert 'function submitBooking()' in html
           assert 'CREACLOUD refinements v2' in css
           assert 'window.CREACLOUD_DESIGN_MODE = "redesign"' in Path('creacloud-design.js').read_text(encoding='utf-8')
           print('Refinement structure is valid')
