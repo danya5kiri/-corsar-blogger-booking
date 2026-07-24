@@ -1,0 +1,121 @@
+name: Apply screenshot corrections
+
+on:
+  push:
+    branches: [fix-card-calendar-weather-call]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-card-calendar-weather-call
+          fetch-depth: 0
+
+      - name: Apply targeted corrections
+        run: python tools/apply_screenshot_corrections.py
+
+      - name: Run permanent tests
+        run: |
+          node --check creacloud-design.js
+          node tests/site_health_test.js
+          node tests/design_modes_test.js
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('creacloud-redesign.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'unbalanced CSS'
+          assert css.count('CREACLOUD screenshot corrections v3') == 1
+          assert html.count('CONFIG.CALL_PHONE_NUMBER') == 2
+          assert 'CALL_PHONE_NUMBER: "79149753285"' in html
+          print('Static correction checks passed')
+          PY
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 > /tmp/corsar-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/corsar-http.log
+          exit 1
+
+      - name: Verify computed desktop geometry
+        run: |
+          cat > /tmp/screenshot-corrections-smoke.cjs <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = require('node:assert/strict');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            await page.goto('http://127.0.0.1:4173/?design=redesign', { waitUntil: 'domcontentloaded' });
+            await page.evaluate(() => {
+              const root = document.getElementById('corsar-blogger-booking');
+              const fixture = document.createElement('div');
+              fixture.id = 'correction-fixture';
+              fixture.innerHTML = `
+                <div class="cb-leaders-track"><button class="cb-leader-card">leader</button></div>
+                <details class="cb-recent-events"><summary class="cb-activity-head">events</summary></details>
+                <button class="cb-day"><span class="cb-day-weather"><svg class="cb-weather-icon"></svg></span><span class="cb-day-num">24</span></button>
+                <div class="cb-weather-temp"><span class="cb-weather-number">+26°</span><svg class="cb-weather-icon"></svg></div>`;
+              root.appendChild(fixture);
+            });
+
+            const result = await page.evaluate(() => {
+              const fixture = document.getElementById('correction-fixture');
+              const leader = fixture.querySelector('.cb-leader-card');
+              const recent = fixture.querySelector('.cb-recent-events');
+              const day = fixture.querySelector('.cb-day');
+              const dayWeather = fixture.querySelector('.cb-day-weather');
+              const heroWeather = fixture.querySelector('.cb-weather-temp');
+              const heroIcon = heroWeather.querySelector('.cb-weather-icon');
+              return {
+                leaderRadius: getComputedStyle(leader).borderRadius,
+                recentBeforeDisplay: getComputedStyle(recent, '::before').display,
+                recentBeforeContent: getComputedStyle(recent, '::before').content,
+                dayRadius: getComputedStyle(day).borderRadius,
+                dayWeatherRight: getComputedStyle(dayWeather).right,
+                dayWeatherLeft: getComputedStyle(dayWeather).left,
+                heroWeatherDisplay: getComputedStyle(heroWeather).display,
+                heroWeatherWidth: heroWeather.getBoundingClientRect().width,
+                heroIconLeft: heroIcon.getBoundingClientRect().left,
+                heroNumberRight: heroWeather.querySelector('.cb-weather-number').getBoundingClientRect().right,
+              };
+            });
+
+            assert.equal(result.leaderRadius, '16px');
+            assert.ok(result.recentBeforeDisplay === 'none' || result.recentBeforeContent === 'none');
+            assert.equal(result.dayRadius, '0px');
+            assert.equal(result.dayWeatherRight, 'auto');
+            assert.notEqual(result.dayWeatherLeft, 'auto');
+            assert.equal(result.heroWeatherDisplay, 'flex');
+            assert.ok(result.heroIconLeft - result.heroNumberRight < 16, JSON.stringify(result));
+            assert.ok(result.heroWeatherWidth < 220, JSON.stringify(result));
+            console.log(result);
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+          node /tmp/screenshot-corrections-smoke.cjs
+
+      - name: Commit working files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html creacloud-redesign.css tests/design_modes_test.js
+          if git diff --cached --quiet; then
+            echo "No correction changes to commit"
+            exit 0
+          fi
+          git commit -m "Исправить геометрию карточек, календаря и звонок"
+          git push origin HEAD:fix-card-calendar-weather-call
