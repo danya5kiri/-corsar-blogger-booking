@@ -573,7 +573,9 @@ export function buildWorkingState(rows: RemoteRow[]): WorkingState {
         sourceOrder: sourceOrder.get(row) ?? -1,
       };
     })
-    .filter((item): item is ContentItem => Boolean(item?.tourId));
+    .filter(
+      (item): item is NonNullable<typeof item> => Boolean(item?.tourId),
+    );
 
   return { bookings, content, creators };
 }

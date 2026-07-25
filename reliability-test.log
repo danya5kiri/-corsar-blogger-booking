@@ -6,11 +6,17 @@
 > creacloud-main@0.1.0 build
 > tsc --noEmit && vite build && node scripts/finalize-build.mjs
 
-src/creacloud-data.ts(576,29): error TS2677: A type predicate's type must be assignable to its parameter's type.
-  Type 'ContentItem' is not assignable to type '{ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; }'.
-    Types of property 'sourceOrder' are incompatible.
-      Type 'number | undefined' is not assignable to type 'number'.
-        Type 'undefined' is not assignable to type 'number'.
-src/creacloud-data.ts(578,22): error TS2322: Type '({ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; } | null)[]' is not assignable to type 'ContentItem[]'.
-  Type '{ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; } | null' is not assignable to type 'ContentItem'.
-    Type 'null' is not assignable to type 'ContentItem'.
+[36mvite v8.0.13 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 20 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/vite-entry.html                   0.89 kB │ gzip:  0.51 kB
+dist/assets/vite-entry-Bx0z_S1A.css   44.50 kB │ gzip:  9.50 kB
+dist/assets/vite-entry-BMkDG9fc.js   269.16 kB │ gzip: 80.96 kB │ map: 1,058.27 kB
+
+[32m✓ built in 214ms[39m
+✓ Production entry renamed to dist/index.html
+✓ Основной адрес и локальные ресурсы настроены
+✓ Рабочий API и пользовательские сценарии сохранены
+✓ Автосинхронизация и полный поиск ников защищены от регрессий
+✓ Расписание сохранено: 186 дат, 583 окна
