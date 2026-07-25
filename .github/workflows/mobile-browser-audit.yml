@@ -1,0 +1,43 @@
+name: Mobile browser audit
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project
+        run: npm ci
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run mobile browser scenarios
+        run: npx playwright test tests/mobile-platform.spec.mjs --config=playwright.config.mjs --reporter=line
+
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-browser-results
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore

@@ -1,0 +1,145 @@
+.splash--light {
+  z-index: 130;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(217, 255, 82, 0.42), transparent 28rem),
+    radial-gradient(circle at 90% 88%, rgba(118, 87, 246, 0.14), transparent 26rem),
+    #f8f9f5;
+}
+
+.splash--light .splash__logo {
+  color: var(--ink);
+}
+
+.splash--light .splash__typing {
+  color: rgba(21, 23, 20, 0.64);
+}
+
+.splash--light .splash__pulse {
+  background: var(--violet);
+  box-shadow:
+    0 0 0 1px rgba(118, 87, 246, 0.42),
+    0 0 24px rgba(118, 87, 246, 0.34);
+}
+
+.splash--light .splash__pulse::before {
+  background: rgba(118, 87, 246, 0.1);
+}
+
+.splash--light .splash__pulse::after {
+  border-color: rgba(118, 87, 246, 0.48);
+}
+
+.splash--light .splash__caret {
+  background: var(--violet);
+}
+
+.status-card--team:disabled {
+  cursor: wait;
+  opacity: 0.86;
+}
+
+.selected-date-weather.is-pending {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.selected-date-weather.is-pending .selected-date-weather__icon {
+  color: var(--violet);
+  animation: reliability-spin 1.3s linear infinite;
+}
+
+.creator-combobox__list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(118, 87, 246, 0.45) transparent;
+}
+
+.creator-combobox__list button {
+  touch-action: manipulation;
+}
+
+@media (max-width: 759px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  .modal-layer {
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    align-items: end;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: calc(100dvh - max(18px, env(safe-area-inset-top)));
+    border-radius: 30px 30px 0 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal__body {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .creator-combobox__list {
+    z-index: 40;
+    max-height: min(340px, 46dvh);
+  }
+
+  .creator-combobox__list button {
+    min-height: 48px;
+    font-size: 13px;
+  }
+
+  .booking-side,
+  .booking-layout,
+  .profile-login-layout,
+  .content-layout,
+  .notices-layout {
+    min-width: 0;
+  }
+
+  .tour-options button,
+  .booking-card__actions button,
+  .secondary-button,
+  .text-button {
+    min-height: 44px;
+  }
+
+  .booking-submit-actions {
+    position: sticky;
+    z-index: 3;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    padding: 10px;
+    border: 1px solid rgba(21, 23, 20, 0.08);
+    border-radius: 22px;
+    background: rgba(251, 252, 248, 0.94);
+    box-shadow: 0 14px 36px rgba(21, 23, 20, 0.12);
+    backdrop-filter: blur(18px);
+  }
+
+  .toolbar {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .recent-events li {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .recent-events time {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+@keyframes reliability-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

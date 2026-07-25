@@ -53,11 +53,15 @@ type DataStatus = "loading" | "live" | "cached" | "error";
 
 const CACHE_KEY = "creacloud-main-working-cache-v4";
 const RECENT_WRITES_KEY = "creacloud-main-recent-writes-v4";
-const TEAM_DAILY_NOTICE_KEY = "creacloud-main-team-daily-notice-v3";
+const TEAM_DAILY_NOTICE_KEY = "creacloud-main-team-daily-notice-v4";
 const RECENT_WRITE_TTL = 15 * 60 * 1000;
-const AUTO_SYNC_INTERVAL_MS = 45 * 1000;
+const AUTO_SYNC_INTERVAL_MS = 30 * 1000;
 const AUTO_SYNC_MIN_GAP_MS = 5 * 1000;
-const POST_WRITE_SYNC_DELAYS = [1800, 5200, 12_000] as const;
+const WEATHER_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+const WEATHER_REFRESH_MIN_GAP_MS = 60 * 1000;
+const PORTAL_TRANSITION_MIN_MS = 720;
+const PORTAL_DATA_WAIT_MS = 3_200;
+const POST_WRITE_SYNC_DELAYS = [650, 1800, 5200, 12_000] as const;
 
 function nowTimestamp() {
   return Date.now();
@@ -68,18 +72,40 @@ function emptyWorkingState(): WorkingState {
 }
 
 function completeWorkingState(next: WorkingState): WorkingState {
+  const bookings = next.bookings.map((booking, index) => ({
+    ...booking,
+    sourceOrder: Number.isFinite(booking.sourceOrder)
+      ? booking.sourceOrder
+      : index,
+  }));
+  const content = next.content.map((item, index) => ({
+    ...item,
+    sourceOrder: Number.isFinite(item.sourceOrder)
+      ? item.sourceOrder
+      : bookings.length + index,
+  }));
   const creators = [
     ...new Set(
       [
         ...(next.creators ?? []),
-        ...next.bookings.map((booking) => booking.creator),
-        ...next.content.map((item) => item.creator),
+        ...bookings.map((booking) => booking.creator),
+        ...content.map((item) => item.creator),
       ]
         .map(normalizeCreator)
         .filter((creator) => creator && !isDeletedCreator(creator)),
     ),
   ].sort((a, b) => a.localeCompare(b, "ru"));
-  return { ...next, creators };
+  return { ...next, bookings, content, creators };
+}
+
+function nextSourceOrder(state: WorkingState) {
+  return (
+    Math.max(
+      -1,
+      ...state.bookings.map((booking) => booking.sourceOrder ?? -1),
+      ...state.content.map((item) => item.sourceOrder ?? -1),
+    ) + 1
+  );
 }
 
 type RecentWrite = { key: string; timestamp: number };
@@ -249,19 +275,38 @@ function SplitTitle({
   );
 }
 
-function Splash({ hidden }: { hidden: boolean }) {
+function Splash({
+  hidden,
+  light = false,
+}: {
+  hidden: boolean;
+  light?: boolean;
+}) {
   const phrases = useMemo(
-    () => [
-      "собираем креаторов",
-      "вдохновляем креаторов",
-      "респектуем креаторам",
-    ],
-    [],
+    () =>
+      light
+        ? [
+            "обновляем рабочую базу",
+            "проверяем свободные места",
+            "готовим ежедневную сводку",
+          ]
+        : [
+            "собираем креаторов",
+            "вдохновляем креаторов",
+            "респектуем креаторам",
+          ],
+    [light],
   );
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [visibleChars, setVisibleChars] = useState(0);
   const [erasing, setErasing] = useState(false);
-  const phrase = phrases[phraseIndex];
+  const phrase = phrases[phraseIndex] ?? phrases[0];
+
+  useEffect(() => {
+    setPhraseIndex(0);
+    setVisibleChars(0);
+    setErasing(false);
+  }, [light]);
 
   useEffect(() => {
     const isComplete = visibleChars >= phrase.length;
@@ -283,7 +328,14 @@ function Splash({ hidden }: { hidden: boolean }) {
   }, [erasing, phrase.length, phrases.length, visibleChars]);
 
   return (
-    <div className={`splash${hidden ? " splash--hidden" : ""}`} aria-hidden={hidden}>
+    <div
+      className={`splash${light ? " splash--light" : ""}${
+        hidden ? " splash--hidden" : ""
+      }`}
+      aria-hidden={hidden}
+      role="status"
+      aria-live="polite"
+    >
       <div className="splash__stage">
         <div className="splash__logo" aria-label="CREACLOUD">
           <strong>CREA</strong>
@@ -350,7 +402,13 @@ function InteractionAuras() {
   );
 }
 
-function Welcome({ onEnter }: { onEnter: () => void }) {
+function Welcome({
+  onEnter,
+  busy,
+}: {
+  onEnter: () => void;
+  busy: boolean;
+}) {
   return (
     <section className="welcome">
       <div className="ambient ambient--lime" />
@@ -375,10 +433,15 @@ function Welcome({ onEnter }: { onEnter: () => void }) {
               <Icon name="arrow" />
             </span>
           </a>
-          <button className="status-card status-card--team" onClick={onEnter}>
+          <button
+            className="status-card status-card--team"
+            onClick={onEnter}
+            disabled={busy}
+            aria-busy={busy}
+          >
             <span className="status-card__index">02</span>
             <SplitTitle strong="Я уже" light="в команде" as="h2" />
-            <p>Открыть дашборд CREACLOUD</p>
+            <p>{busy ? "Обновляем данные площадки..." : "Открыть дашборд CREACLOUD"}</p>
             <span className="status-card__arrow">
               <Icon name="arrow" />
             </span>
@@ -1061,7 +1124,7 @@ function BookingPanel({
           </div>
           <span>{schedule.length} тура</span>
         </div>
-        {selectedWeather && (
+        {selectedWeather ? (
           <div className="selected-date-weather" aria-label="Прогноз погоды">
             <span className="selected-date-weather__icon" aria-hidden="true">
               {selectedWeather.icon}
@@ -1071,6 +1134,20 @@ function BookingPanel({
               <span>
                 {selectedWeather.temperatureMin}…{selectedWeather.temperatureMax}
               </span>
+            </div>
+            <small>Обновляется автоматически</small>
+          </div>
+        ) : (
+          <div
+            className="selected-date-weather is-pending"
+            aria-label="Прогноз пока недоступен"
+          >
+            <span className="selected-date-weather__icon" aria-hidden="true">
+              ◌
+            </span>
+            <div>
+              <strong>Прогноз появится ближе к дате</strong>
+              <span>Проверяем погоду каждые 15 минут</span>
             </div>
             <small>Владивосток</small>
           </div>
@@ -1902,39 +1979,75 @@ type RecentTourEvent = {
   tourName: string;
   date: string;
   createdAt: string;
+  sourceOrder: number;
 };
 
+const LEGACY_BOOKING_NOTICE_LIMIT = 4;
+const DAILY_NOTICE_EVENT_LIMIT = 5;
+
+function compareEventsWithinSource(a: RecentTourEvent, b: RecentTourEvent) {
+  const aTimestamp = Date.parse(a.createdAt);
+  const bTimestamp = Date.parse(b.createdAt);
+  if (Number.isFinite(aTimestamp) && Number.isFinite(bTimestamp)) {
+    return bTimestamp - aTimestamp;
+  }
+  if (a.sourceOrder !== b.sourceOrder) return b.sourceOrder - a.sourceOrder;
+  return b.date.localeCompare(a.date);
+}
+
 function getRecentTourEvents(state: WorkingState) {
-  const events: RecentTourEvent[] = [
-    ...state.bookings.map((booking) => ({
+  const bookings: RecentTourEvent[] = state.bookings
+    .map((booking, index) => ({
       id: `booking-${booking.id}`,
       kind: "booking" as const,
       creator: booking.creator,
       tourName: booking.tourName,
       date: booking.date,
       createdAt: booking.createdAt,
-    })),
-    ...state.content.map((item) => ({
+      sourceOrder: booking.sourceOrder ?? index,
+    }))
+    .sort(compareEventsWithinSource);
+  const content: RecentTourEvent[] = state.content
+    .map((item, index) => ({
       id: `content-${item.id}`,
       kind: "content" as const,
       creator: item.creator,
       tourName: item.tourName,
       date: item.date,
       createdAt: item.createdAt,
-    })),
+      sourceOrder: item.sourceOrder ?? index,
+    }))
+    .sort(compareEventsWithinSource);
+
+  // Legacy booking rows do not contain a creation timestamp. The API returns
+  // bookings and content as separate blocks, so their global array indexes are
+  // not a shared timeline. Reserve four places for the newest booking rows so
+  // season-critical applications never disappear behind content reports.
+  const bookingLimit = content.length
+    ? Math.min(LEGACY_BOOKING_NOTICE_LIMIT, bookings.length)
+    : Math.min(DAILY_NOTICE_EVENT_LIMIT, bookings.length);
+  const selected = [
+    ...bookings.slice(0, bookingLimit),
+    ...content.slice(0, DAILY_NOTICE_EVENT_LIMIT - bookingLimit),
   ];
 
-  return events
-    .sort((a, b) => {
-      const aTimestamp = Date.parse(a.createdAt);
-      const bTimestamp = Date.parse(b.createdAt);
-      if (Number.isFinite(aTimestamp) || Number.isFinite(bTimestamp)) {
-        return (Number.isFinite(bTimestamp) ? bTimestamp : 0) -
-          (Number.isFinite(aTimestamp) ? aTimestamp : 0);
-      }
-      return b.date.localeCompare(a.date);
-    })
-    .slice(0, 5);
+  if (selected.length < DAILY_NOTICE_EVENT_LIMIT) {
+    selected.push(
+      ...bookings.slice(bookingLimit, DAILY_NOTICE_EVENT_LIMIT - selected.length),
+    );
+  }
+  if (selected.length < DAILY_NOTICE_EVENT_LIMIT) {
+    const selectedContent = new Set(
+      selected.filter((event) => event.kind === "content").map((event) => event.id),
+    );
+    selected.push(
+      ...content
+        .filter((event) => !selectedContent.has(event.id))
+        .slice(0, DAILY_NOTICE_EVENT_LIMIT - selected.length),
+    );
+  }
+
+  return selected.slice(0, DAILY_NOTICE_EVENT_LIMIT);
 }
 
 function NoticesPanel({
@@ -2052,6 +2165,7 @@ function Toast({ message }: { message: string }) {
 
 export default function CreacloudApp() {
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [entered, setEntered] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   const [state, setState] = useState<WorkingState>(() => emptyWorkingState());
@@ -2089,6 +2203,8 @@ export default function CreacloudApp() {
   const lastSyncStartedAtRef = useRef(0);
   const cacheSavedAtRef = useRef(0);
   const reconciliationTimersRef = useRef<number[]>([]);
+  const weatherInFlightRef = useRef<Promise<void> | null>(null);
+  const lastWeatherStartedAtRef = useRef(0);
 
   const knownCreators = useMemo(
     () => completeWorkingState(state).creators ?? [],
@@ -2170,6 +2286,38 @@ export default function CreacloudApp() {
     return request;
   }
 
+  async function refreshWeather({
+    force = false,
+  }: {
+    force?: boolean;
+  } = {}) {
+    if (weatherInFlightRef.current) return weatherInFlightRef.current;
+    const now = nowTimestamp();
+    if (
+      !force &&
+      now - lastWeatherStartedAtRef.current < WEATHER_REFRESH_MIN_GAP_MS
+    ) {
+      return;
+    }
+
+    lastWeatherStartedAtRef.current = now;
+    const request = fetchVladivostokWeather()
+      .then((next) => {
+        setWeather(next.current);
+        setWeatherForecast(next.forecast);
+      })
+      .catch(() => {
+        // Keep the last successful weather snapshot.
+      })
+      .finally(() => {
+        if (weatherInFlightRef.current === request) {
+          weatherInFlightRef.current = null;
+        }
+      });
+    weatherInFlightRef.current = request;
+    return request;
+  }
+
   function clearReconciliationTimers() {
     reconciliationTimersRef.current.forEach((timer) =>
       window.clearTimeout(timer),
@@ -2203,9 +2351,11 @@ export default function CreacloudApp() {
   }
 
   const refreshWorkingDataRef = useRef(refreshWorkingData);
+  const refreshWeatherRef = useRef(refreshWeather);
 
   useEffect(() => {
     refreshWorkingDataRef.current = refreshWorkingData;
+    refreshWeatherRef.current = refreshWeather;
   });
 
   useEffect(() => {
@@ -2255,15 +2405,40 @@ export default function CreacloudApp() {
     );
     window.addEventListener("focus", synchronizeVisiblePage);
     window.addEventListener("online", synchronizeVisiblePage);
+    window.addEventListener("pageshow", synchronizeVisiblePage);
     window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("focus", synchronizeVisiblePage);
       window.removeEventListener("online", synchronizeVisiblePage);
+      window.removeEventListener("pageshow", synchronizeVisiblePage);
       window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       clearReconciliationTimers();
+    };
+  }, []);
+
+  useEffect(() => {
+    const synchronizeWeather = () => {
+      if (document.visibilityState === "visible") {
+        void refreshWeatherRef.current();
+      }
+    };
+    const interval = window.setInterval(
+      synchronizeWeather,
+      WEATHER_REFRESH_INTERVAL_MS,
+    );
+    window.addEventListener("focus", synchronizeWeather);
+    window.addEventListener("online", synchronizeWeather);
+    window.addEventListener("pageshow", synchronizeWeather);
+    document.addEventListener("visibilitychange", synchronizeWeather);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", synchronizeWeather);
+      window.removeEventListener("online", synchronizeWeather);
+      window.removeEventListener("pageshow", synchronizeWeather);
+      document.removeEventListener("visibilitychange", synchronizeWeather);
     };
   }, []);
 
@@ -2303,16 +2478,7 @@ export default function CreacloudApp() {
 
     const dataRequest = refreshWorkingDataRef.current({ force: true });
 
-    const weatherRequest = fetchVladivostokWeather()
-      .then((next) => {
-        if (!cancelled) {
-          setWeather(next.current);
-          setWeatherForecast(next.forecast);
-        }
-      })
-      .catch(() => {
-        // Weather is informative and must not block the main data.
-      });
+    const weatherRequest = refreshWeatherRef.current({ force: true });
 
     Promise.allSettled([dataRequest, weatherRequest]).then(() => {
       const remaining = Math.max(0, 1450 - (Date.now() - startedAt));
@@ -2357,20 +2523,46 @@ export default function CreacloudApp() {
     setToolbarHidden(false);
   }
 
-  function enterTeamPortal() {
+  async function enterTeamPortal() {
+    if (portalLoading) return;
+    const startedAt = Date.now();
     let showDailyNotice = true;
     try {
       showDailyNotice =
         window.localStorage.getItem(TEAM_DAILY_NOTICE_KEY) !== DEMO_TODAY;
-      if (showDailyNotice) {
-        window.localStorage.setItem(TEAM_DAILY_NOTICE_KEY, DEMO_TODAY);
-      }
     } catch {
       // The notification remains available when browser storage is unavailable.
     }
+
+    setPortalLoading(true);
+    const synchronization = Promise.allSettled([
+      refreshWorkingData({ force: true }),
+      refreshWeather({ force: true }),
+    ]);
+    await Promise.race([
+      synchronization,
+      new Promise((resolve) => window.setTimeout(resolve, PORTAL_DATA_WAIT_MS)),
+    ]);
+    const remaining = Math.max(
+      0,
+      PORTAL_TRANSITION_MIN_MS - (Date.now() - startedAt),
+    );
+    if (remaining) {
+      await new Promise((resolve) => window.setTimeout(resolve, remaining));
+    }
+
     setEntered(true);
-    if (showDailyNotice) setPanel("notices");
-    void refreshWorkingData();
+    if (showDailyNotice) {
+      setPanel("notices");
+      try {
+        window.localStorage.setItem(TEAM_DAILY_NOTICE_KEY, DEMO_TODAY);
+      } catch {
+        // Opening the notice must not depend on local storage.
+      }
+    } else {
+      setPanel(null);
+    }
+    window.requestAnimationFrame(() => setPortalLoading(false));
   }
 
   function openBooking(view: BookingView = "new") {
@@ -2519,6 +2711,7 @@ export default function CreacloudApp() {
         tourName,
         status: "active",
         createdAt: new Date().toISOString(),
+        sourceOrder: nextSourceOrder(latest),
       };
       const nextBookings =
         mode === "transfer" && source
@@ -2715,7 +2908,10 @@ export default function CreacloudApp() {
       rememberWrite(dedupeKey);
       saveCachedState({
         ...latest,
-        content: [optimistic, ...latest.content],
+        content: [
+          { ...optimistic, sourceOrder: nextSourceOrder(latest) },
+          ...latest.content,
+        ],
       });
       setDataStatus("live");
       setLastSynced(syncLabel());
@@ -2913,9 +3109,9 @@ export default function CreacloudApp() {
 
   return (
     <>
-      <Splash hidden={!loading} />
+      <Splash hidden={!loading && !portalLoading} light={portalLoading} />
       {!loading && !entered ? (
-        <Welcome onEnter={enterTeamPortal} />
+        <Welcome onEnter={enterTeamPortal} busy={portalLoading} />
       ) : (
         <div className="site-shell">
           <div

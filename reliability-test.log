@@ -1,0 +1,22 @@
+
+> creacloud-main@0.1.0 test
+> npm run build && node scripts/verify-site.mjs
+
+
+> creacloud-main@0.1.0 build
+> tsc --noEmit && vite build && node scripts/finalize-build.mjs
+
+[36mvite v8.0.13 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 20 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/vite-entry.html                   0.89 kB │ gzip:  0.52 kB
+dist/assets/vite-entry-Bx0z_S1A.css   44.50 kB │ gzip:  9.50 kB
+dist/assets/vite-entry-SJ1VFg8I.js   269.40 kB │ gzip: 81.04 kB │ map: 1,059.99 kB
+
+[32m✓ built in 192ms[39m
+✓ Production entry renamed to dist/index.html
+✓ Основной адрес и локальные ресурсы настроены
+✓ Рабочий API и пользовательские сценарии сохранены
+✓ Автосинхронизация и полный поиск ников защищены от регрессий
+✓ Расписание сохранено: 186 дат, 583 окна
