@@ -122,7 +122,7 @@ test("mobile team entry, daily notice, creator search and sections", async ({
     });
   });
 
-  await page.goto("http://127.0.0.1:4173/", {
+  await page.goto("http://127.0.0.1:4173/vite-entry.html", {
     waitUntil: "domcontentloaded",
   });
 
