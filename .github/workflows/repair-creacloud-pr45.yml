@@ -1,0 +1,186 @@
+name: Repair CREACLOUD PR 45
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: >-
+      github.event.pull_request.number == 45 &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v6
+        with:
+          ref: audit/platform-reliability-2026-07-25
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Check repair marker
+        id: marker
+        run: |
+          if git log -1 --pretty=%B | grep -q '\[pr45 repaired\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply final reliability fixes
+        if: steps.marker.outputs.skip != 'true'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f"{label}: expected one match, found {count}")
+              return text.replace(old, new, 1)
+
+          data_path = Path("src/creacloud-data.ts")
+          data = data_path.read_text()
+          data = replace_once(
+              data,
+              '.filter((item): item is ContentItem => Boolean(item?.tourId));',
+              '.filter(\n      (item): item is NonNullable<typeof item> => Boolean(item?.tourId),\n    );',
+              "content type predicate",
+          )
+          data_path.write_text(data)
+
+          app_path = Path("src/creacloud-app.tsx")
+          app = app_path.read_text()
+          app = replace_once(
+              app,
+              'const WEATHER_REFRESH_INTERVAL_MS = 15 * 60 * 1000;',
+              'const WEATHER_REFRESH_INTERVAL_MS = 10 * 60 * 1000;',
+              "weather interval",
+          )
+          app = replace_once(
+              app,
+              '''    const dataRequest = refreshWorkingDataRef.current({ force: true });
+
+    const weatherRequest = refreshWeatherRef.current({ force: true });
+
+    Promise.allSettled([dataRequest, weatherRequest]).then(() => {
+      const remaining = Math.max(0, 1450 - (Date.now() - startedAt));
+      window.setTimeout(() => {
+        if (!cancelled) setLoading(false);
+      }, remaining);
+    });
+
+    return () => {
+      cancelled = true;
+    };''',
+              '''    void refreshWorkingDataRef.current({ force: true });
+    void refreshWeatherRef.current({ force: true });
+
+    const remaining = Math.max(0, 950 - (Date.now() - startedAt));
+    const splashTimer = window.setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, remaining);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(splashTimer);
+    };''',
+              "non-blocking initial splash",
+          )
+          app = replace_once(
+              app,
+              '''            cell.date > SEASON_END ||
+            scheduled.length === 0;''',
+              '''            cell.date > SEASON_END ||
+            scheduled.length === 0 ||
+            occupied === scheduled.length;''',
+              "fully occupied calendar date",
+          )
+          app = replace_once(
+              app,
+              'Проверяем погоду каждые 15 минут',
+              'Проверяем погоду каждые 10 минут',
+              "weather hint",
+          )
+          app_path.write_text(app)
+
+          verify_path = Path("scripts/verify-site.mjs")
+          verify = verify_path.read_text()
+          if 'occupied === scheduled.length' not in verify:
+              verify = replace_once(
+                  verify,
+                  'assert.match(app, /POST_WRITE_SYNC_DELAYS/);',
+                  '''assert.match(app, /POST_WRITE_SYNC_DELAYS/);
+assert.match(app, /WEATHER_REFRESH_INTERVAL_MS = 10 \* 60 \* 1000/);
+assert.match(app, /occupied === scheduled.length/);
+assert.match(app, /PORTAL_TRANSITION_MIN_MS/);''',
+                  "final reliability assertions",
+              )
+          verify_path.write_text(verify)
+          PY
+
+      - name: Setup Node
+        if: steps.marker.outputs.skip != 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.marker.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Verify build and application logic
+        if: steps.marker.outputs.skip != 'true'
+        run: npm test
+
+      - name: Verify live working base and weather
+        if: steps.marker.outputs.skip != 'true'
+        env:
+          API_URL: https://script.google.com/macros/s/AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec
+        run: |
+          CALLBACK="creacloudFinalAudit"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
+            "${API_URL}?callback=${CALLBACK}&t=$(date +%s)" \
+            --output /tmp/base.js
+          grep -qi 'katerinamanko.ru' /tmp/base.js
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
+            'https://api.open-meteo.com/v1/forecast?latitude=43.1155&longitude=131.8855&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FVladivostok' \
+            --output /tmp/weather.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const weather = JSON.parse(fs.readFileSync('/tmp/weather.json', 'utf8'));
+          if ((weather.daily?.time ?? []).length !== 16) {
+            throw new Error('Weather provider did not return 16 forecast days');
+          }
+          NODE
+
+      - name: Remove temporary audit machinery
+        if: steps.marker.outputs.skip != 'true'
+        run: |
+          rm -f \
+            .github/workflows/apply-platform-reliability-patch.yml \
+            .github/workflows/apply-platform-reliability.yml \
+            .github/workflows/live-platform-audit.yml \
+            reliability-test.exit \
+            reliability-test.log \
+            scripts/apply-platform-reliability-patch.py \
+            scripts/apply-platform-reliability.mjs \
+            scripts/fix-reliability-types.mjs
+
+      - name: Commit repaired branch
+        if: steps.marker.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Завершить аудит и исправить надежность платформы [pr45 repaired]"
+          git push origin HEAD:audit/platform-reliability-2026-07-25
