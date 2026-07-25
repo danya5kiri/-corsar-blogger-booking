@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -27,7 +28,6 @@ jobs:
 
           app_path = Path("src/creacloud-app.tsx")
           app = app_path.read_text()
-
           app = app.replace(
               "const WEATHER_REFRESH_INTERVAL_MS = 15 * 60 * 1000;",
               "const WEATHER_REFRESH_INTERVAL_MS = 10 * 60 * 1000;",
@@ -73,7 +73,6 @@ jobs:
             occupied === scheduled.length;'''
           if old_disabled in app:
               app = app.replace(old_disabled, new_disabled, 1)
-
           app_path.write_text(app)
 
           verify_path = Path("scripts/verify-site.mjs")
@@ -111,7 +110,6 @@ assert.match(app, /PORTAL_TRANSITION_MIN_MS/);'''
             "${API_URL}?callback=${CALLBACK}&t=$(date +%s)" \
             --output /tmp/base.js
           grep -qi 'katerinamanko.ru' /tmp/base.js
-
           curl --fail --silent --show-error --location \
             --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
             'https://api.open-meteo.com/v1/forecast?latitude=43.1155&longitude=131.8855&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FVladivostok' \
