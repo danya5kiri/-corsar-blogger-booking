@@ -1,0 +1,43 @@
+name: Apply CREACLOUD reliability patch
+
+on:
+  push:
+    branches:
+      - audit/platform-reliability-2026-07-25
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[platform patch applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: audit/platform-reliability-2026-07-25
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply reliability patch
+        run: python3 scripts/apply-platform-reliability-patch.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and verify
+        run: npm test
+
+      - name: Commit verified changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src scripts/verify-site.mjs
+          git commit -m "Исправить уведомления, синхронизацию и бронирование [platform patch applied]"
+          git push origin HEAD:audit/platform-reliability-2026-07-25
