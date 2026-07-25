@@ -35,6 +35,19 @@ assert.match(app, /createCancellationPayload/);
 assert.match(app, /createContentPayload/);
 assert.match(app, /TEAM_DAILY_NOTICE_KEY/);
 assert.match(api, /fetchVladivostokWeather/);
+assert.match(data, /creatorCandidatesFromRow/);
+assert.match(data, /return \{ bookings, content, creators \}/);
+assert.match(app, /AUTO_SYNC_INTERVAL_MS/);
+assert.match(app, /syncInFlightRef/);
+assert.match(app, /mutationEpochRef/);
+assert.match(app, /POST_WRITE_SYNC_DELAYS/);
+assert.match(app, /visibilitychange/);
+assert.match(app, /addEventListener\("online"/);
+assert.match(app, /addEventListener\("storage"/);
+assert.match(app, /role="combobox"/);
+assert.match(app, /role="listbox"/);
+assert.doesNotMatch(app, /creators\.slice\(/);
+assert.doesNotMatch(app, /Обновить данные/);
 
 const dates = schedule.match(/^\s*"2026-\d{2}-\d{2}":/gm) ?? [];
 const slots =
@@ -46,4 +59,5 @@ assert.equal(slots.length, 583);
 
 console.log("✓ Основной адрес и локальные ресурсы настроены");
 console.log("✓ Рабочий API и пользовательские сценарии сохранены");
+console.log("✓ Автосинхронизация и полный поиск ников защищены от регрессий");
 console.log("✓ Расписание сохранено: 186 дат, 583 окна");
