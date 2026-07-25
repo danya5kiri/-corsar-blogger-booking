@@ -10,18 +10,24 @@ on:
 
 permissions:
   contents: read
-  pages: read
+  pages: write
 
 jobs:
   pages-source:
     runs-on: ubuntu-latest
     steps:
-      - name: Show GitHub Pages source
+      - name: Switch Pages to GitHub Actions
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api "repos/${{ github.repository }}/pages" \
-            --jq '{status, build_type, source, html_url}'
+          gh api \
+            --method PUT \
+            "repos/${{ github.repository }}/pages" \
+            -f build_type=workflow
+
+          BUILD_TYPE="$(gh api "repos/${{ github.repository }}/pages" --jq '.build_type')"
+          echo "GitHub Pages build type: ${BUILD_TYPE}"
+          test "${BUILD_TYPE}" = "workflow"
 
   site-health:
     runs-on: ubuntu-latest
