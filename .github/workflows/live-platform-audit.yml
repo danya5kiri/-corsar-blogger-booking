@@ -76,9 +76,11 @@ jobs:
               .replace(/\s+/g, "");
           const content = rows.filter((row) => text(row.type) === "content_report");
           const bookings = rows.filter((row) => text(row.type) !== "content_report");
-          const creatorRows = rows.filter((row) =>
-            JSON.stringify(row).toLowerCase().includes("katerinamanko"),
-          );
+          const creatorRows = rows
+            .map((row, sourceIndex) => ({ row, sourceIndex }))
+            .filter(({ row }) =>
+              JSON.stringify(row).toLowerCase().includes("katerinamanko"),
+            );
           const creators = new Set(rows.map(normalizedCreator).filter(Boolean));
 
           console.log(`Live rows: ${rows.length}`);
@@ -86,10 +88,11 @@ jobs:
           console.log(`Content rows: ${content.length}`);
           console.log(`Distinct creator values: ${creators.size}`);
           console.log(`Rows matching katerinamanko: ${creatorRows.length}`);
-          for (const [index, row] of creatorRows.entries()) {
+          for (const [index, { row, sourceIndex }] of creatorRows.entries()) {
             console.log(
               `katerinamanko row ${index + 1}:`,
               JSON.stringify({
+                sourceIndex,
                 type: row.type,
                 date: row.date,
                 telegram: row.telegram,
@@ -107,6 +110,20 @@ jobs:
               }),
             );
           }
+
+          console.log("Last 12 source rows:");
+          rows.slice(-12).forEach((row, tailIndex) => {
+            console.log(
+              JSON.stringify({
+                sourceIndex: rows.length - 12 + tailIndex,
+                type: row.type,
+                creator: normalizedCreator(row),
+                date: row.date,
+                tour: row.tour,
+                createdAt: row.createdAt || row.timestamp || row.submittedAt || row.created,
+              }),
+            );
+          });
 
           const rowsWithoutCreatedAt = rows.filter(
             (row) => !text(row.createdAt || row.timestamp || row.submittedAt || row.created),
