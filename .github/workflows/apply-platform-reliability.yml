@@ -8,19 +8,13 @@ on:
       - opened
       - synchronize
       - reopened
-  push:
-    branches:
-      - audit/platform-reliability-2026-07-25
 
 permissions:
   contents: write
 
 jobs:
   apply:
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.head_ref == 'audit/platform-reliability-2026-07-25' &&
-      !contains(github.event.pull_request.head.label, '[reliability applied]')
+    if: github.head_ref == 'audit/platform-reliability-2026-07-25'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -29,28 +23,55 @@ jobs:
           ref: audit/platform-reliability-2026-07-25
           token: ${{ github.token }}
 
+      - name: Check whether patch is already committed
+        id: patch-state
+        run: |
+          if grep -q "PORTAL_TRANSITION_MIN_MS" src/creacloud-app.tsx; then
+            echo "apply=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "apply=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
+        if: steps.patch-state.outputs.apply == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
       - name: Apply source changes
+        if: steps.patch-state.outputs.apply == 'true'
         run: node scripts/apply-platform-reliability.mjs
 
-      - name: Install and verify
-        run: |
-          npm ci
-          npm test
+      - name: Install dependencies
+        if: steps.patch-state.outputs.apply == 'true'
+        run: npm ci
 
-      - name: Commit generated source changes
+      - name: Capture verification result
+        if: steps.patch-state.outputs.apply == 'true'
+        run: |
+          set +e
+          npm test > reliability-test.log 2>&1
+          TEST_EXIT=$?
+          set -e
+          echo "${TEST_EXIT}" > reliability-test.exit
+          cat reliability-test.log
+
+      - name: Commit source and diagnostics
+        if: steps.patch-state.outputs.apply == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/creacloud-app.tsx src/creacloud-data.ts src/creacloud-api.ts src/main.tsx
-          if git diff --cached --quiet; then
-            echo "No generated changes to commit."
-            exit 0
-          fi
+          git add \
+            src/creacloud-app.tsx \
+            src/creacloud-data.ts \
+            src/creacloud-api.ts \
+            src/main.tsx \
+            reliability-test.log \
+            reliability-test.exit
           git commit -m "Применить исправления надежности площадки [reliability applied]"
           git push origin HEAD:audit/platform-reliability-2026-07-25
+
+      - name: Fail after preserving diagnostics
+        if: steps.patch-state.outputs.apply == 'true'
+        run: test "$(cat reliability-test.exit)" = "0"
