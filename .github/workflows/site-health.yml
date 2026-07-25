@@ -13,6 +13,16 @@ permissions:
   pages: read
 
 jobs:
+  pages-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show GitHub Pages source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/pages" \
+            --jq '{status, build_type, source, html_url}'
+
   site-health:
     runs-on: ubuntu-latest
     steps:
@@ -30,10 +40,3 @@ jobs:
 
       - name: Build and verify
         run: npm test
-
-      - name: Diagnose GitHub Pages source
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api "repos/${{ github.repository }}/pages" \
-            --jq '{status, build_type, source, html_url}'
