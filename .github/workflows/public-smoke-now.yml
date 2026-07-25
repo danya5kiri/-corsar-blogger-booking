@@ -1,0 +1,68 @@
+name: Diagnose public CREACLOUD now
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  public-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build expected production files
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify matching public deployment
+        env:
+          SITE_URL: https://danya5kiri.github.io/-corsar-blogger-booking/
+        run: |
+          EXPECTED_JS=$(grep -oE '/-corsar-blogger-booking/assets/[^" ]+\.js' dist/index.html | head -1)
+          EXPECTED_CSS=$(grep -oE '/-corsar-blogger-booking/assets/[^" ]+\.css' dist/index.html | head -1)
+          test -n "${EXPECTED_JS}"
+          test -n "${EXPECTED_CSS}"
+
+          for attempt in {1..24}; do
+            CACHE_BUSTER="${GITHUB_SHA}-${attempt}-$(date +%s)"
+            curl --fail --silent --show-error --location \
+              -H "Cache-Control: no-cache, no-store, max-age=0" \
+              "${SITE_URL}?build=${CACHE_BUSTER}" \
+              --output /tmp/public-index.html
+
+            if grep -Fq "${EXPECTED_JS}" /tmp/public-index.html && \
+               grep -Fq "${EXPECTED_CSS}" /tmp/public-index.html; then
+              curl --fail --silent --show-error --location \
+                "https://danya5kiri.github.io${EXPECTED_JS}?build=${CACHE_BUSTER}" \
+                --output /tmp/public-app.js
+              curl --fail --silent --show-error --location \
+                "https://danya5kiri.github.io${EXPECTED_CSS}?build=${CACHE_BUSTER}" \
+                --output /tmp/public-app.css
+              test -s /tmp/public-app.js
+              test -s /tmp/public-app.css
+              echo "Expected JavaScript: ${EXPECTED_JS}"
+              echo "Expected CSS: ${EXPECTED_CSS}"
+              echo "Public site matches current main production build."
+              exit 0
+            fi
+
+            echo "Waiting for public deployment, attempt ${attempt}/24..."
+            sleep 10
+          done
+
+          echo "Expected JavaScript: ${EXPECTED_JS}"
+          echo "Expected CSS: ${EXPECTED_CSS}"
+          cat /tmp/public-index.html
+          exit 1
