@@ -15,5 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Show compact live base order
-        run: node scripts/audit-live-base.mjs
+      - name: Save compact live base order
+        run: node scripts/audit-live-base.mjs > live-base-order.json
+
+      - name: Upload order report
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-base-order
+          path: live-base-order.json
+          if-no-files-found: error
