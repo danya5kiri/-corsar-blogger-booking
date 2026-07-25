@@ -38,8 +38,14 @@ jobs:
             echo "repair=false" >> "$GITHUB_OUTPUT"
           fi
 
+          if grep -q "LEGACY_BOOKING_NOTICE_LIMIT" src/creacloud-app.tsx; then
+            echo "notice=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "notice=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
-        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true' || steps.patch-state.outputs.notice == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -53,12 +59,16 @@ jobs:
         if: steps.patch-state.outputs.repair == 'true'
         run: node scripts/fix-reliability-types.mjs
 
+      - name: Apply daily notice policy
+        if: steps.patch-state.outputs.notice == 'true'
+        run: node scripts/fix-recent-events-policy.mjs
+
       - name: Install dependencies
-        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true' || steps.patch-state.outputs.notice == 'true'
         run: npm ci
 
       - name: Capture verification result
-        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true' || steps.patch-state.outputs.notice == 'true'
         run: |
           set +e
           npm test > reliability-test.log 2>&1
@@ -68,7 +78,7 @@ jobs:
           cat reliability-test.log
 
       - name: Commit source and diagnostics
-        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true' || steps.patch-state.outputs.notice == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -82,10 +92,10 @@ jobs:
           if git diff --cached --quiet; then
             echo "No source or diagnostic changes to commit."
           else
-            git commit -m "Исправить и проверить надежность площадки [reliability applied]"
+            git commit -m "Проверить последние события и надежность площадки [reliability applied]"
             git push origin HEAD:audit/platform-reliability-2026-07-25
           fi
 
       - name: Fail after preserving diagnostics
-        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true' || steps.patch-state.outputs.notice == 'true'
         run: test "$(cat reliability-test.exit)" = "0"
