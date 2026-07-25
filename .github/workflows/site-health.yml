@@ -2,9 +2,11 @@ name: Проверить здоровье сайта
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,6 +15,17 @@ jobs:
   site-health:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Запустить тесты продукта и режимов дизайна
-        run: node tests/site_health_test.js && node tests/design_modes_test.js
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and verify
+        run: npm test
