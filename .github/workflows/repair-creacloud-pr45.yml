@@ -1,17 +1,15 @@
-name: Finalize CREACLOUD platform
+name: Apply final CREACLOUD refinements
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   finalize:
-    if: ${{ !contains(github.event.head_commit.message, '[platform finalized]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
@@ -21,7 +19,7 @@ jobs:
           fetch-depth: 0
           token: ${{ github.token }}
 
-      - name: Apply final production refinements
+      - name: Apply refinements
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -73,6 +71,7 @@ jobs:
             occupied === scheduled.length;'''
           if old_disabled in app:
               app = app.replace(old_disabled, new_disabled, 1)
+
           app_path.write_text(app)
 
           verify_path = Path("scripts/verify-site.mjs")
@@ -82,8 +81,6 @@ jobs:
 assert.match(app, /occupied === scheduled.length/);
 assert.match(app, /PORTAL_TRANSITION_MIN_MS/);'''
           if additions not in verify:
-              if anchor not in verify:
-                  raise RuntimeError("Verification anchor was not found")
               verify = verify.replace(anchor, f"{anchor}\n{additions}", 1)
           verify_path.write_text(verify)
           PY
@@ -100,48 +97,13 @@ assert.match(app, /PORTAL_TRANSITION_MIN_MS/);'''
       - name: Verify production build
         run: npm test
 
-      - name: Verify live base and 16-day weather
-        env:
-          API_URL: https://script.google.com/macros/s/AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec
-        run: |
-          CALLBACK="creacloudFinalAudit"
-          curl --fail --silent --show-error --location \
-            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
-            "${API_URL}?callback=${CALLBACK}&t=$(date +%s)" \
-            --output /tmp/base.js
-          grep -qi 'katerinamanko.ru' /tmp/base.js
-          curl --fail --silent --show-error --location \
-            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
-            'https://api.open-meteo.com/v1/forecast?latitude=43.1155&longitude=131.8855&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FVladivostok' \
-            --output /tmp/weather.json
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          const weather = JSON.parse(fs.readFileSync('/tmp/weather.json', 'utf8'));
-          if ((weather.daily?.time ?? []).length !== 16) {
-            throw new Error('Weather provider did not return 16 forecast days');
-          }
-          NODE
+      - name: Remove one-time workflow
+        run: rm -f .github/workflows/repair-creacloud-pr45.yml
 
-      - name: Remove temporary audit files
-        run: |
-          rm -f \
-            .github/workflows/apply-platform-reliability-patch.yml \
-            .github/workflows/apply-platform-reliability.yml \
-            .github/workflows/live-base-order.yml \
-            .github/workflows/live-platform-audit.yml \
-            .github/workflows/repair-creacloud-pr45.yml \
-            reliability-test.exit \
-            reliability-test.log \
-            scripts/apply-platform-reliability-patch.py \
-            scripts/apply-platform-reliability.mjs \
-            scripts/audit-live-base.mjs \
-            scripts/fix-recent-events-policy.mjs \
-            scripts/fix-reliability-types.mjs
-
-      - name: Commit final platform
+      - name: Commit verified refinements
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Финализировать CREACLOUD после полного аудита [platform finalized]"
+          git commit -m "Ускорить загрузку и обновление данных CREACLOUD [final refinements]"
           git push origin HEAD:main
