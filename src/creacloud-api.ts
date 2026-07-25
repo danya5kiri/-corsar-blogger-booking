@@ -72,6 +72,11 @@ export async function sendWorkingPayload(payload: Record<string, unknown>) {
   await fetch(API_URL, {
     method: "POST",
     mode: "no-cors",
+    cache: "no-store",
+    keepalive: true,
+    headers: {
+      "Content-Type": "text/plain;charset=UTF-8",
+    },
     body: JSON.stringify(payload),
   });
 }
@@ -102,6 +107,7 @@ export function createBookingPayload({
     date,
     telegram: creator,
     tour: tourName,
+    createdAt: new Date().toISOString(),
     name: "",
     phone: "",
     count: 1,
@@ -149,6 +155,7 @@ export function createCancellationPayload({
       participants: 1,
       status: "Отмена",
       operation: "cancel",
+      createdAt: new Date().toISOString(),
       contactChannel: contactMode === "call" ? "phone" : "whatsapp",
       cancelBookingKey: source.sourceKey,
       previousDate: source.date,
@@ -173,7 +180,7 @@ export function createContentPayload({
   const linkKey = normalizeContentLink(link);
   const payload = {
     type: "content_report",
-    createdAt: new Date().toLocaleString("ru-RU"),
+    createdAt: new Date().toISOString(),
     telegram: creator,
     date: booking.date,
     tour: booking.tourName,
@@ -313,7 +320,8 @@ export async function fetchVladivostokWeather(): Promise<VladivostokWeather> {
   );
   url.searchParams.set("forecast_days", "16");
   url.searchParams.set("timezone", "Asia/Vladivostok");
-  const response = await fetch(url);
+  url.searchParams.set("_", String(Date.now()));
+  const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error("weather");
   const data = (await response.json()) as {
     current?: { temperature_2m?: number; weather_code?: number };

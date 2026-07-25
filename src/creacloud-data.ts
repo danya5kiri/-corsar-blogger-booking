@@ -17,6 +17,7 @@ export type Booking = {
   tourName: string;
   status: "active";
   createdAt: string;
+  sourceOrder?: number;
 };
 
 export type ContentItem = {
@@ -27,6 +28,7 @@ export type ContentItem = {
   tourName: string;
   link: string;
   createdAt: string;
+  sourceOrder?: number;
 };
 
 export type WorkingState = {
@@ -156,15 +158,29 @@ function rowString(row: RemoteRow, ...keys: string[]) {
 export function normalizeDate(value: unknown) {
   if (!value) return "";
   const text = String(value).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  const explicitDate = text.match(/^(\d{4}-\d{2}-\d{2})(?:T|\s|$)/);
+  if (explicitDate) return explicitDate[1];
 
   const parsed = new Date(text);
   if (Number.isNaN(parsed.getTime())) return text;
-  return [
-    parsed.getFullYear(),
-    String(parsed.getMonth() + 1).padStart(2, "0"),
-    String(parsed.getDate()).padStart(2, "0"),
-  ].join("-");
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Vladivostok",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(parsed);
+    const values = Object.fromEntries(
+      parts.map((part) => [part.type, part.value]),
+    );
+    return `${values.year}-${values.month}-${values.day}`;
+  } catch {
+    return [
+      parsed.getFullYear(),
+      String(parsed.getMonth() + 1).padStart(2, "0"),
+      String(parsed.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
 }
 
 export function normalizeCreator(value: unknown) {
@@ -449,6 +465,10 @@ function creatorCandidatesFromRow(row: RemoteRow) {
     row.telegram,
     row.creator,
     row.nickname,
+    row.username,
+    row.handle,
+    row.login,
+    row.telegramNick,
     row.previousTelegram,
     row.fromTelegram,
   ];
@@ -459,6 +479,9 @@ function creatorCandidatesFromRow(row: RemoteRow) {
 export function buildWorkingState(rows: RemoteRow[]): WorkingState {
   const prepared = (Array.isArray(rows) ? rows : []).filter(
     (row): row is RemoteRow => Boolean(row && typeof row === "object"),
+  );
+  const sourceOrder = new Map(
+    prepared.map((row, index) => [row, index] as const),
   );
   const creators = [
     ...new Set(
@@ -494,6 +517,7 @@ export function buildWorkingState(rows: RemoteRow[]): WorkingState {
         tourName,
         status: "active" as const,
         createdAt: rowCreatedAt(row),
+        sourceOrder: sourceOrder.get(row) ?? -1,
       };
     })
     .filter((booking) => booking.creator && booking.date && booking.tourId);
@@ -546,6 +570,7 @@ export function buildWorkingState(rows: RemoteRow[]): WorkingState {
         tourName,
         link,
         createdAt: rowCreatedAt(row),
+        sourceOrder: sourceOrder.get(row) ?? -1,
       };
     })
     .filter((item): item is ContentItem => Boolean(item?.tourId));

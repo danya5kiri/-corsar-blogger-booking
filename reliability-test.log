@@ -1,0 +1,16 @@
+
+> creacloud-main@0.1.0 test
+> npm run build && node scripts/verify-site.mjs
+
+
+> creacloud-main@0.1.0 build
+> tsc --noEmit && vite build && node scripts/finalize-build.mjs
+
+src/creacloud-data.ts(576,29): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Type 'ContentItem' is not assignable to type '{ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; }'.
+    Types of property 'sourceOrder' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+src/creacloud-data.ts(578,22): error TS2322: Type '({ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; } | null)[]' is not assignable to type 'ContentItem[]'.
+  Type '{ id: string; creator: string; date: string; tourId: string; tourName: string; link: string; createdAt: string; sourceOrder: number; } | null' is not assignable to type 'ContentItem'.
+    Type 'null' is not assignable to type 'ContentItem'.
