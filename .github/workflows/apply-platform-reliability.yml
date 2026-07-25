@@ -1,0 +1,45 @@
+name: Apply CREACLOUD reliability patch
+
+on:
+  push:
+    branches:
+      - audit/platform-reliability-2026-07-25
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[reliability applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: audit/platform-reliability-2026-07-25
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply source changes
+        run: node scripts/apply-platform-reliability.mjs
+
+      - name: Install and verify
+        run: |
+          npm ci
+          npm test
+
+      - name: Commit generated source changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/creacloud-app.tsx src/creacloud-data.ts src/creacloud-api.ts src/main.tsx
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "Применить исправления надежности площадки [reliability applied]"
+          git push origin HEAD:audit/platform-reliability-2026-07-25
