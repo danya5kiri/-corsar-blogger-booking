@@ -12,78 +12,14 @@ jobs:
   finalize:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v6
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ github.token }}
 
       - name: Apply refinements
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          app_path = Path("src/creacloud-app.tsx")
-          app = app_path.read_text()
-          app = app.replace(
-              "const WEATHER_REFRESH_INTERVAL_MS = 15 * 60 * 1000;",
-              "const WEATHER_REFRESH_INTERVAL_MS = 10 * 60 * 1000;",
-          )
-          app = app.replace(
-              "Проверяем погоду каждые 15 минут",
-              "Проверяем погоду каждые 10 минут",
-          )
-
-          old_initial = '''    const dataRequest = refreshWorkingDataRef.current({ force: true });
-
-    const weatherRequest = refreshWeatherRef.current({ force: true });
-
-    Promise.allSettled([dataRequest, weatherRequest]).then(() => {
-      const remaining = Math.max(0, 1450 - (Date.now() - startedAt));
-      window.setTimeout(() => {
-        if (!cancelled) setLoading(false);
-      }, remaining);
-    });
-
-    return () => {
-      cancelled = true;
-    };'''
-          new_initial = '''    void refreshWorkingDataRef.current({ force: true });
-    void refreshWeatherRef.current({ force: true });
-
-    const remaining = Math.max(0, 950 - (Date.now() - startedAt));
-    const splashTimer = window.setTimeout(() => {
-      if (!cancelled) setLoading(false);
-    }, remaining);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(splashTimer);
-    };'''
-          if old_initial in app:
-              app = app.replace(old_initial, new_initial, 1)
-
-          old_disabled = '''            cell.date > SEASON_END ||
-            scheduled.length === 0;'''
-          new_disabled = '''            cell.date > SEASON_END ||
-            scheduled.length === 0 ||
-            occupied === scheduled.length;'''
-          if old_disabled in app:
-              app = app.replace(old_disabled, new_disabled, 1)
-
-          app_path.write_text(app)
-
-          verify_path = Path("scripts/verify-site.mjs")
-          verify = verify_path.read_text()
-          anchor = "assert.match(app, /POST_WRITE_SYNC_DELAYS/);"
-          additions = '''assert.match(app, /WEATHER_REFRESH_INTERVAL_MS = 10 \\* 60 \\* 1000/);
-assert.match(app, /occupied === scheduled.length/);
-assert.match(app, /PORTAL_TRANSITION_MIN_MS/);'''
-          if additions not in verify:
-              verify = verify.replace(anchor, f"{anchor}\n{additions}", 1)
-          verify_path.write_text(verify)
-          PY
+        run: python3 scripts/finalize-creacloud.py
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -97,11 +33,9 @@ assert.match(app, /PORTAL_TRANSITION_MIN_MS/);'''
       - name: Verify production build
         run: npm test
 
-      - name: Remove one-time workflow
-        run: rm -f .github/workflows/repair-creacloud-pr45.yml
-
-      - name: Commit verified refinements
+      - name: Commit refinements
         run: |
+          rm -f scripts/finalize-creacloud.py .github/workflows/repair-creacloud-pr45.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
