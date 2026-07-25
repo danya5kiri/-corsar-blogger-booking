@@ -25,5 +25,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api "repos/${{ github.repository }}/commits/1c631a26d3e076d28be310afb46dfbe06506c6cd/check-runs" \
+          gh api "repos/${{ github.repository }}/commits/273cf9b22607cf2738a48f3be2c6c107ae5632d5/check-runs" \
             --jq '.check_runs[] | {name,status,conclusion,output}'
