@@ -29,21 +29,8 @@ jobs:
           npm install --no-save @playwright/test@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Start preview server
-        run: |
-          npm run dev -- --port 4173 > /tmp/creacloud-vite.log 2>&1 &
-          echo $! > /tmp/creacloud-vite.pid
-          for attempt in {1..40}; do
-            if curl --fail --silent http://127.0.0.1:4173/vite-entry.html > /dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat /tmp/creacloud-vite.log
-          exit 1
-
       - name: Run mobile browser scenarios
-        run: npx playwright test tests/mobile-platform.spec.mjs --reporter=line
+        run: npx playwright test tests/mobile-platform.spec.mjs --config=playwright.config.mjs --reporter=line
 
       - name: Upload browser diagnostics
         if: always()
@@ -53,5 +40,4 @@ jobs:
           path: |
             test-results
             playwright-report
-            /tmp/creacloud-vite.log
           if-no-files-found: ignore
