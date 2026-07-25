@@ -1,0 +1,131 @@
+name: Audit live CREACLOUD platform
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  live-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and verify repository
+        run: npm test
+
+      - name: Audit live working base
+        env:
+          API_URL: https://script.google.com/macros/s/AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec
+        run: |
+          CALLBACK="creacloudLiveAudit"
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
+            "${API_URL}?callback=${CALLBACK}&t=$(date +%s)" \
+            --output /tmp/working-base.js
+
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const raw = fs.readFileSync("/tmp/working-base.js", "utf8").trim();
+          const match = raw.match(/^creacloudLiveAudit\((.*)\);?$/s);
+          if (!match) {
+            console.error(raw.slice(0, 500));
+            throw new Error("Working base did not return valid JSONP");
+          }
+          const rows = JSON.parse(match[1]);
+          if (!Array.isArray(rows)) throw new Error("Working base response is not an array");
+
+          const text = (value) => String(value ?? "").trim();
+          const normalizedCreator = (row) =>
+            text(row.telegram || row.creator || row.nickname || row.name)
+              .toLowerCase()
+              .replace(/\s+/g, "");
+          const content = rows.filter((row) => text(row.type) === "content_report");
+          const bookings = rows.filter((row) => text(row.type) !== "content_report");
+          const creatorRows = rows.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes("katerinamanko"),
+          );
+          const creators = new Set(
+            rows.map(normalizedCreator).filter(Boolean),
+          );
+
+          console.log(`Live rows: ${rows.length}`);
+          console.log(`Booking-like rows: ${bookings.length}`);
+          console.log(`Content rows: ${content.length}`);
+          console.log(`Distinct creator values: ${creators.size}`);
+          console.log(`Rows matching katerinamanko: ${creatorRows.length}`);
+          for (const [index, row] of creatorRows.entries()) {
+            console.log(
+              `katerinamanko row ${index + 1}:`,
+              JSON.stringify({
+                type: row.type,
+                date: row.date,
+                telegram: row.telegram,
+                creator: row.creator,
+                nickname: row.nickname,
+                name: row.name,
+                tour: row.tour,
+                status: row.status,
+                operation: row.operation,
+                createdAt: row.createdAt,
+                timestamp: row.timestamp,
+                submittedAt: row.submittedAt,
+                requestId: row.requestId,
+                dedupeKey: row.dedupeKey,
+              }),
+            );
+          }
+
+          const rowsWithoutCreatedAt = rows.filter(
+            (row) => !text(row.createdAt || row.timestamp || row.submittedAt || row.created),
+          );
+          console.log(`Rows without creation timestamp: ${rowsWithoutCreatedAt.length}`);
+          NODE
+
+      - name: Audit live weather forecast
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 45 \
+            "https://api.open-meteo.com/v1/forecast?latitude=43.1155&longitude=131.8855&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=16&timezone=Asia%2FVladivostok" \
+            --output /tmp/weather.json
+
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const data = JSON.parse(fs.readFileSync("/tmp/weather.json", "utf8"));
+          const dates = data.daily?.time ?? [];
+          console.log(`Weather forecast days: ${dates.length}`);
+          console.log(`Weather range: ${dates[0]} — ${dates.at(-1)}`);
+          console.log(`Current weather time: ${data.current?.time ?? "missing"}`);
+          if (dates.length !== 16) throw new Error("Expected 16 weather days");
+          NODE
+
+      - name: Verify live production assets
+        run: |
+          SITE="https://danya5kiri.github.io/-corsar-blogger-booking/"
+          curl --fail --silent --show-error --location \
+            -H "Cache-Control: no-cache" \
+            "${SITE}?audit=$(date +%s)" --output /tmp/live-index.html
+          grep -F "CREACLOUD — кабинет креаторов «Корсар»" /tmp/live-index.html
+          ASSET_JS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.js' /tmp/live-index.html | head -1)
+          ASSET_CSS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.css' /tmp/live-index.html | head -1)
+          test -n "${ASSET_JS}"
+          test -n "${ASSET_CSS}"
+          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_JS}" --output /tmp/live-app.js
+          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_CSS}" --output /tmp/live-app.css
+          test -s /tmp/live-app.js
+          test -s /tmp/live-app.css
+          echo "Live JS and CSS are available."
