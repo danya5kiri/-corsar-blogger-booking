@@ -67,8 +67,8 @@ jobs:
             src/creacloud-data.ts \
             src/creacloud-api.ts \
             src/main.tsx \
-            reliability-test.log \
             reliability-test.exit
+          git add -f reliability-test.log
           git commit -m "Применить исправления надежности площадки [reliability applied]"
           git push origin HEAD:audit/platform-reliability-2026-07-25
 
