@@ -32,6 +32,7 @@ export type ContentItem = {
 export type WorkingState = {
   bookings: Booking[];
   content: ContentItem[];
+  creators?: string[];
 };
 
 export type RemoteRow = Record<string, unknown>;
@@ -443,10 +444,30 @@ export function isValidContentLink(value: unknown) {
   }
 }
 
+function creatorCandidatesFromRow(row: RemoteRow) {
+  const candidates = [
+    row.telegram,
+    row.creator,
+    row.nickname,
+    row.previousTelegram,
+    row.fromTelegram,
+  ];
+  if (rowString(row, "type") === "content_report") candidates.push(row.name);
+  return candidates;
+}
+
 export function buildWorkingState(rows: RemoteRow[]): WorkingState {
   const prepared = (Array.isArray(rows) ? rows : []).filter(
     (row): row is RemoteRow => Boolean(row && typeof row === "object"),
   );
+  const creators = [
+    ...new Set(
+      prepared
+        .flatMap(creatorCandidatesFromRow)
+        .map(normalizeCreator)
+        .filter((creator) => creator && !isDeletedCreator(creator)),
+    ),
+  ].sort((a, b) => a.localeCompare(b, "ru"));
   const bookingRows = resolveEffectiveBookingRows(
     prepared.filter((row) => rowString(row, "type") !== "content_report"),
   );
@@ -529,7 +550,7 @@ export function buildWorkingState(rows: RemoteRow[]): WorkingState {
     })
     .filter((item): item is ContentItem => Boolean(item?.tourId));
 
-  return { bookings, content };
+  return { bookings, content, creators };
 }
 
 export function getTodayKey() {
