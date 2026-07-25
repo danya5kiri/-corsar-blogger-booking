@@ -26,3 +26,26 @@ jobs:
         run: |
           gh api "repos/${{ github.repository }}/pages/builds/latest" \
             --jq '{status, commit, created_at, updated_at, error}'
+
+      - name: Verify live HTML, CSS and JavaScript
+        run: |
+          SITE="https://danya5kiri.github.io/-corsar-blogger-booking/"
+          curl --fail --silent --show-error --location \
+            -H "Cache-Control: no-cache" \
+            "${SITE}?build=057ecb9081640aec472fa21f2aae4c44be2294ad" \
+            --output page.html
+
+          grep -F "CREACLOUD — кабинет креаторов «Корсар»" page.html
+          grep -F "/-corsar-blogger-booking/assets/vite-entry-CLXhto7S.js" page.html
+          grep -F "/-corsar-blogger-booking/assets/vite-entry-CR5ZjwjL.css" page.html
+
+          curl --fail --silent --show-error --location \
+            "${SITE}assets/vite-entry-CLXhto7S.js" \
+            --output app.js
+          curl --fail --silent --show-error --location \
+            "${SITE}assets/vite-entry-CR5ZjwjL.css" \
+            --output app.css
+
+          test -s app.js
+          test -s app.css
+          echo "Live production files are available."
