@@ -7,9 +7,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vite",
+    "start": "vite --host 0.0.0.0",
+    "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "preview": "vite preview --host 0.0.0.0",
     "test": "npm run build && node scripts/verify-site.mjs"
   },
   "dependencies": {
