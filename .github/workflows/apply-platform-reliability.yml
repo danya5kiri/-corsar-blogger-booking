@@ -23,7 +23,7 @@ jobs:
           ref: audit/platform-reliability-2026-07-25
           token: ${{ github.token }}
 
-      - name: Check whether patch is already committed
+      - name: Determine required work
         id: patch-state
         run: |
           if grep -q "PORTAL_TRANSITION_MIN_MS" src/creacloud-app.tsx; then
@@ -32,8 +32,14 @@ jobs:
             echo "apply=true" >> "$GITHUB_OUTPUT"
           fi
 
+          if [ -f reliability-test.exit ] && [ "$(cat reliability-test.exit)" != "0" ]; then
+            echo "repair=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "repair=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
-        if: steps.patch-state.outputs.apply == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -43,12 +49,16 @@ jobs:
         if: steps.patch-state.outputs.apply == 'true'
         run: node scripts/apply-platform-reliability.mjs
 
+      - name: Apply type correction
+        if: steps.patch-state.outputs.repair == 'true'
+        run: node scripts/fix-reliability-types.mjs
+
       - name: Install dependencies
-        if: steps.patch-state.outputs.apply == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
         run: npm ci
 
       - name: Capture verification result
-        if: steps.patch-state.outputs.apply == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
         run: |
           set +e
           npm test > reliability-test.log 2>&1
@@ -58,7 +68,7 @@ jobs:
           cat reliability-test.log
 
       - name: Commit source and diagnostics
-        if: steps.patch-state.outputs.apply == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -69,9 +79,13 @@ jobs:
             src/main.tsx \
             reliability-test.exit
           git add -f reliability-test.log
-          git commit -m "Применить исправления надежности площадки [reliability applied]"
-          git push origin HEAD:audit/platform-reliability-2026-07-25
+          if git diff --cached --quiet; then
+            echo "No source or diagnostic changes to commit."
+          else
+            git commit -m "Исправить и проверить надежность площадки [reliability applied]"
+            git push origin HEAD:audit/platform-reliability-2026-07-25
+          fi
 
       - name: Fail after preserving diagnostics
-        if: steps.patch-state.outputs.apply == 'true'
+        if: steps.patch-state.outputs.apply == 'true' || steps.patch-state.outputs.repair == 'true'
         run: test "$(cat reliability-test.exit)" = "0"
