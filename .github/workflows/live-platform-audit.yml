@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  live-audit:
+  repository-health:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,6 +27,26 @@ jobs:
       - name: Build and verify repository
         run: npm test
 
+      - name: Verify live production assets
+        run: |
+          SITE="https://danya5kiri.github.io/-corsar-blogger-booking/"
+          curl --fail --silent --show-error --location \
+            -H "Cache-Control: no-cache" \
+            "${SITE}?audit=$(date +%s)" --output /tmp/live-index.html
+          grep -F "CREACLOUD — кабинет креаторов «Корсар»" /tmp/live-index.html
+          ASSET_JS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.js' /tmp/live-index.html | head -1)
+          ASSET_CSS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.css' /tmp/live-index.html | head -1)
+          test -n "${ASSET_JS}"
+          test -n "${ASSET_CSS}"
+          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_JS}" --output /tmp/live-app.js
+          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_CSS}" --output /tmp/live-app.css
+          test -s /tmp/live-app.js
+          test -s /tmp/live-app.css
+          echo "Live JS and CSS are available."
+
+  live-working-base:
+    runs-on: ubuntu-latest
+    steps:
       - name: Audit live working base
         env:
           API_URL: https://script.google.com/macros/s/AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec
@@ -59,9 +79,7 @@ jobs:
           const creatorRows = rows.filter((row) =>
             JSON.stringify(row).toLowerCase().includes("katerinamanko"),
           );
-          const creators = new Set(
-            rows.map(normalizedCreator).filter(Boolean),
-          );
+          const creators = new Set(rows.map(normalizedCreator).filter(Boolean));
 
           console.log(`Live rows: ${rows.length}`);
           console.log(`Booking-like rows: ${bookings.length}`);
@@ -96,6 +114,9 @@ jobs:
           console.log(`Rows without creation timestamp: ${rowsWithoutCreatedAt.length}`);
           NODE
 
+  live-weather:
+    runs-on: ubuntu-latest
+    steps:
       - name: Audit live weather forecast
         run: |
           curl --fail --silent --show-error --location \
@@ -112,20 +133,3 @@ jobs:
           console.log(`Current weather time: ${data.current?.time ?? "missing"}`);
           if (dates.length !== 16) throw new Error("Expected 16 weather days");
           NODE
-
-      - name: Verify live production assets
-        run: |
-          SITE="https://danya5kiri.github.io/-corsar-blogger-booking/"
-          curl --fail --silent --show-error --location \
-            -H "Cache-Control: no-cache" \
-            "${SITE}?audit=$(date +%s)" --output /tmp/live-index.html
-          grep -F "CREACLOUD — кабинет креаторов «Корсар»" /tmp/live-index.html
-          ASSET_JS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.js' /tmp/live-index.html | head -1)
-          ASSET_CSS=$(grep -oE '/-corsar-blogger-booking/assets/[^\"]+\.css' /tmp/live-index.html | head -1)
-          test -n "${ASSET_JS}"
-          test -n "${ASSET_CSS}"
-          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_JS}" --output /tmp/live-app.js
-          curl --fail --silent --show-error --location "https://danya5kiri.github.io${ASSET_CSS}" --output /tmp/live-app.css
-          test -s /tmp/live-app.js
-          test -s /tmp/live-app.css
-          echo "Live JS and CSS are available."
