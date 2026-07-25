@@ -7,9 +7,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "start": "vite --host 0.0.0.0",
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc --noEmit && vite build",
+    "start": "vite --host 0.0.0.0 vite-entry.html",
+    "dev": "vite --host 0.0.0.0 vite-entry.html",
+    "build": "tsc --noEmit && vite build && node scripts/finalize-build.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test": "npm run build && node scripts/verify-site.mjs"
   },
