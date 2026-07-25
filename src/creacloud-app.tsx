@@ -55,9 +55,31 @@ const CACHE_KEY = "creacloud-main-working-cache-v4";
 const RECENT_WRITES_KEY = "creacloud-main-recent-writes-v4";
 const TEAM_DAILY_NOTICE_KEY = "creacloud-main-team-daily-notice-v3";
 const RECENT_WRITE_TTL = 15 * 60 * 1000;
+const AUTO_SYNC_INTERVAL_MS = 45 * 1000;
+const AUTO_SYNC_MIN_GAP_MS = 5 * 1000;
+const POST_WRITE_SYNC_DELAYS = [1800, 5200, 12_000] as const;
+
+function nowTimestamp() {
+  return Date.now();
+}
 
 function emptyWorkingState(): WorkingState {
-  return { bookings: [], content: [] };
+  return { bookings: [], content: [], creators: [] };
+}
+
+function completeWorkingState(next: WorkingState): WorkingState {
+  const creators = [
+    ...new Set(
+      [
+        ...(next.creators ?? []),
+        ...next.bookings.map((booking) => booking.creator),
+        ...next.content.map((item) => item.creator),
+      ]
+        .map(normalizeCreator)
+        .filter((creator) => creator && !isDeletedCreator(creator)),
+    ),
+  ].sort((a, b) => a.localeCompare(b, "ru"));
+  return { ...next, creators };
 }
 
 type RecentWrite = { key: string; timestamp: number };
@@ -1154,21 +1176,119 @@ function ProfileLogin({
   onChange: (value: string) => void;
   onSubmit: () => void;
 }) {
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(0);
+  const query = value.trim().toLowerCase().replace(/^@/, "");
+  const matchingCreators = useMemo(
+    () =>
+      creators
+        .filter((creator) =>
+          creator.toLowerCase().replace(/^@/, "").includes(query),
+        )
+        .sort((a, b) => {
+          const aStarts = a.toLowerCase().replace(/^@/, "").startsWith(query);
+          const bStarts = b.toLowerCase().replace(/^@/, "").startsWith(query);
+          return Number(bStarts) - Number(aStarts) || a.localeCompare(b, "ru");
+        }),
+    [creators, query],
+  );
+  const listVisible = suggestionsOpen && matchingCreators.length > 0;
+
+  function chooseCreator(creator: string) {
+    onChange(creator);
+    setActiveSuggestion(0);
+    setSuggestionsOpen(false);
+  }
+
   return (
     <div className="profile-login-layout">
       <section className="profile-login-card">
-        <label className="field">
+        <div className="field">
           <span>Введите ник</span>
-          <input
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder="@username"
-            autoCapitalize="none"
-            onKeyDown={(event) => {
-              if (event.key === "Enter") onSubmit();
-            }}
-          />
-        </label>
+          <div className="creator-combobox">
+            <input
+              value={value}
+              onChange={(event) => {
+                onChange(event.target.value);
+                setActiveSuggestion(0);
+                setSuggestionsOpen(true);
+              }}
+              onFocus={() => setSuggestionsOpen(true)}
+              onBlur={() => {
+                window.setTimeout(() => setSuggestionsOpen(false), 120);
+              }}
+              placeholder="@username"
+              autoCapitalize="none"
+              autoComplete="off"
+              aria-label="Ник креатора"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={listVisible}
+              aria-controls="creator-login-options"
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && matchingCreators.length) {
+                  event.preventDefault();
+                  setSuggestionsOpen(true);
+                  setActiveSuggestion(
+                    (current) => (current + 1) % matchingCreators.length,
+                  );
+                  return;
+                }
+                if (event.key === "ArrowUp" && matchingCreators.length) {
+                  event.preventDefault();
+                  setSuggestionsOpen(true);
+                  setActiveSuggestion(
+                    (current) =>
+                      (current - 1 + matchingCreators.length) %
+                      matchingCreators.length,
+                  );
+                  return;
+                }
+                if (event.key === "Escape") {
+                  setSuggestionsOpen(false);
+                  return;
+                }
+                if (
+                  event.key === "Enter" &&
+                  listVisible &&
+                  matchingCreators[activeSuggestion]
+                ) {
+                  event.preventDefault();
+                  chooseCreator(matchingCreators[activeSuggestion]);
+                  return;
+                }
+                if (event.key === "Enter") onSubmit();
+              }}
+            />
+            {listVisible && (
+              <div
+                className="creator-combobox__list"
+                id="creator-login-options"
+                role="listbox"
+              >
+                {matchingCreators.map((creator, index) => (
+                  <button
+                    key={creator}
+                    type="button"
+                    role="option"
+                    aria-selected={index === activeSuggestion}
+                    className={index === activeSuggestion ? "is-active" : ""}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveSuggestion(index)}
+                    onClick={() => chooseCreator(creator)}
+                  >
+                    {creator}
+                  </button>
+                ))}
+              </div>
+            )}
+            {suggestionsOpen && !matchingCreators.length && (
+              <div className="creator-combobox__empty">
+                Совпадений в рабочей базе нет
+              </div>
+            )}
+          </div>
+        </div>
         <p>
           Покажем поездки, контент, рейтинг, текущую бронь и персональную
           рекомендацию.
@@ -1180,13 +1300,12 @@ function ProfileLogin({
       </section>
       <section className="profile-suggestions">
         <small>Профили из действующей базы</small>
-        <div>
-          {creators.slice(0, 4).map((creator) => (
-            <button key={creator} onClick={() => onChange(creator)}>
-              {creator}
-            </button>
-          ))}
-        </div>
+        <strong>{creators.length}</strong>
+        <span>ников доступно для входа</span>
+        <p>
+          Нажмите на поле: выпадет весь список. При вводе он автоматически
+          отфильтруется.
+        </p>
       </section>
     </div>
   );
@@ -1823,13 +1942,11 @@ function NoticesPanel({
   dataStatus,
   lastSynced,
   refreshing,
-  onRefresh,
 }: {
   state: WorkingState;
   dataStatus: DataStatus;
   lastSynced: string;
   refreshing: boolean;
-  onRefresh: () => void;
 }) {
   const rankings = getRankings(state);
   const recentEvents = getRecentTourEvents(state);
@@ -1895,7 +2012,9 @@ function NoticesPanel({
               ? "Рабочая база подключена"
               : dataStatus === "cached"
                 ? "Показана последняя сохранённая копия"
-                : "Проверяем подключение"}
+                : dataStatus === "error"
+                  ? "Нет связи с рабочей базой"
+                  : "Проверяем подключение"}
           </strong>
           <p>
             Бронирования, переносы, отмены и публикации синхронизируются с общей
@@ -1903,9 +2022,18 @@ function NoticesPanel({
             {lastSynced ? ` Последняя синхронизация: ${lastSynced}.` : ""}
           </p>
         </div>
-        <button disabled={refreshing} onClick={onRefresh}>
-          {refreshing ? "Обновляем..." : "Обновить данные"}
-        </button>
+        <div
+          className={`sync-status__automatic is-${dataStatus}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span aria-hidden="true" />
+          {refreshing
+            ? "Синхронизируем..."
+            : dataStatus === "cached" || dataStatus === "error"
+              ? "Повторим автоматически"
+              : "Автообновление включено"}
+        </div>
       </section>
     </div>
   );
@@ -1954,21 +2082,28 @@ export default function CreacloudApp() {
   const [toast, setToast] = useState("");
   const [toolbarHidden, setToolbarHidden] = useState(false);
   const lastScroll = useRef(0);
+  const stateRef = useRef(state);
+  const writeBusyRef = useRef(false);
+  const mutationEpochRef = useRef(0);
+  const syncInFlightRef = useRef<Promise<WorkingState | null> | null>(null);
+  const lastSyncStartedAtRef = useRef(0);
+  const cacheSavedAtRef = useRef(0);
+  const reconciliationTimersRef = useRef<number[]>([]);
 
-  const activeBookings = state.bookings.filter(
-    (booking) => booking.status === "active",
-  );
   const knownCreators = useMemo(
-    () => [...new Set(activeBookings.map((booking) => booking.creator))].sort(),
-    [activeBookings],
+    () => completeWorkingState(state).creators ?? [],
+    [state],
   );
 
   function saveCachedState(next: WorkingState, syncedAt = new Date()) {
-    setState(next);
+    const completed = completeWorkingState(next);
+    stateRef.current = completed;
+    cacheSavedAtRef.current = syncedAt.getTime();
+    setState(completed);
     try {
       window.localStorage.setItem(
         CACHE_KEY,
-        JSON.stringify({ state: next, savedAt: syncedAt.toISOString() }),
+        JSON.stringify({ state: completed, savedAt: syncedAt.toISOString() }),
       );
     } catch {
       // A cache failure must not block the live working base.
@@ -1986,25 +2121,151 @@ export default function CreacloudApp() {
     }).format(value);
   }
 
-  async function refreshWorkingData(showMessage = true) {
-    setRefreshing(true);
-    try {
-      const next = await fetchWorkingState();
-      saveCachedState(next);
-      setDataStatus("live");
-      setLastSynced(syncLabel());
-      if (showMessage) notify("Данные рабочей базы обновлены.");
-      return next;
-    } catch {
-      setDataStatus(state.bookings.length || state.content.length ? "cached" : "error");
-      if (showMessage) {
-        notify("Не удалось обновить базу. Показаны последние сохранённые данные.");
-      }
+  async function refreshWorkingData({
+    force = false,
+  }: {
+    force?: boolean;
+  } = {}) {
+    if (writeBusyRef.current) return null;
+    if (syncInFlightRef.current) return syncInFlightRef.current;
+    const now = nowTimestamp();
+    if (!force && now - lastSyncStartedAtRef.current < AUTO_SYNC_MIN_GAP_MS) {
       return null;
-    } finally {
-      setRefreshing(false);
     }
+
+    lastSyncStartedAtRef.current = now;
+    const requestEpoch = mutationEpochRef.current;
+    setRefreshing(true);
+    const request: Promise<WorkingState | null> = fetchWorkingState()
+      .then((next) => {
+        if (
+          writeBusyRef.current ||
+          requestEpoch !== mutationEpochRef.current
+        ) {
+          return null;
+        }
+        saveCachedState(next);
+        setDataStatus("live");
+        setLastSynced(syncLabel());
+        return next;
+      })
+      .catch(() => {
+        const current = stateRef.current;
+        setDataStatus(
+          current.bookings.length ||
+            current.content.length ||
+            (current.creators?.length ?? 0)
+            ? "cached"
+            : "error",
+        );
+        return null;
+      })
+      .finally(() => {
+        if (syncInFlightRef.current === request) {
+          syncInFlightRef.current = null;
+          setRefreshing(false);
+        }
+      });
+    syncInFlightRef.current = request;
+    return request;
   }
+
+  function clearReconciliationTimers() {
+    reconciliationTimersRef.current.forEach((timer) =>
+      window.clearTimeout(timer),
+    );
+    reconciliationTimersRef.current = [];
+  }
+
+  function scheduleReconciliation() {
+    clearReconciliationTimers();
+    reconciliationTimersRef.current = POST_WRITE_SYNC_DELAYS.map((delay) =>
+      window.setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          void refreshWorkingData({ force: true });
+        }
+      }, delay),
+    );
+  }
+
+  function beginWrite() {
+    clearReconciliationTimers();
+    mutationEpochRef.current += 1;
+    writeBusyRef.current = true;
+    setWriteBusy(true);
+  }
+
+  function finishWrite(reconcile: boolean) {
+    writeBusyRef.current = false;
+    mutationEpochRef.current += 1;
+    setWriteBusy(false);
+    if (reconcile) scheduleReconciliation();
+  }
+
+  const refreshWorkingDataRef = useRef(refreshWorkingData);
+
+  useEffect(() => {
+    refreshWorkingDataRef.current = refreshWorkingData;
+  });
+
+  useEffect(() => {
+    const synchronizeVisiblePage = () => {
+      if (document.visibilityState === "visible") {
+        void refreshWorkingDataRef.current();
+      }
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (
+        event.key !== CACHE_KEY ||
+        !event.newValue ||
+        writeBusyRef.current
+      ) {
+        return;
+      }
+      try {
+        const parsed = JSON.parse(event.newValue) as {
+          state?: WorkingState;
+          savedAt?: string;
+        };
+        const savedAt = parsed.savedAt ? new Date(parsed.savedAt) : null;
+        const savedTimestamp =
+          savedAt && !Number.isNaN(savedAt.getTime()) ? savedAt.getTime() : 0;
+        if (
+          !parsed.state ||
+          !Array.isArray(parsed.state.bookings) ||
+          !Array.isArray(parsed.state.content) ||
+          savedTimestamp <= cacheSavedAtRef.current
+        ) {
+          return;
+        }
+        const completed = completeWorkingState(parsed.state);
+        stateRef.current = completed;
+        cacheSavedAtRef.current = savedTimestamp;
+        setState(completed);
+        setDataStatus("live");
+        if (savedAt) setLastSynced(syncLabel(savedAt));
+      } catch {
+        // Ignore malformed cache messages from another tab.
+      }
+    };
+    const onVisibilityChange = () => synchronizeVisiblePage();
+    const interval = window.setInterval(
+      synchronizeVisiblePage,
+      AUTO_SYNC_INTERVAL_MS,
+    );
+    window.addEventListener("focus", synchronizeVisiblePage);
+    window.addEventListener("online", synchronizeVisiblePage);
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", synchronizeVisiblePage);
+      window.removeEventListener("online", synchronizeVisiblePage);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      clearReconciliationTimers();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -2022,13 +2283,15 @@ export default function CreacloudApp() {
           Array.isArray(parsed.state.bookings) &&
           Array.isArray(parsed.state.content)
         ) {
-          const cachedState = parsed.state;
+          const cachedState = completeWorkingState(parsed.state);
           const cachedAt = parsed.savedAt ? new Date(parsed.savedAt) : null;
           window.queueMicrotask(() => {
             if (cancelled) return;
+            stateRef.current = cachedState;
             setState(cachedState);
             setDataStatus("cached");
             if (cachedAt && !Number.isNaN(cachedAt.getTime())) {
+              cacheSavedAtRef.current = cachedAt.getTime();
               setLastSynced(syncLabel(cachedAt));
             }
           });
@@ -2038,17 +2301,7 @@ export default function CreacloudApp() {
       // Continue with a live load when the isolated cache is unavailable.
     }
 
-    const dataRequest = fetchWorkingState()
-      .then((next) => {
-        if (cancelled) return;
-        saveCachedState(next);
-        setDataStatus("live");
-        setLastSynced(syncLabel());
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setDataStatus((current) => (current === "cached" ? "cached" : "error"));
-      });
+    const dataRequest = refreshWorkingDataRef.current({ force: true });
 
     const weatherRequest = fetchVladivostokWeather()
       .then((next) => {
@@ -2117,18 +2370,21 @@ export default function CreacloudApp() {
     }
     setEntered(true);
     if (showDailyNotice) setPanel("notices");
+    void refreshWorkingData();
   }
 
   function openBooking(view: BookingView = "new") {
     setBookingView(view);
     if (!activeCreator && view !== "new") setActiveCreator(profileInput);
     setPanel("booking");
+    void refreshWorkingData();
   }
 
   function openProfile() {
     setProfileError("");
     if (activeCreator) setProfileInput(activeCreator);
     setPanel("profile-login");
+    void refreshWorkingData();
   }
 
   function submitProfile() {
@@ -2195,7 +2451,8 @@ export default function CreacloudApp() {
       return;
     }
 
-    setWriteBusy(true);
+    let reconcile = false;
+    beginWrite();
     try {
       const latest = await fetchWorkingState();
       const existingCreator = latest.bookings.find(
@@ -2249,6 +2506,7 @@ export default function CreacloudApp() {
         return;
       }
 
+      reconcile = true;
       await sendWorkingPayload(payload);
       rememberWrite(dedupeKey);
 
@@ -2294,13 +2552,10 @@ export default function CreacloudApp() {
       window.setTimeout(() => {
         window.location.href = contactUrl;
       }, 450);
-      window.setTimeout(() => {
-        void refreshWorkingData(false);
-      }, 2200);
     } catch {
       notify("Не удалось проверить или сохранить бронь. Повторите попытку.");
     } finally {
-      setWriteBusy(false);
+      finishWrite(reconcile);
     }
   }
 
@@ -2320,7 +2575,8 @@ export default function CreacloudApp() {
       return;
     }
 
-    setWriteBusy(true);
+    let reconcile = false;
+    beginWrite();
     try {
       const latest = await fetchWorkingState();
       const source = latest.bookings.find(
@@ -2340,6 +2596,7 @@ export default function CreacloudApp() {
         return;
       }
 
+      reconcile = true;
       await sendWorkingPayload(payload);
       rememberWrite(dedupeKey);
       saveCachedState({
@@ -2363,13 +2620,10 @@ export default function CreacloudApp() {
       window.setTimeout(() => {
         window.location.href = contactUrl;
       }, 450);
-      window.setTimeout(() => {
-        void refreshWorkingData(false);
-      }, 2200);
     } catch {
       notify("Не удалось проверить или удалить бронь. Повторите попытку.");
     } finally {
-      setWriteBusy(false);
+      finishWrite(reconcile);
     }
   }
 
@@ -2379,6 +2633,7 @@ export default function CreacloudApp() {
     setContentLink("");
     setContentError("");
     setPanel("content");
+    void refreshWorkingData();
   }
 
   async function submitContent() {
@@ -2409,7 +2664,8 @@ export default function CreacloudApp() {
       return;
     }
 
-    setWriteBusy(true);
+    let reconcile = false;
+    beginWrite();
     try {
       const latest = await fetchWorkingState();
       const existingCreator = latest.bookings.find(
@@ -2454,6 +2710,7 @@ export default function CreacloudApp() {
         return;
       }
 
+      reconcile = true;
       await sendWorkingPayload(payload);
       rememberWrite(dedupeKey);
       saveCachedState({
@@ -2468,15 +2725,12 @@ export default function CreacloudApp() {
       setContentLink("");
       setContentError("");
       notify("Контент добавлен в рабочую базу и связан с поездкой.");
-      window.setTimeout(() => {
-        void refreshWorkingData(false);
-      }, 2200);
     } catch {
       setContentError(
         "Не удалось проверить или добавить материал. Повторите попытку.",
       );
     } finally {
-      setWriteBusy(false);
+      finishWrite(reconcile);
     }
   }
 
@@ -2652,9 +2906,6 @@ export default function CreacloudApp() {
           dataStatus={dataStatus}
           lastSynced={lastSynced}
           refreshing={refreshing}
-          onRefresh={() => {
-            void refreshWorkingData();
-          }}
         />
       </ModalShell>
     );
@@ -2677,7 +2928,10 @@ export default function CreacloudApp() {
               weather={weather}
               onOpen={(next) => {
                 if (next === "booking") openBooking("new");
-                else setPanel(next);
+                else {
+                  setPanel(next);
+                  void refreshWorkingData();
+                }
               }}
             />
             <Toolbar
