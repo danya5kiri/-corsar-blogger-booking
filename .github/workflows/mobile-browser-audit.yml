@@ -34,7 +34,7 @@ jobs:
           npm run dev -- --port 4173 > /tmp/creacloud-vite.log 2>&1 &
           echo $! > /tmp/creacloud-vite.pid
           for attempt in {1..40}; do
-            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4173/vite-entry.html > /dev/null; then
               exit 0
             fi
             sleep 1
