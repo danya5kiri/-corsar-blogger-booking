@@ -1162,8 +1162,18 @@ button.tile {
   background: rgba(217, 255, 82, 0.13);
 }
 
+.calendar-grid > button.is-past {
+  background: rgba(21, 23, 20, 0.045);
+  color: rgba(21, 23, 20, 0.58);
+}
+
+.calendar-grid > button.is-past i {
+  background: rgba(118, 87, 246, 0.5);
+}
+
 .calendar-grid > button.is-selected {
   background: var(--lime);
+  color: var(--ink);
   font-weight: 800;
 }
 

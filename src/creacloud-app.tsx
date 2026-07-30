@@ -943,7 +943,6 @@ function CalendarMonth({
           ).length;
           const disabled =
             cell.date < BOOKING_START ||
-            cell.date < DEMO_TODAY ||
             cell.date > SEASON_END ||
             scheduled.length === 0;
           return (
@@ -951,6 +950,7 @@ function CalendarMonth({
               key={cell.date}
               className={[
                 selectedDate === cell.date ? "is-selected" : "",
+                cell.date < DEMO_TODAY ? "is-past" : "",
                 scheduled.length ? "has-tours" : "",
                 scheduled.length > 0 && occupied === scheduled.length
                   ? "is-full"
@@ -1033,6 +1033,7 @@ function BookingPanel({
     )
     .sort((a, b) => a.date.localeCompare(b.date));
   const schedule = SCHEDULE[selectedDate] ?? [];
+  const isHistoricalDate = selectedDate < DEMO_TODAY;
   const selectedWeather: WeatherDay | undefined = forecast[selectedDate];
 
   if (view === "manage") {
@@ -1115,7 +1116,13 @@ function BookingPanel({
       <section className="booking-side">
         <div className="selected-date-head">
           <div>
-            <small>{view === "transfer" ? "Новая дата" : "Выбранная дата"}</small>
+            <small>
+              {view === "transfer"
+                ? "Новая дата"
+                : isHistoricalDate
+                  ? "История бронирований"
+                  : "Выбранная дата"}
+            </small>
             <SplitTitle
               strong={selectedDate.slice(-2)}
               light={formatDateRu(selectedDate).replace(/^\d+\s/, "")}
@@ -1181,7 +1188,7 @@ function BookingPanel({
             return (
               <button
                 key={tourId}
-                disabled={Boolean(occupant)}
+                disabled={Boolean(occupant) || isHistoricalDate}
                 className={[
                   selectedTour === tourId ? "is-selected" : "",
                   `is-tone-${(index % 3) + 1}`,
@@ -1193,7 +1200,13 @@ function BookingPanel({
                 <span className="tour-option__symbol">{tour.emoji}</span>
                 <span>
                   <strong>{tour.name}</strong>
-                  <small>{occupant ? `Занято · ${occupant.creator}` : "Свободно"}</small>
+                  <small>
+                    {occupant
+                      ? `Занято · ${occupant.creator}`
+                      : isHistoricalDate
+                        ? "Нет записи"
+                        : "Свободно"}
+                  </small>
                 </span>
                 <Icon name="right" />
               </button>
@@ -1212,18 +1225,20 @@ function BookingPanel({
         <div className="booking-submit-actions">
           <button
             className="primary-button"
-            disabled={busy}
+            disabled={busy || isHistoricalDate}
             onClick={() => onSubmit("whatsapp")}
           >
-            {busy
-              ? "Сохраняем..."
+            {isHistoricalDate
+              ? "Архивная дата"
+              : busy
+                ? "Сохраняем..."
               : view === "transfer"
                 ? "Перенести и открыть WhatsApp"
                 : "Забронировать и открыть WhatsApp"}
           </button>
           <button
             className="booking-call-button"
-            disabled={busy}
+            disabled={busy || isHistoricalDate}
             onClick={() => onSubmit("call")}
           >
             Позвонить для записи
