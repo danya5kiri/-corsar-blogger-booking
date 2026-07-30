@@ -1,0 +1,29 @@
+name: Diagnose finalization run
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show failed check annotations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/check-runs/89643970857/annotations" \
+            --jq '.[] | {path,start_line,end_line,annotation_level,title,message,raw_details}'
+
+      - name: Show failing job tail
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/jobs/89643970857/logs" > /tmp/finalize.log
+          tail -n 160 /tmp/finalize.log
