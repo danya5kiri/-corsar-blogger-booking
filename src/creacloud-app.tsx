@@ -1193,7 +1193,7 @@ function BookingPanel({
                 <span className="tour-option__symbol">{tour.emoji}</span>
                 <span>
                   <strong>{tour.name}</strong>
-                  <small>{occupant ? "Занято" : "Свободно"}</small>
+                  <small>{occupant ? `Занято · ${occupant.creator}` : "Свободно"}</small>
                 </span>
                 <Icon name="right" />
               </button>
