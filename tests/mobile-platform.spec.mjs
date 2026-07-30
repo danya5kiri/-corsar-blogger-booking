@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
 
+// Regression coverage: archived calendar dates remain viewable but not bookable.
 const bookingRows = [
   {
     date: "2026-07-27T07:00:00.000Z",
     telegram: "@older_creator",
-    tour: "Барбекю на островах",
+    tour: "Вечерний круиз на яхте с саксофоном",
     status: "Новая заявка",
   },
   {
@@ -167,6 +168,16 @@ test("mobile team entry, daily notice, creator search and sections", async ({
   await expect(bookingDialog.locator(".calendar-card")).toBeVisible();
   await expect(bookingDialog.locator(".selected-date-weather")).toBeVisible();
   await expect(bookingDialog).toContainText("Обновляется автоматически");
+
+  const archivedDate = bookingDialog.getByRole("button", { name: /27 число/ });
+  await expect(archivedDate).toBeEnabled();
+  await archivedDate.click();
+  await expect(bookingDialog).toContainText("История бронирований");
+  await expect(bookingDialog).toContainText("Занято · @older_creator");
+  await expect(
+    bookingDialog.getByRole("button", { name: "Архивная дата" }),
+  ).toBeDisabled();
+
   await assertNoHorizontalOverflow(page);
   await closeModal(page);
 
