@@ -5,7 +5,7 @@ const bookingRows = [
   {
     date: "2026-07-27T07:00:00.000Z",
     telegram: "@older_creator",
-    tour: "Барбекю на островах",
+    tour: "Вечерний круиз на яхте с саксофоном",
     status: "Новая заявка",
   },
   {
