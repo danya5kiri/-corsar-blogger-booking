@@ -1,0 +1,38 @@
+name: Diagnose booking history
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  booking-history:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project
+        run: npm ci
+
+      - name: Install TypeScript runner
+        run: npm install --no-save tsx@4.20.6
+
+      - name: Fetch live working base
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 60 \
+            "https://script.google.com/macros/s/AKfycbyRUzCwCTkj4TzURMsYfCZGVRrZnxoeoqTzz76w3n9qz-JlU4ji2i3e1xYQr4CymGsf8Q/exec?callback=bookingHistoryAudit&t=$(date +%s)" \
+            --output /tmp/creacloud-working-base.js
+
+      - name: Parse booking history exactly like the site
+        run: npx tsx scripts/diagnose-booking-history.ts
