@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 
+// Regression coverage: archived calendar dates remain viewable but not bookable.
 const bookingRows = [
   {
     date: "2026-07-27T07:00:00.000Z",
